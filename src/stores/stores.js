@@ -151,6 +151,8 @@ export const useAppStore = defineStore('app', {
         isTakeScreenshot: false,
         connectionState: 'connecting', // 'connecting', 'no-signal', 'connection-failed'
         connectingTimeout: null,
+        bitrate: 0,
+        fps: 0,
       },
       hid: {
         isActive: false,

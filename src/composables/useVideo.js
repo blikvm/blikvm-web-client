@@ -180,8 +180,6 @@ export function useVideo() {
 
   const updateInfo = () => {
     if (uStreamerPluginHandle.value !== null) {
-      let info = '';
-      // 获取视频元素
       const el = document.getElementById('webrtc-output');
       let currentFrames = null;
       if (el && el.webkitDecodedFrameCount !== undefined) {
@@ -189,12 +187,29 @@ export function useVideo() {
       } else if (el && el.mozPaintedFrames !== undefined) {
         currentFrames = el.mozPaintedFrames;
       }
-      // 假设 getBitrate() 方法存在于 handle
+
+      let bitrateKbps = null;
       if (typeof uStreamerPluginHandle.value.getBitrate === 'function') {
-        info = `${uStreamerPluginHandle.value.getBitrate()}`.replace('kbits/sec', 'kbps');
+        const br = `${uStreamerPluginHandle.value.getBitrate()}`; // e.g. "1234 kbits/sec"
+        const m = br.match(/([0-9]+(?:\.[0-9]+)?)/);
+        if (m) {
+          bitrateKbps = Number(m[1]);
+        }
+      }
+      if (bitrateKbps !== null && !Number.isNaN(bitrateKbps)) {
+        try {
+          device.value.video.bitrate = Math.round(bitrateKbps);
+        } catch (e) {
+          // ignore assignment error, but keep UI info string updated
+        }
       }
       if (currentFrames !== null) {
-        info += ` / ${Math.max(0, currentFrames - frames)} fps dynamic`;
+        const fpsDynamic = Math.max(0, currentFrames - frames);
+        try {
+          device.value.video.fps = fpsDynamic;
+        } catch (e) {
+          // ignore assignment error
+        }
         frames = currentFrames;
       }
       // to do, how to show this info @ronan

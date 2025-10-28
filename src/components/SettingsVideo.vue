@@ -69,14 +69,14 @@
 
           <br /><br />
           <div class="d-flex text-caption justify-start">
-            {{ $t('settings.device.video.resolutionField') }}
+            {{ $t('settings.device.video.inputFormat') }}
           </div>
           <v-row dense no-gutters v-if="device.board.type === '4B' || device.board.type === 'CM4'">
             <v-col>
               <v-text-field
                 v-model="device.video.resolution"
                 readonly
-                :label="$t('settings.device.video.resolutionField')"
+                :label="$t('settings.device.video.inputFormat')"
                 density="compact"
                 tile
                 rounded="lg"
@@ -102,7 +102,6 @@
               </v-text-field>
             </v-col>
           </v-row>
-
           <v-row dense no-gutters v-else>
             <v-col cols="12">
               <v-select
@@ -117,6 +116,41 @@
                 tile
                 @update:modelValue="setResolution"
               />
+            </v-col>
+          </v-row>
+
+          <div class="d-flex text-caption justify-start" v-if="device.video.videoMode === 'h264'">
+            {{ $t('settings.device.video.liveFormat') }}
+          </div>
+          <v-row dense no-gutters v-if="device.video.videoMode === 'h264'">
+            <v-col>
+              <v-text-field
+                :model-value="`${device.video.bitrate} kbps`"
+                readonly
+                :label="$t('settings.device.video.liveFormat')"
+                density="compact"
+                tile
+                rounded="lg"
+                color="#76FF03"
+                variant="plain"
+                hide-details
+                single-line
+              >
+                <template v-slot:append>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      margin-left: 8px;
+                      font-size: 0.85rem;
+                      color: #76ff03;
+                      font-weight: 500;
+                    "
+                  >
+                    {{ device.video.fps }} Hz
+                  </div>
+                </template>
+              </v-text-field>
             </v-col>
           </v-row>
 
