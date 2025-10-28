@@ -344,6 +344,11 @@ export const useAppStore = defineStore('app', {
       showFooter: true,
       pinnedFooter: true,
     },
+    macro: {
+      showInterface: false,
+      isPlaying: false,
+      playheadPosition: 0,
+    },
     ocr: {
       isMenuActive: false,
       isOcrStarted: false, // TODO cannot be derived?

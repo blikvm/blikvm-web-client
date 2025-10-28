@@ -29,6 +29,16 @@
         :handle-key-released="handleKeyReleased"
       />
 
+      <!-- Macro Manager Section -->
+      <div v-if="showMacroManager" class="macro-manager-section">
+        <MacroRecording />
+      </div>
+
+      <!-- Macro Recording Studio Section -->
+      <div v-if="showMacroPlayback" class="macro-recording-studio-section">
+        <MacroRecordingStudio />
+      </div>
+
     </div>
 
     <!-- Navigation bar -->
@@ -42,6 +52,12 @@
       :toggle-pin="togglePin"
     />
   </v-footer>
+
+  <!-- Macro Recording Overlay -->
+  <MacroOverlay 
+    :show-macro-overlay="showMacroOverlay"
+    @close="closeMacroOverlay"
+  />
 </template>
 
 <script setup>
@@ -60,6 +76,9 @@ import AppFooterNotifications from "@/components/footer/AppFooterNotifications.v
 import AppFooterTerminals from "@/components/footer/AppFooterTerminals.vue"
 import AppFooterDesktopKeyboard from "@/components/footer/AppFooterDesktopKeyboard.vue"
 import AppFooterNavigation from "@/components/footer/AppFooterNavigation.vue"
+import MacroOverlay from "@/components/MacroOverlay.vue"
+import MacroRecording from "@/components/MacroRecording.vue"
+import MacroRecordingStudio from "@/components/MacroRecordingStudio.vue"
 
 // Composables and stores
 const store = useAppStore()
@@ -68,7 +87,7 @@ const { isExperimental, footer, isTouchDevice, settings } = storeToRefs(store)
 const { handleKeyPress, handleKeyReleased } = useKeyboard(device.value.ws)
 
 // Footer toggle functionality with proper mutual exclusivity - video always active
-const { activeToggle, handleToggleChange: handleFooterToggleChange } = useFooterToggle(["video"])
+const { activeToggle, handleToggleChange: handleFooterToggleChange, showMacroOverlay, closeMacroOverlay } = useFooterToggle(["video"])
 
 // Business logic composables  
 const { lockStates } = useLockStates(device)
@@ -89,9 +108,16 @@ const {
 
 // Computed properties
 const showSSHTerminal = computed(() => device.value.showSSHTerminal)
+const showMacroManager = computed(() => activeToggle.value.includes('macro-manager'))
+const showMacroPlayback = computed(() => activeToggle.value.includes('macro-playback'))
+
+// Update store macro interface state when toggles change
+watch([showMacroManager, showMacroPlayback], ([manager, playback]) => {
+  store.macro.showInterface = manager || playback
+}, { immediate: true })
 
 const hasActiveComponents = computed(() => 
-  showKeyboard.value || showMobileKeyboard.value || showVirtualMouse.value || showSSHTerminal.value || showSerial.value || showNotifications.value
+  showKeyboard.value || showMobileKeyboard.value || showVirtualMouse.value || showSSHTerminal.value || showSerial.value || showNotifications.value || showMacroManager.value || showMacroPlayback.value
 )
 
 const shouldShowFooter = computed(() => 
@@ -145,7 +171,7 @@ function handleToggleChange(newToggles) {
   // 3. video is display-only, cannot be toggled by user
   // Rule: newest clicked component wins, hides all conflicting ones
   
-  const interactiveComponents = ['keyboard', 'console', 'serial', 'notifications']
+  const interactiveComponents = ['keyboard', 'console', 'serial', 'notifications', 'macro-manager', 'macro-playback']
   const newItem = newToggles.find(item => !previousToggleState.value.includes(item))
   
   // If user clicked video, ignore it (video is controlled by video state, not user)
@@ -153,6 +179,13 @@ function handleToggleChange(newToggles) {
     // Restore previous state - video toggle is display-only
     activeToggle.value = previousToggleState.value
     return
+  }
+  
+  // Special handling for macro components - they take full screen, hide everything else
+  if (newItem === 'macro-manager') {
+    newToggles = ['video', 'macro-manager'] // Only keep video and macro-manager
+  } else if (newItem === 'macro-playback') {
+    newToggles = ['video', 'macro-playback'] // Only keep video and macro-playback
   }
   
   if (interactiveComponents.includes(newItem)) {
@@ -221,4 +254,18 @@ onMounted(() => {
 
 <style scoped>
 /* Minimal styles for main AppFooter component */
+
+.macro-manager-section,
+.macro-recording-studio-section {
+  max-height: 70vh;
+  overflow-y: auto;
+  width: 100%;
+  position: relative;
+}
+
+/* Ensure these sections don't break out of footer bounds */
+.macro-recording-studio-section {
+  background-color: #1a1a1a;
+  border-top: 1px solid #333;
+}
 </style>

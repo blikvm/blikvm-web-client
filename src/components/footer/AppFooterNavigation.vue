@@ -132,7 +132,10 @@ const menuItems = [
   { id: "mouse", text: t("common.mouse"), icon: "mdi-mouse-outline" },
   { id: "console", text: t("appFooter.sshTerminal"), icon: "mdi-console-line" },
   { id: "serial", text: t("appFooter.serialTerminal"), icon: "mdi-serial-port" },
-  { id: "notifications", text: t("notification.title"), icon: "mdi-bell-outline" }
+  { id: "notifications", text: t("notification.title"), icon: "mdi-bell-outline" },
+  { id: "macro", text: "Macro", icon: "mdi-record-rec" },
+  { id: "macro-manager", text: "Macro Manager", icon: "mdi-playlist-edit" },
+  { id: "macro-playback", text: "Macro Recording Studio", icon: "mdi-timeline" }
 ];
 
 // Computed properties

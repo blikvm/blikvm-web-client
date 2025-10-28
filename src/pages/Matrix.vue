@@ -20,8 +20,30 @@
 
           <AppToolbar :z-index="zIndex.toolbar" class="toolbar" />
 
-          <div class="video-center-wrapper">
-            <AppKVM />
+          <!-- Main content area with KVM video and macro interface -->
+          <div class="main-content-wrapper">
+            <!-- KVM Video Section -->
+            <div class="video-center-wrapper">
+              <AppKVM />
+            </div>
+
+            <!-- Macro Side Panel -->
+            <MacroSidePanel 
+              v-if="showMacroInterface"
+              :playhead-position="macroPlayheadPosition"
+              @event-selected="handleMacroEventSelected"
+            />
+          </div>
+
+          <!-- Unified Timeline Below Video -->
+          <div v-if="showMacroInterface" class="unified-timeline-wrapper">
+            <MacroUnifiedTimeline 
+              @play="handleMacroPlay"
+              @pause="handleMacroPause"
+              @stop="handleMacroStop"
+              @seek="handleMacroSeek"
+              @event-selected="handleMacroEventSelected"
+            />
           </div>
         </v-container>
       </div>
@@ -53,6 +75,8 @@
   import DialogTextPaste from '@/components/dialog/DialogTextPaste.vue';
   import { useI18n } from 'vue-i18n';
   import { zIndex } from '@/styles/zIndex';
+  import MacroSidePanel from '@/components/MacroSidePanel.vue';
+  import MacroUnifiedTimeline from '@/components/MacroUnifiedTimeline.vue';
 
   const store = useAppStore();
   const { device } = useDevice();
@@ -60,9 +84,23 @@
 
   const { t } = useI18n();
 
-  const { isProcessing, toolbar, showAboutPageDialog, hasValidStream, footer, misc } =
+  const { isProcessing, toolbar, showAboutPageDialog, hasValidStream, footer, misc, macro } =
     storeToRefs(store);
   const showInitScreen = ref(true);
+  
+  // Macro interface state from store
+  const showMacroInterface = computed(() => macro.value.showInterface);
+  const macroPlayheadPosition = computed(() => macro.value.playheadPosition);
+  
+  // Toggle macro interface (this will be controlled by footer later)
+  const toggleMacroInterface = () => {
+    macro.value.showInterface = !macro.value.showInterface;
+  };
+  
+  // Expose to window for testing (remove in production)
+  if (typeof window !== 'undefined') {
+    window.toggleMacroInterface = toggleMacroInterface;
+  }
   // TODO 2025-05-18 this needs to be move elsewhere
   const handleMouseMove = (event) => {
     const mouseY = event.clientY;
@@ -115,6 +153,34 @@
       showInitScreen.value = false;
     }, 1);
   });
+
+  // Macro event handlers
+  const handleMacroPlay = () => {
+    console.log('Macro playback started');
+    macro.value.isPlaying = true;
+  };
+
+  const handleMacroPause = () => {
+    console.log('Macro playback paused');
+    macro.value.isPlaying = false;
+  };
+
+  const handleMacroStop = () => {
+    console.log('Macro playback stopped');
+    macro.value.isPlaying = false;
+    macro.value.playheadPosition = 0;
+  };
+
+  const handleMacroSeek = (time) => {
+    console.log('Macro seek to time:', time);
+    // Update playhead position based on time
+    macro.value.playheadPosition = (time / 180) * 100; // Assuming 180s duration
+  };
+
+  const handleMacroEventSelected = (event) => {
+    console.log('Macro event selected:', event);
+  };
+
 </script>
 
 <style scoped>
@@ -171,8 +237,15 @@
   .video-container {
     flex: 1 1 auto;
     display: flex;
+    flex-direction: column;
     overflow: hidden;
     padding: 0;
+  }
+
+  .main-content-wrapper {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
   }
 
   .video-center-wrapper {
@@ -181,6 +254,12 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
+  }
+
+  .unified-timeline-wrapper {
+    flex-shrink: 0;
+    padding: 8px;
+    background-color: #1a1a1a;
   }
 
   .video-element {

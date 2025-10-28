@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 /**
  * Composable for managing footer toggle state and mutual exclusivity
@@ -6,6 +6,9 @@ import { ref } from 'vue';
  */
 export function useFooterToggle(initialSelection = ["video"]) {
   const activeToggle = ref([...initialSelection]);
+  
+  // Macro overlay state
+  const showMacroOverlay = computed(() => activeToggle.value.includes('macro'));
 
   /**
    * Handle toggle changes with mutual exclusivity rules
@@ -88,6 +91,13 @@ export function useFooterToggle(initialSelection = ["video"]) {
     handleToggleChange([...selection]);
   };
 
+  /**
+   * Close macro overlay
+   */
+  const closeMacroOverlay = () => {
+    removeFromToggle('macro');
+  };
+
   return {
     activeToggle,
     handleToggleChange,
@@ -96,6 +106,8 @@ export function useFooterToggle(initialSelection = ["video"]) {
     removeFromToggle,
     toggleItem,
     resetToggle,
-    setToggle
+    setToggle,
+    showMacroOverlay,
+    closeMacroOverlay
   };
 }
