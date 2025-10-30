@@ -19,7 +19,7 @@ export function useState() {
     error.value = null;
     try {
       const res = await http.get('/check/token');
-      if (res.status === 200 && res.data?.data.code === 0) {
+      if (res.status === 200 && res.data.code === 0) {
       } else if (res.status === 401) {
         router.push({ name: 'index' }).catch((error) => console.log(error));
       } else {

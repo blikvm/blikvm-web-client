@@ -312,7 +312,7 @@
               <v-slider
                 v-model="device.video.WebRTCGop"
                 :max="60"
-                :min="1"
+                :min="0"
                 :step="1"
                 show-ticks="always"
                 tick-size="2"

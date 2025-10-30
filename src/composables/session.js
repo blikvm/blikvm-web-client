@@ -19,22 +19,24 @@
 #                                                                            #
 *****************************************************************************/
 import Config from '@/config.js';
-import { RateLimitedMouse } from './mouse.js';
+import { RateLimitedMouse } from '@/utils/mouse.js';
 import { useAppStore } from '@/stores/stores';
 import { storeToRefs } from 'pinia';
 import { useDevice } from '@/composables/useDevice';
 import { useAlert } from '@/composables/useAlert';
+import { useState } from '@/composables/useState.js';
 
 const store = useAppStore();
 const { misc, isHidActive, notification } = storeToRefs(store);
 
 const { device } = useDevice();
 const { sendAlert } = useAlert();
+const { apiBinState } = useState();
 
-// TODO
-let pingInterval = null;
-const pingTimeout = 5000;
-let pongTimeout;
+let __ping_timer = null;
+const pingTimeout = 1000;
+let __ws = null;
+let __missed_heartbeats = 0;
 
 // Method to build the ws URL
 const buildWsUrl = () => {
@@ -43,19 +45,34 @@ const buildWsUrl = () => {
   return `${wsProtocol}://${Config.host_ip}${Config.host_port}/wss?token=${token}`;
 };
 
-const init = (device) => {
-  //  const wsProtocol = Config.http_protocol === "https:" ? "wss" : "ws"; // TODO for testing
-  //  const token = localStorage.getItem("token");
-  //  const url = `${wsProtocol}://${Config.host_ip}${Config.host_port}/wss?token=${token}`;
-  //
-  device.value.wsUrl = buildWsUrl();
-  console.log(device.value.wsUrl);
+const startSession = () => {
+  if (__ws && (__ws.readyState === WebSocket.OPEN || __ws.readyState === WebSocket.CONNECTING)) {
+    device.value.isIntentionalClose = true;
+    __ws.close();
+    __ws = null; // Clear reference
+  }
+  const wsUrl = buildWsUrl();
+  __ws = new WebSocket(wsUrl);
+  __ws.onopen = __wsOpenHandler;
+  __ws.onmessage = (event) => handleWSMessage(event.data);
+  __ws.onclose = __wsCloseHandler;
+  __ws.onerror = __wsErrorHandler;
+}
 
-  // TODO is this the right place?
-  device.value.mjpegUrl = device.value.baseUrl + device.value.video.videoUri;
-};
+const __wsOpenHandler = () => {
+  device.value.isDisconnected = false;
+  device.value.userCancelledReconnect = false; // Reset cancel flag on successful connection
+  device.value.lastDisconnectTime = null; // Clear disconnect time on successful connection
+  device.value.reconnectCount = 0; // Reset reconnect count on successful connection
+  device.value.isIntentionalClose = false; // Reset intentional close flag
+  console.log(`WebSocket connection established for ${device.value.wsUrl}`);
+  device.value.ws = __ws;
+  __missed_heartbeats = 0;
+  __ping_timer = setInterval(__pingServer, 1000);
+}
 
-const handleWSMessage = (event, device) => {
+
+const handleWSMessage = (event) => {
   const message = JSON.parse(event); // Assuming the message is in the correct format
 
   if (message.data?.systemInfo) {
@@ -130,6 +147,7 @@ const handleWSMessage = (event, device) => {
   }
 
   if (typeof message?.data?.pong === 'number') {
+    __missed_heartbeats = 0;
     let timestamp = new Date().getTime();
     let delay = (timestamp - message.data.pong) / 2;
     device.value.networkLatency = Math.ceil(delay);
@@ -163,24 +181,84 @@ const handleWSMessage = (event, device) => {
   }
 };
 
-const isWebSocketOpen = (ws) => {
-  return ws && ws.readyState === WebSocket.OPEN;
-};
-
-pingInterval = setInterval(() => {
-  sendPing(device.value.ws);
-}, pingTimeout);
-
-const sendPing = (ws) => {
-  const timestamp = new Date().getTime();
-
-  if (isWebSocketOpen(ws)) {
+const __pingServer = () => {
     try {
-      ws.send(JSON.stringify({ ping: timestamp }));
+      __missed_heartbeats += 1;
+      if (__missed_heartbeats >= 15) {
+				throw new Error("Too many missed heartbeats");
+			}
+      const timestamp = new Date().getTime();
+      __ws.send(JSON.stringify({ ping: timestamp }));
     } catch (error) {
-      console.error('Error sending ping:', error);
+      __wsErrorHandler(error.message);
     }
-  }
 };
 
-export { isWebSocketOpen, handleWSMessage, sendPing };
+const __wsErrorHandler = (error) => {
+  console.error('Session: socket error:', error);
+  if(__ws){
+    	__ws.onclose = null;
+			__ws.close();
+			__wsCloseHandler(null);
+  }
+}
+
+const attemptReconnect = () => {
+    // Check if this was an intentional close
+    if (device.value.isIntentionalClose) {
+      return;
+    }
+
+    // Check if user manually cancelled reconnection
+    if (device.value.userCancelledReconnect) {
+      console.log('Reconnection cancelled by user');
+      return;
+    }
+
+    // Clear any existing timeout to prevent duplicates
+    if (device.value.reconnectTimeout) {
+      clearTimeout(device.value.reconnectTimeout);
+      device.value.reconnectTimeout = null;
+    }
+
+    // Increment count immediately to prevent race conditions
+    const currentAttempt = device.value.reconnectCount;
+    device.value.reconnectCount++;
+
+    // Exponential backoff algorithm: 1s, 10s, 20s, then 40s
+    const delays = [1000, 10000, 20000, 40000];
+    const delay = delays[Math.min(currentAttempt, delays.length - 1)];
+
+    console.log(
+      `Reconnecting in ${(delay / 1000).toFixed(0)}s (attempt ${device.value.reconnectCount})`
+    );
+    apiBinState(); // Check API status on each reconnect attempt
+
+    device.value.reconnectTimeout = setTimeout(() => {
+      startSession();
+    }, delay);
+}
+
+const __wsCloseHandler = (ev) => {
+  console.log("Session: socket closed:", ev);
+  if (__ping_timer) {
+		clearInterval(__ping_timer);
+		__ping_timer = null;
+	}
+  if (!device.value.isIntentionalClose) {
+    device.value.isDisconnected = true;
+    device.value.video.isActive = false; // Stop video stream
+    if (!device.value.lastDisconnectTime) {
+      device.value.lastDisconnectTime = Date.now();
+    }
+    } else {
+    // Reset flag for next connection
+    device.value.isIntentionalClose = false;
+  }
+  
+  __ws = null;
+  attemptReconnect();
+  // setTimeout(() => startSession(), 1000);
+}
+
+export { startSession };

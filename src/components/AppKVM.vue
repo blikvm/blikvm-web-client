@@ -128,7 +128,7 @@
   import { useAppStore } from '@/stores/stores';
   import { useHealth } from '@/composables/useHealth.js';
   import { storeToRefs } from 'pinia';
-  import { handleWSMessage } from '@/utils/websocket.js';
+  import { startSession } from '@/composables/session.js';
   import { useDevice } from '@/composables/useDevice';
   import { usePointerLock } from '@/composables/usePointerLock';
   import { useKeyboard } from '@/composables/useKeyboard-new';
@@ -136,11 +136,9 @@
   import { useMouse } from '@/composables/useMouse';
   import { RateLimitedMouse } from '../utils/mouse.js';
   import { useExtractText } from '@/composables/useExtractText';
-  import { useMicrophone } from '@/composables/useMicrophone';
   import { useCamera } from '@/composables/useCameraWithSwitch.js';
   import { useAppKVMVideo } from '@/composables/useAppKVMVideo.js';
   import { zIndex } from '@/styles/zIndex'; // TODO should be constants!
-  import { useState } from '@/composables/useState.js';
 
   // Stores & States
   const store = useAppStore();
@@ -163,7 +161,6 @@
 
   const { isVideoActive, isH264, isMjpeg, videoElementStyle } = useAppKVMVideo(device);
   const { getHealthThreshold } = useHealth();
-  const { apiBinState } = useState();
 
   // DOM Refs
   const streamElementRef = ref(null);
@@ -194,17 +191,9 @@
   });
 
   // WebSocket Init
-  const wsProtocol = Config.http_protocol === 'https:' ? 'wss' : 'ws'; // TODO for testing
-  const token = localStorage.getItem('token');
-  const wsUrl = `${wsProtocol}://${Config.host_ip}${Config.host_port}/wss?token=${token}`;
   device.value.mjpegUrl = `${Config.http_protocol}//${Config.host_ip}${Config.host_port}/video/stream`;
-
-  let ws = null; // WebSocket instance
-  const reconnectInterval = 2000; // Initial reconnect interval (ms)
-  device.value.wsUrl = wsUrl;
   const wasNoSignal = ref(true);
-
-  createWebSocket();
+  startSession();
 
   const { requestPointerLock, exitPointerLock, isPointerLocked } = usePointerLock(
     //document.pointerLockElement,
@@ -332,109 +321,6 @@
     }
   );
 
-  function createWebSocket() {
-    try {
-      // Close existing connection if any (check both OPEN and CONNECTING states)
-      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-        device.value.isIntentionalClose = true;
-        ws.close();
-        ws = null; // Clear reference
-      }
-
-      ws = new WebSocket(wsUrl);
-
-      ws.addEventListener('open', () => {
-        device.value.isDisconnected = false;
-        device.value.userCancelledReconnect = false; // Reset cancel flag on successful connection
-        device.value.lastDisconnectTime = null; // Clear disconnect time on successful connection
-        device.value.reconnectCount = 0; // Reset reconnect count on successful connection
-        device.value.isIntentionalClose = false; // Reset intentional close flag
-        console.log(`WebSocket connection established for ${device.value.wsUrl}`);
-      });
-
-      ws.addEventListener('message', (event) => {
-        handleWSMessage(event.data, device);
-      });
-
-      ws.addEventListener('close', (event) => {
-        console.log('WebSocket connection closed', { code: event.code, reason: event.reason });
-
-        // Only mark as disconnected and attempt reconnect if not intentional
-        if (!device.value.isIntentionalClose) {
-          device.value.isDisconnected = true;
-          device.value.video.isActive = false; // Stop video stream
-          if (!device.value.lastDisconnectTime) {
-            device.value.lastDisconnectTime = Date.now();
-          }
-          attemptReconnect();
-        } else {
-          // Reset flag for next connection
-          device.value.isIntentionalClose = false;
-        }
-      });
-
-      ws.addEventListener('error', (error) => {
-        console.error('WebSocket error:', error);
-        ws.close(); // Close current connection, trigger close event
-      });
-
-      device.value.ws = ws; // Store WebSocket instance in device object
-    } catch (error) {
-      console.error('Failed to create WebSocket:', error);
-      // Only trigger reconnection if not already disconnected (prevent loop)
-      if (!device.value.isDisconnected) {
-        device.value.isDisconnected = true;
-        attemptReconnect();
-      }
-    }
-  }
-
-  // Store reference for cleanup
-  const wsManager = {
-    createWebSocket,
-  };
-
-  // Expose for retry functionality (will be cleaned up on unmount)
-  if (typeof window !== 'undefined') {
-    window.wsManager = wsManager;
-  }
-
-  function attemptReconnect() {
-    // Check if this was an intentional close
-    if (device.value.isIntentionalClose) {
-      return;
-    }
-
-    // Check if user manually cancelled reconnection
-    if (device.value.userCancelledReconnect) {
-      console.log('Reconnection cancelled by user');
-      return;
-    }
-
-    // Clear any existing timeout to prevent duplicates
-    if (device.value.reconnectTimeout) {
-      clearTimeout(device.value.reconnectTimeout);
-      device.value.reconnectTimeout = null;
-    }
-
-    // Increment count immediately to prevent race conditions
-    const currentAttempt = device.value.reconnectCount;
-    device.value.reconnectCount++;
-
-    // Exponential backoff algorithm: 10s, 20s, then 40s
-    const delays = [10000, 20000, 40000];
-    const delay = delays[Math.min(currentAttempt, delays.length - 1)];
-
-    console.log(
-      `Reconnecting in ${(delay / 1000).toFixed(0)}s (attempt ${device.value.reconnectCount})`
-    );
-    apiBinState(); // Check API status on each reconnect attempt
-
-    device.value.reconnectTimeout = setTimeout(() => {
-      createWebSocket();
-    }, delay);
-  }
-
   watch(
     () => device.value.video.audioVolume,
     (newVal) => {
@@ -559,11 +445,6 @@
     if (device.value.reconnectTimeout) {
       clearTimeout(device.value.reconnectTimeout);
       device.value.reconnectTimeout = null;
-    }
-
-    // Clean up global reference
-    if (window.wsManager) {
-      delete window.wsManager;
     }
   });
 </script>
