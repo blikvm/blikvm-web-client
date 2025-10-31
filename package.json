@@ -1,6 +1,6 @@
 {
   "name": "blikvm-matrix",
-  "version": "2.1.1-alpha",
+  "version": "2.2.0-alpha",
   "build": "2025-05-09 15:13:24",
   "scripts": {
     "dev": "vite --mode development",
