@@ -62,14 +62,22 @@
           </v-alert>
         </v-sheet>
 
-        <v-sheet min-width="420" rounded="lg" class="pa-0">
+        <v-form
+          ref="loginForm"
+          id="loginForm"
+          autocomplete="on"
+          method="post"
+          @submit.prevent="handleLoginClick"
+        >
+          <v-sheet min-width="420" rounded="lg" class="pa-0">
           <v-text-field
             v-model="user"
-            :append-inner-icon="visibleUsername ? 'mdi-eye-off' : 'mdi-eye'"
+            name="username"
+            id="username"
             density="compact"
             flat
             :placeholder="$t('login.username')"
-            :type="visibleUsername ? 'text' : 'password'"
+            type="text"
             rounded="lg"
             variant="solo"
             hide-details
@@ -78,10 +86,6 @@
             aria-label="Username"
             autocomplete="username"
             @keyup.enter="handleLoginClick"
-            @click:append-inner="
-              visibleUsername = !visibleUsername;
-              if (visibleUsername) visiblePassword = false;
-            "
           >
             <template #prepend-inner>
               <v-icon color="#76FF03" icon="mdi-account" />
@@ -90,6 +94,8 @@
 
           <v-text-field
             v-model="password"
+            name="password"
+            id="password"
             :append-inner-icon="visiblePassword ? 'mdi-eye-off' : 'mdi-eye'"
             density="compact"
             flat
@@ -142,7 +148,19 @@
             >
             </v-otp-input>
           </div>
-        </v-sheet>
+          <div class="px-3 pb-3">
+            <v-btn
+              block
+              variant="tonal"
+              class="text-none mt-2"
+              color="#76FF03"
+              rounded="lg"
+              :loading="validating"
+              type="submit"
+            >{{ $t('login.login') }}</v-btn>
+          </div>
+          </v-sheet>
+        </v-form>
 
         <v-sheet class="d-flex flex-column align-start bg-transparent" min-width="420">
           <v-alert
@@ -159,16 +177,7 @@
             {{ errorMessage }}
           </v-alert>
 
-          <v-btn
-            block
-            variant="tonal"
-            class="text-none mt-2 mb-2"
-            color="#76FF03"
-            rounded="lg"
-            :loading="validating"
-            @click="handleLoginClick"
-            >{{ $t('login.login') }}
-          </v-btn>
+          
         </v-sheet>
       </v-col>
     </v-row>
