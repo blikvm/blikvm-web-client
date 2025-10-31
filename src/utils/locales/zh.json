@@ -460,6 +460,7 @@
     "server": "后端",
     "used": "已用",
     "free": "剩余",
+    "unregister": "未注册",
     "allowed": "已允许",
     "blocked": "已阻止",
     "retry": "立刻重试",

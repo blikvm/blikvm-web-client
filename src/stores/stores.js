@@ -23,7 +23,7 @@ import { defineStore } from 'pinia';
 
 export const useAppStore = defineStore('app', {
   persist: {
-    pick: ['settings', 'systeminfo'], // Persist settings and systeminfo
+    pick: ['settings', 'systeminfo', 'mic'], // Persist settings and systeminfo
   },
   state: () => ({
     // default store values

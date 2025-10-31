@@ -469,6 +469,7 @@
     "free": "Free",
     "allowed": "allowed",
     "blocked": "blocked",
+    "unregister": "unregister",
     "hide": "Hide",
     "video": "Video",
     "sshTerminal": "SSH Terminal",
