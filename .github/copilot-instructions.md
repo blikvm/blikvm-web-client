@@ -58,7 +58,7 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 18 or higher (no specific version pinned in package.json)
 - HTTPS development requires `cert.pem` and `key.pem` in project root
 
 ### Common Commands
@@ -199,7 +199,7 @@ Currently, there are no automated tests in this repository. When adding tests in
 ### Browser Compatibility
 
 - Target modern browsers: Chrome 90+, Firefox 88+, Edge 90+
-- WebRTC required - Safari has limited support
+- WebRTC required - Safari 14+ supported (Safari 15+ has significantly improved WebRTC capabilities)
 - Modern JavaScript features are acceptable (ES2020+)
 
 ### Performance Considerations
@@ -265,7 +265,9 @@ Commit message format:
 <type>: <subject>
 ```
 
-Types: `feature`, `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `merge`, `revert`, `build`, `chore`
+Types: `feature` or `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `merge`, `revert`, `build`, `chore`
+
+Note: This project accepts both `feature` and `feat` for new features (see README.md)
 
 Example: `feat: add virtual keyboard support for mobile devices`
 
