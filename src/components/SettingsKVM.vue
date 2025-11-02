@@ -782,7 +782,7 @@
       </v-expansion-panels>
 
       <!-- Mic Registration -->
-      <SettingsMic v-if="device.board.type === '4B' || device.board.type === 'CM4'" v-model:innerPanel="innerPanel" />
+      <SettingsMic v-if="supportsAudioFeatures" v-model:innerPanel="innerPanel" />
 
       <!-- Keyboard & Mouse -->
       <v-expansion-panels v-model="innerPanel" multiple>
@@ -845,7 +845,7 @@
   import DialogReboot from '@/components/dialog/DialogReboot.vue';
 
   const { convertBytesToGiB } = useConversion();
-  const { device } = useDevice();
+  const { device, supportsAudioFeatures } = useDevice();
   const innerPanel = ref([]);
   const { copyClipboard } = useClipboard();
   const store = useAppStore();

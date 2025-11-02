@@ -48,7 +48,7 @@
                 group
               >
                 <v-btn
-                  v-if="device.board.type === '4B' || device.board.type === 'CM4'"
+                  v-if="supportsAudioFeatures"
                   value="h264"
                   @click="handleVideoModeChange('h264')"
                 >
@@ -71,7 +71,7 @@
           <div class="d-flex text-caption justify-start">
             {{ $t('settings.device.video.inputFormat') }}
           </div>
-          <v-row dense no-gutters v-if="device.board.type === '4B' || device.board.type === 'CM4'">
+          <v-row dense no-gutters v-if="supportsAudioFeatures">
             <v-col>
               <v-text-field
                 v-model="device.video.resolution"
@@ -219,12 +219,7 @@
           </v-row>
 
           <!-- quality -->
-          <v-row
-            v-if="
-              device.video.videoMode === 'mjpeg' &&
-              (device.board.type === '4B' || device.board.type === 'CM4')
-            "
-          >
+          <v-row v-if="device.video.videoMode === 'mjpeg' && supportsAudioFeatures">
             <div class="text-caption">
               {{ $t('settings.device.video.mjpegQualityField') }}
             </div>
@@ -359,7 +354,7 @@
   import { storeToRefs } from 'pinia';
   import { useVideo } from '@/composables/useVideo';
 
-  const { device } = useDevice();
+  const { device, supportsAudioFeatures } = useDevice();
   const store = useAppStore();
   const { isExperimental } = storeToRefs(store);
   const { initVideo, destroyJanusConnection, clearImageSource, initMjpeg } = useVideo();

@@ -10,5 +10,10 @@ export function useDevice() {
     return foundDevice; // Return the found device or undefined if not found
   });
 
-  return { device };
+  // Computed property to check if the board supports audio/mic features
+  const supportsAudioFeatures = computed(() => {
+    return device.value?.board?.type === '4B' || device.value?.board?.type === 'CM4';
+  });
+
+  return { device, supportsAudioFeatures };
 }
