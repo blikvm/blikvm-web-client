@@ -782,7 +782,7 @@
       </v-expansion-panels>
 
       <!-- Mic Registration -->
-      <SettingsMic v-model:innerPanel="innerPanel" />
+      <SettingsMic v-if="device.board.type === '4B' || device.board.type === 'CM4'" v-model:innerPanel="innerPanel" />
 
       <!-- Keyboard & Mouse -->
       <v-expansion-panels v-model="innerPanel" multiple>
