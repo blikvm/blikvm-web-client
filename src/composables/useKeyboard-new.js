@@ -1,7 +1,7 @@
 'use strict';
 
 // useKeyboard.js
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch } from 'vue';
 import { keytoCode } from '../utils/virtualKeyboard.js';
 import { useDevice } from '@/composables/useDevice';
 import { useAppStore } from '@/stores/stores';
