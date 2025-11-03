@@ -337,7 +337,7 @@ export const useAppStore = defineStore('app', {
     },
     toolbar: {
       expanded: true,
-      pinned: false,
+      pinned: true,
       visible: true,
       offset: 0,
     },
