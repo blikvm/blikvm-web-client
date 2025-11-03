@@ -42,7 +42,7 @@
     </template>
 
     <!-- Status Indicator (Connection + Health) -->
-    <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+    <v-tooltip location="top" content-class="">
       <template v-slot:activator="{ props: tooltipProps }">
         <v-icon
           v-bind="tooltipProps"
