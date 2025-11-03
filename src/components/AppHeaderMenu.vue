@@ -8,6 +8,7 @@
     flat
     color="black"
     class="user-menu-toolbar"
+    :style="headerMenuStyle"
   >
     <!-- Layout Controls Button Group -->
     <v-btn-group variant="elevated" color="black" class="layout-btn-group">
@@ -106,6 +107,7 @@
     settings,
     footer,
     menuItems,
+    headerMenuStyle,
     handleLayoutClick,
     handleUserClick,
   } = useHeaderMenu();
@@ -115,7 +117,6 @@
   .user-menu-toolbar {
     position: fixed;
     top: 7px;
-    right: 10px;
     z-index: 999;
     width: auto;
     border-radius: 30px;

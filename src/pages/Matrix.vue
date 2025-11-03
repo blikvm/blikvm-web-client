@@ -19,7 +19,6 @@
           ></v-progress-linear>
 
           <AppToolbar :z-index="zIndex.toolbar" class="toolbar" />
-          <AppHeaderMenu />
 
           <div class="video-center-wrapper">
             <AppKVM />
@@ -48,7 +47,6 @@
   import { useDevice } from '@/composables/useDevice';
   import { useAbility } from '@casl/vue';
   import AppToolbar from '@/components/AppToolbar.vue';
-  import AppHeaderMenu from '@/components/AppHeaderMenu.vue';
   import Reconnect from '@/components/Reconnect.vue';
   import DialogManageAccount from '@/components/dialog/DialogManageAccount.vue';
   import DialogCtrlAltDelConfirm from '@/components/dialog/DialogCtrlAltDelConfirm.vue';
@@ -69,7 +67,7 @@
   const handleMouseMove = (event) => {
     const mouseY = event.clientY;
 
-    // Show toolbar if near the top
+    // Show toolbar if near the top (industry standard auto-hide)
     if (toolbar.value) {
       toolbar.value.visible = mouseY <= 50;
     }
