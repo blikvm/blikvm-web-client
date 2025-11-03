@@ -15,14 +15,14 @@
 </template>
 
 <script setup>
-  import { ref, reactive, onMounted } from 'vue';
+  import { ref, reactive, onMounted, watch } from 'vue';
   import { useDevice } from '@/composables/useDevice';
   import { useKeyboard } from '@/composables/useKeyboard-new';
   import Keyboard from 'simple-keyboard';
   import 'simple-keyboard/build/css/index.css';
 
   const { device } = useDevice();
-  const { pressedKeys } = useKeyboard();
+  const { pressedKeys, handleKeyPress: composableHandleKeyPress, handleKeyReleased: composableHandleKeyReleased } = useKeyboard();
 
   const props = defineProps({
     input: String,
@@ -183,13 +183,16 @@
       } else if (isCapsLock) {
         handleShift();
         emit('onKeyPress', button);
+        composableHandleKeyPress(button);
       } else if (isSpecialKey) {
         if (!keyStates[button]) {
           emit('onKeyPress', button);
+          composableHandleKeyPress(button);
         }
         toggleKeyState(button, event);
       } else {
         emit('onKeyPress', button);
+        composableHandleKeyPress(button);
         resetKeyStyles();
       }
 
@@ -200,6 +203,7 @@
       keyStates[button] = !keyStates[button];
       device.value.hid.keyboard.pressedKeys[button] = event;
       emit('onKeyPress', button);
+      composableHandleKeyPress(button);
     };
 
     const resetKeyStyles = () => {
@@ -249,9 +253,11 @@
       if (modifierKeys.includes(button)) {
         if (!keyStates[button]) {
           emit('onKeyReleased', button);
+          composableHandleKeyReleased(button);
         }
       } else {
         emit('onKeyReleased', button);
+        composableHandleKeyReleased(button);
         releaseActiveKeys();
       }
     };
@@ -266,9 +272,9 @@
             handleShift();
           }
 
-          if (pressedKeys[key]) {
-            pressedKeys[key].target.style.backgroundColor = '';
-            delete pressedKeys[key];
+          if (pressedKeys.value[key]) {
+            pressedKeys.value[key].target.style.backgroundColor = '';
+            delete pressedKeys.value[key];
           }
         }
       }

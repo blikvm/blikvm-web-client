@@ -140,7 +140,9 @@ export function useKeyboard() {
     if (index > -1) {
       pressedKeys.value.splice(index, 1);
     } else {
-      console.error('Key not found in pressedKeys:', keyCode);
+      // Safety check: Only log warning for debugging, don't error
+      // This can happen when virtual keyboard tries to release keys that were pressed physically
+      console.warn('Key not found in pressedKeys (likely pressed via physical keyboard):', keyCode);
     }
   };
 
