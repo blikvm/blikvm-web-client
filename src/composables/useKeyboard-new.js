@@ -12,9 +12,6 @@ const { device } = useDevice();
 let keyboardWatcherRegistered = false;
 // AltGr fix (Windows): delay ControlLeft to detect AltGr (Ctrl+AltRight)
 let altgrCtrlTimer = null;
-// Only enable AltGr workaround on Windows platforms (sourced from global store)
-const appStore = useAppStore();
-const isWindows = appStore.platform?.isWindows === true;
 
 // Helper to push a pressed key consistently
 function pressKey(code) {
@@ -27,8 +24,9 @@ function pressKey(code) {
 
 // Encapsulated AltGr fix for Windows
 // phase: 'down' | 'up'
+// isWindows: boolean indicating if platform is Windows
 // returns true if the handler consumed the event and caller should early-return
-function handleAltGrFix(phase, code) {
+function handleAltGrFix(phase, code, isWindows) {
   if (!isWindows) return false;
 
   if (phase === 'down') {
@@ -71,6 +69,9 @@ function handleAltGrFix(phase, code) {
 }
 
 export function useKeyboard() {
+  // Access store inside function to ensure platform detection has completed
+  const appStore = useAppStore();
+  
   const handlePressedKeysChange = (newVal) => {
     const obj = {
       k: newVal,
@@ -92,7 +93,7 @@ export function useKeyboard() {
     const code = event.code;
 
     // AltGr fix (Windows) – early-return if consumed
-    if (handleAltGrFix('down', code)) return;
+    if (handleAltGrFix('down', code, appStore.platform?.isWindows === true)) return;
 
     if (!pressedKeys.value.includes(code)) {
       pressKey(code);
@@ -106,7 +107,7 @@ export function useKeyboard() {
     const code = event.code;
 
       // AltGr fix (Windows) – flush pending timer on keyup
-      handleAltGrFix('up', code); // no early-return needed
+      handleAltGrFix('up', code, appStore.platform?.isWindows === true); // no early-return needed
       const index = pressedKeys.value.indexOf(code);
     if (index > -1) {
       pressedKeys.value.splice(index, 1);
