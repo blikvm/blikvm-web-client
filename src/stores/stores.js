@@ -384,6 +384,15 @@ export const useAppStore = defineStore('app', {
       microphoneName: '',
     },
 
+    // Client platform flags (set at startup in main.js)
+    platform: {
+      isWindows: false,
+      isMac: false,
+      isLinux: false,
+      isChromeOS: false,
+      isMobile: false,
+    },
+
     error: null,
     // TODO maybe move this to video
     errorSignal: false,
