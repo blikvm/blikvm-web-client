@@ -119,7 +119,7 @@ export function useKeyboard() {
       }
       return;
     }
-    console.log("up: code:", code, "pressedKeys:", pressedKeys.value);
+    // console.log("up: code:", code, "pressedKeys:", pressedKeys.value);
   };
 
   // TODO this is not called?
