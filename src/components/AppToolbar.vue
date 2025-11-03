@@ -41,14 +41,6 @@
       <span>{{ device.isDisconnected ? $t('common.disconnect') : $t('common.connect') }}</span>
     </v-tooltip>
 
-    <v-tooltip location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon class="toolbar-icon" v-bind="tooltipProps" @click="handleClick('settings')">
-          mdi-cog-outline
-        </v-icon>
-      </template>
-      <span>{{ $t('common.configure') }}</span>
-    </v-tooltip>
 
     <v-tooltip location="top" content-class="">
       <template v-slot:activator="{ props: tooltipProps }">

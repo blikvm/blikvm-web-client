@@ -17,10 +17,12 @@
 <script setup>
   import { ref, reactive, onMounted } from 'vue';
   import { useDevice } from '@/composables/useDevice';
+  import { useKeyboard } from '@/composables/useKeyboard-new';
   import Keyboard from 'simple-keyboard';
   import 'simple-keyboard/build/css/index.css';
 
   const { device } = useDevice();
+  const { pressedKeys } = useKeyboard();
 
   const props = defineProps({
     input: String,
