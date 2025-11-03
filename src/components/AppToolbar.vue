@@ -14,26 +14,20 @@
   >
     <template #prepend>
       <div class="toolbar-content">
-        <v-tooltip location="top" content-class="">
-          <template v-slot:activator="{ props: tooltipProps }">
-            <v-icon 
-              ref="dragHandleRef"
-              v-bind="tooltipProps"
-              color="#76FF03" 
-              :class="{ 'pin-active': toolbar.pinned }"
-              class="unified-handle" 
-              role="button"
-              tabindex="0"
-              :aria-label="toolbar.pinned ? 'Toolbar is pinned - click to enable dragging' : 'Drag toolbar or click to pin'"
-              :style="unifiedHandleStyle"
-              @mousedown="handleMouseDown"
-              @keydown="handleKeyDown"
-            >
-              {{ toolbar.pinned ? 'mdi-pin' : 'mdi-drag' }}
-            </v-icon>
-          </template>
-          <span>{{ toolbar.pinned ? 'Pinned - click to enable dragging' : 'Drag to move, click to pin, double-click to center' }}</span>
-        </v-tooltip>
+        <v-icon 
+          ref="dragHandleRef"
+          color="#76FF03" 
+          :class="{ 'pin-active': toolbar.pinned }"
+          class="unified-handle" 
+          role="button"
+          tabindex="0"
+          :aria-label="toolbar.pinned ? 'Pinned' : 'Draggable'"
+          :style="unifiedHandleStyle"
+          @mousedown="handleMouseDown"
+          @keydown="handleKeyDown"
+        >
+          {{ toolbar.pinned ? 'mdi-pin' : 'mdi-drag' }}
+        </v-icon>
       </div>
     </template>
 
@@ -48,7 +42,7 @@
     </template>
 
     <!-- Status Indicator (Connection + Health) -->
-    <v-tooltip location="top" content-class="">
+    <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
       <template v-slot:activator="{ props: tooltipProps }">
         <v-icon
           v-bind="tooltipProps"
@@ -64,8 +58,6 @@
 
     <!-- Expanded Controls Section -->
     <template v-if="toolbar.expanded">
-      <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical></v-divider>
-      
       <!-- KVM Status Icons -->
       <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
         <template v-slot:activator="{ props: tooltipProps }">
@@ -99,8 +91,6 @@
         </template>
         <span>{{ $t('common.mouse') }} {{ device.hid.isActive && device.hid.mouse.isActive ? $t('common.active') : $t('common.inactive') }}</span>
       </v-tooltip>
-
-      <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical></v-divider>
 
       <!-- Action Controls -->
       <v-tooltip location="top" content-class="">
@@ -138,40 +128,39 @@
         <span>{{ $t('common.fullscreenMode') }}</span>
       </v-tooltip>
 
-      <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical></v-divider>
+      <AppToolbarOperations v-if="!device?.isDisconnected" />
+      <AppToolbarExpanded />
+    </template>
 
-      <!-- Layout Menu -->
-      <v-menu offset-y>
-        <template v-slot:activator="{ props: menuProps }">
-          <v-tooltip location="top" content-class="">
-            <template v-slot:activator="{ props: tooltipProps }">
-              <v-icon
-                v-bind="{ ...menuProps, ...tooltipProps }"
-                :color="settings.isVisible || footer.showFooter ? '#76FF03' : 'white'"
-                size="small"
-              >mdi-view-dashboard</v-icon>
-            </template>
-            <span>Layout controls</span>
-          </v-tooltip>
+    <template #append>
+      <!-- Settings Toggle -->
+      <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="settings.isVisible ? '#76FF03' : 'white'"
+            @click="handleLayoutClick('left')"
+            size="small"
+          >mdi-dock-left</v-icon>
         </template>
-        <v-list density="compact">
-          <v-list-item @click="handleLayoutClick('left')">
-            <template v-slot:prepend>
-              <v-icon :color="settings.isVisible ? '#76FF03' : ''">mdi-dock-left</v-icon>
-            </template>
-            <v-list-item-title>Toggle Settings</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="handleLayoutClick('bottom')">
-            <template v-slot:prepend>
-              <v-icon :color="footer.showFooter ? '#76FF03' : ''">mdi-dock-bottom</v-icon>
-            </template>
-            <v-list-item-title>Toggle Footer</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+        <span>Settings</span>
+      </v-tooltip>
+
+      <!-- Footer Toggle -->
+      <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="footer.showFooter ? '#76FF03' : 'white'"
+            @click="handleLayoutClick('bottom')"
+            size="small"
+          >mdi-dock-bottom</v-icon>
+        </template>
+        <span>Footer</span>
+      </v-tooltip>
 
       <!-- User Menu -->
-      <v-menu offset-y>
+      <v-menu v-if="toolbar.expanded" offset-y>
         <template v-slot:activator="{ props: menuProps }">
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
@@ -197,11 +186,6 @@
         </v-list>
       </v-menu>
 
-      <AppToolbarOperations v-if="!device?.isDisconnected" />
-      <AppToolbarExpanded />
-    </template>
-
-    <template #append>
       <v-icon color="#76FF03" @click.stop="toggleToolbarExpansion">
         {{ toolbar.expanded ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right' }}
       </v-icon>
