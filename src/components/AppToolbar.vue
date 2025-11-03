@@ -216,11 +216,13 @@
   import { useAppKVMVideo } from '@/composables/useAppKVMVideo';
   import { useHealthCheck } from '@/composables/useHealthCheck.js';
   import { useHeaderMenu } from '@/composables/useHeaderMenu';
+  import { useDragHandle, DRAG_CONSTANTS } from '@/composables/useDragHandle';
+  import { useFullscreen } from '@/composables/useFullscreen';
   import { onMounted, onBeforeUnmount, ref, computed, nextTick } from 'vue';
 
   const store = useAppStore();
 
-  const { settings, footer, isFullscreen, toolbar, showOverlay, showCtrlAltDelDialog, systeminfo } =
+  const { settings, footer, toolbar, showOverlay, showCtrlAltDelDialog, systeminfo } =
     storeToRefs(store);
 
   const { device } = useDevice();
@@ -230,30 +232,57 @@
   // Header menu functionality
   const { account, menuItems, handleLayoutClick, handleUserClick } = useHeaderMenu();
 
+  // Fullscreen functionality
+  const { isFullscreen, toggleFullscreen } = useFullscreen({
+    onEnter: () => {
+      settings.value.isVisible = false;
+      toolbar.value.visible = false;
+      toolbar.value.pinned = false;
+      footer.value.showFooter = false;
+    },
+    onExit: () => {
+      toolbar.value.pinned = true;
+      toolbar.value.visible = true;
+      footer.value.showFooter = true;
+    }
+  });
+
   // Template refs
   const toolbarRef = ref(null);
   const dragHandleRef = ref(null);
 
-  // Drag state
-  const isDragging = ref(false);
-  const dragState = ref({
-    startX: 0,
-    startOffset: 0,
-    maxOffset: 0
+  // Drag functionality
+  const { 
+    isDragging, 
+    dragStyle, 
+    handleStyle, 
+    handleMouseDown: dragHandleMouseDown, 
+    handleKeyDown: dragHandleKeyDown, 
+    handleResize: dragHandleResize,
+    initialize: initializeDrag 
+  } = useDragHandle({
+    target: toolbar,
+    onToggle: () => pinMenu(),
+    onDoubleClick: () => { toolbar.value.offset = 0; },
+    calculateMaxOffset: () => {
+      if (!toolbarRef.value?.$el) return DRAG_CONSTANTS.DEFAULT_MAX_OFFSET;
+      const toolbarWidth = toolbarRef.value.$el.offsetWidth;
+      const viewportWidth = window.innerWidth;
+      return Math.max(DRAG_CONSTANTS.MIN_MAX_OFFSET, (viewportWidth - toolbarWidth) / 2 - DRAG_CONSTANTS.MIN_SAFE_MARGIN);
+    }
   });
 
   // Computed styles
   const toolbarStyle = computed(() => ({
-    left: `calc(50% + ${toolbar.value.offset}px)`,
-    transition: isDragging.value ? 'none' : 'left 0.2s ease-out'
+    left: '50%',
+    transform: `translateX(calc(-50% + ${toolbar.value.offset}px))`,
+    ...dragStyle.value
   }));
 
   const unifiedHandleStyle = computed(() => ({
-    cursor: toolbar.value.pinned 
-      ? 'pointer' 
-      : isDragging.value ? 'grabbing' : 'grab',
+    ...handleStyle.value,
+    cursor: toolbar.value.pinned ? 'pointer' : handleStyle.value.cursor,
     marginRight: '4px',
-    userSelect: 'none',
     transition: 'transform 0.2s ease'
   }));
 
@@ -266,57 +295,10 @@
   };
 
   const toggleToolbarExpansion = () => {
-    if (!toolbar.value) return; // Ensure toolbar is defined
-    console.log('Expand/Collapse toolbar');
-    // Logic for expanding or collapsing the toolbar
+    if (!toolbar.value) return;
     toolbar.value.expanded = !toolbar.value.expanded;
   };
 
-  // TODO move to composable
-  // Exit fullscreen mode is handled by browser, so we only need to enter fullscreen mode
-  const toggleFullscreen = () => {
-    const doc = document;
-    const root = doc.documentElement;
-
-    const enterFullscreen =
-      root.requestFullscreen ||
-      root.mozRequestFullScreen ||
-      root.webkitRequestFullScreen ||
-      root.msRequestFullscreen;
-
-    if (
-      !doc.fullscreenElement &&
-      !doc.mozFullScreenElement &&
-      !doc.webkitFullscreenElement &&
-      !doc.msFullscreenElement
-    ) {
-      enterFullscreen.call(root);
-    }
-    // No need to manually exit fullscreen — browser handles that
-  };
-
-  const updateFullscreenStatus = () => {
-    isFullscreen.value = !!(
-      document.fullscreenElement ||
-      document.mozFullScreenElement ||
-      document.webkitFullscreenElement ||
-      document.msFullscreenElement
-    );
-
-    if (isFullscreen.value) {
-      // Hide UI elements in fullscreen mode
-      settings.value.isVisible = false;
-      toolbar.value.visible = false;
-      toolbar.value.pinned = false;
-      footer.value.showFooter = false;
-    } else {
-      // Restore UI elements when exiting fullscreen mode  
-      toolbar.value.pinned = true;
-      toolbar.value.visible = true; // Will be controlled by proximity when unpinned
-      footer.value.showFooter = true;
-      // Don't force settings to be visible, let user control it
-    }
-  };
 
   const handleClick = (value) => {
     switch (value) {
@@ -331,190 +313,36 @@
         break;
 
       default:
-      // TODO
+        break;
     }
   };
 
-  // Double-click detection
-  const lastClickTime = ref(0);
-  const clickCount = ref(0);
-
-  // Unified handle functionality
+  // Unified handle functionality - delegate to drag composable
   const handleMouseDown = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const startTime = Date.now();
-    const startX = event.clientX;
-    const startY = event.clientY;
-    let hasDragged = false;
-    
-    const onMouseMove = (e) => {
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
-      
-      // If moved more than 5px and not pinned, start dragging
-      if (deltaX > 5 || deltaY > 5) {
-        if (!toolbar.value.pinned) {
-          hasDragged = true;
-          startDrag(event);
-        }
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-      }
-    };
-    
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      
-      // If it was a quick click without drag
-      if (!hasDragged && Date.now() - startTime < 300) {
-        const timeSinceLastClick = startTime - lastClickTime.value;
-        
-        // Double-click detection (within 400ms)
-        if (timeSinceLastClick < 400 && clickCount.value === 1) {
-          // Double-click: center toolbar
-          toolbar.value.offset = 0;
-          clickCount.value = 0;
-        } else {
-          // Single click: toggle pin state
-          clickCount.value = 1;
-          setTimeout(() => {
-            if (clickCount.value === 1) {
-              pinMenu();
-              clickCount.value = 0;
-            }
-          }, 400); // Wait for potential second click
-        }
-        
-        lastClickTime.value = startTime;
-      }
-    };
-    
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  };
-
-  // Drag functionality
-  const calculateMaxOffset = () => {
-    if (!toolbarRef.value?.$el) return 200;
-    const toolbarWidth = toolbarRef.value.$el.offsetWidth;
-    const viewportWidth = window.innerWidth;
-    return Math.max(100, (viewportWidth - toolbarWidth) / 2 - 20);
-  };
-
-  const constrainOffset = (offset) => {
-    const maxOffset = dragState.value.maxOffset;
-    return Math.max(-maxOffset, Math.min(maxOffset, offset));
-  };
-
-  const startDrag = (event) => {
-    if (event.button !== 0) return; // Only left mouse button
-    
-    event.preventDefault();
-    event.stopPropagation();
-    
-    isDragging.value = true;
-    dragState.value.startX = event.clientX;
-    dragState.value.startOffset = toolbar.value.offset;
-    dragState.value.maxOffset = calculateMaxOffset();
-
-    // Add passive event listeners for better performance
-    const moveHandler = (e) => handleDragMove(e);
-    const upHandler = () => handleDragEnd(moveHandler, upHandler);
-
-    document.addEventListener('mousemove', moveHandler, { passive: false });
-    document.addEventListener('mouseup', upHandler, { once: true });
-    document.addEventListener('mouseleave', upHandler, { once: true });
-    
-    // Prevent text selection during drag
-    document.body.style.userSelect = 'none';
-    document.body.style.webkitUserSelect = 'none';
-  };
-
-  const handleDragMove = (event) => {
-    if (!isDragging.value) return;
-    
-    event.preventDefault();
-    const deltaX = event.clientX - dragState.value.startX;
-    const newOffset = dragState.value.startOffset + deltaX;
-    toolbar.value.offset = constrainOffset(newOffset);
-  };
-
-  const handleDragEnd = (moveHandler, upHandler) => {
-    isDragging.value = false;
-    
-    // Restore text selection
-    document.body.style.userSelect = '';
-    document.body.style.webkitUserSelect = '';
-    
-    // Snap to center if close enough
-    if (Math.abs(toolbar.value.offset) < 50) {
-      toolbar.value.offset = 0;
-    }
-    
-    // Clean up event listeners
-    document.removeEventListener('mousemove', moveHandler);
-    document.removeEventListener('mouseup', upHandler);
-    document.removeEventListener('mouseleave', upHandler);
-  };
-
-  // Keyboard accessibility
-  const handleKeyDown = (event) => {
-    const step = 20;
-    
-    switch (event.key) {
-      case 'ArrowLeft':
-        event.preventDefault();
-        toolbar.value.offset = constrainOffset(toolbar.value.offset - step);
-        break;
-      case 'ArrowRight':
-        event.preventDefault();
-        toolbar.value.offset = constrainOffset(toolbar.value.offset + step);
-        break;
-      case 'Home':
-        event.preventDefault();
-        toolbar.value.offset = 0;
-        break;
-      case 'Escape':
-        event.preventDefault();
-        toolbar.value.offset = 0;
-        break;
+    // Only allow dragging when not pinned
+    if (!toolbar.value.pinned) {
+      dragHandleMouseDown(event);
+    } else {
+      // When pinned, handle click for unpinning
+      event.preventDefault();
+      event.stopPropagation();
+      pinMenu();
     }
   };
 
-  // Reset position on window resize
-  const handleResize = () => {
-    dragState.value.maxOffset = calculateMaxOffset();
-    toolbar.value.offset = constrainOffset(toolbar.value.offset);
-  };
+  // Keyboard accessibility - delegate to drag composable
+  const handleKeyDown = dragHandleKeyDown;
+
+  // Reset position on window resize - delegate to drag composable
+  const handleResize = dragHandleResize;
 
   onMounted(async () => {
-    document.addEventListener('fullscreenchange', updateFullscreenStatus);
-    document.addEventListener('webkitfullscreenchange', updateFullscreenStatus);
-    document.addEventListener('mozfullscreenchange', updateFullscreenStatus);
-    document.addEventListener('MSFullscreenChange', updateFullscreenStatus);
     window.addEventListener('resize', handleResize);
-    
-    // Initialize drag constraints after component is fully mounted
-    await nextTick();
-    dragState.value.maxOffset = calculateMaxOffset();
+    await initializeDrag();
   });
 
   onBeforeUnmount(() => {
-    document.removeEventListener('fullscreenchange', updateFullscreenStatus);
-    document.removeEventListener('webkitfullscreenchange', updateFullscreenStatus);
-    document.removeEventListener('mozfullscreenchange', updateFullscreenStatus);
-    document.removeEventListener('MSFullscreenChange', updateFullscreenStatus);
     window.removeEventListener('resize', handleResize);
-    
-    // Clean up any ongoing drag
-    if (isDragging.value) {
-      isDragging.value = false;
-      document.body.style.userSelect = '';
-      document.body.style.webkitUserSelect = '';
-    }
   });
 </script>
 
@@ -558,7 +386,6 @@
     transform: translateX(-50%);
     border-radius: 30px;
     background-color: var(--v-primary-base);
-    /* TODO do we need this? */
     z-index: 1000;
     transition:
       opacity 0.3s ease,
