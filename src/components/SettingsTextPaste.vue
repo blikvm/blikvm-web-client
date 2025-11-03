@@ -55,7 +55,7 @@
           <v-row dense no-gutters>
             <v-col cols="auto" class="d-flex align-center">
               <div class="d-flex align-center pa-1 ga-1">
-                <span class="text-no-wrap">{{ $t('settings.text.paste.keymap') }}:</span>
+                <span class="text-no-wrap">{{ $t('settings.text.paste.keymap') }} </span>
                 <v-select
                   v-model="paste.selectedKeymap"
                   :items="keymapOptions"
@@ -71,7 +71,7 @@
                   color="#76FF03"
                   @click.stop
                 />
-                <span class="text-no-wrap ml-3">{{ $t('settings.text.paste.delay') }}:</span>
+                <span class="text-no-wrap ml-3">{{ $t('settings.text.paste.delay') }} </span>
                 <v-text-field
                   v-model.number="paste.characterDelay"
                   type="number"

@@ -12,26 +12,26 @@ export function useCursors() {
     {
       icon: 'mdi-cursor-default',
       cursor: 'default',
-      label: 'Default cursor',
+      label: 'default cursor',
       color: '',
     },
     {
       icon: 'mdi-cursor-move',
       cursor: 'grab',
-      label: 'Grab cursor',
+      label: 'grab cursor',
       color: '',
     },
-    { icon: 'mdi-plus', cursor: 'crosshair', label: 'Cell cursor', color: '' },
+    { icon: 'mdi-plus', cursor: 'crosshair', label: 'cell cursor', color: '' },
     {
       icon: 'mdi-cursor-text',
       cursor: 'text',
-      label: 'Text cursor',
+      label: 'text cursor',
       color: '',
     },
     {
       icon: 'mdi-circle-medium',
       cursor: 'cursor-green-dot',
-      label: 'Green dot',
+      label: 'green dot',
       color: '#76FF03',
     },
   ]);
