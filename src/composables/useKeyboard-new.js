@@ -97,7 +97,7 @@ export function useKeyboard() {
     if (!pressedKeys.value.includes(code)) {
       pressKey(code);
     }
-    console.log("down code:", code, "pressedKeys:", pressedKeys.value);
+    //console.log("down code:", code, "pressedKeys:", pressedKeys.value);
   };
 
   ///
