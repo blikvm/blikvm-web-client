@@ -2,7 +2,16 @@
   <v-navigation-drawer v-if="settings.isVisible" permanent width="500">
     <!-- HEADER SECTION background-image: url('/bg-2.jpg'); background-size: cover; -->
     <template #prepend>
-      <v-img src="/bg-2.jpg">
+      <v-img src="/bg-2.jpg" style="position: relative">
+        <!-- Close button -->
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          style="position: absolute; top: 8px; right: 8px; z-index: 10;"
+          @click="settings.isVisible = false"
+        />
+        
         <div class="text-h4 text-center mb-0 font-weight-medium" style="color: #76ff03">
           BliKVM Matrix
           <v-btn
@@ -38,34 +47,11 @@
         <Settings />
       </v-tabs-window-item>
     </v-tabs-window>
-
-    <template #append>
-      <v-divider />
-
-      <div class="d-flex pa-4 ga-2 justify-start align-center justify-space-around">
-        <v-tooltip v-for="(item, i) in appendItems" :key="i" location="top">
-          <template v-slot:activator="{ props }">
-            <v-btn
-              v-bind="props"
-              height="32"
-              :icon="item.icon"
-              rounded="lg"
-              size="small"
-              variant="text"
-              width="32"
-              @click="item.onClick"
-            >
-              <v-icon color="#76FF03" />
-            </v-btn>
-          </template>
-          <span class="custom-tooltip">{{ item.tooltip }}</span>
-        </v-tooltip>
-      </div>
-    </template>
   </v-navigation-drawer>
 </template>
 
 <script setup>
+  import { ref } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
