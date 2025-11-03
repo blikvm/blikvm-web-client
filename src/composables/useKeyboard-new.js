@@ -105,8 +105,8 @@ export function useKeyboard() {
     event.preventDefault();
     const code = event.code;
 
-  // AltGr fix (Windows) – flush pending timer on keyup
-  handleAltGrFix('up', code); // no early-return needed
+    // AltGr fix (Windows) – flush pending timer on keyup
+    handleAltGrFix('up', code); // no early-return needed
     const index = pressedKeys.value.indexOf(code);
     if (index > -1) {
       pressedKeys.value.splice(index, 1);
