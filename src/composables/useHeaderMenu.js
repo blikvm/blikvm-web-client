@@ -3,13 +3,20 @@ import { storeToRefs } from 'pinia';
 import { useSessionUtils } from '@/composables/useSessionUtils';
 import { useDevice } from '@/composables/useDevice';
 import { useRouter } from 'vue-router';
+import { computed } from 'vue';
 
 export function useHeaderMenu() {
   const store = useAppStore();
   const { device } = useDevice();
-  const { settings, footer, showManageAccountDialog, showAboutPageDialog, account } = storeToRefs(store);
+  const { settings, footer, toolbar, showManageAccountDialog, showAboutPageDialog, account } = storeToRefs(store);
   const { inactivateDevice } = useSessionUtils(device);
   const router = useRouter();
+
+  // Computed style for header menu positioning
+  const headerMenuStyle = computed(() => ({
+    right: `calc(10px - ${toolbar.value.offset}px)`,
+    transition: 'right 0.2s ease-out'
+  }));
 
   const handleLayoutClick = (action) => {
     switch (action) {
@@ -73,6 +80,9 @@ export function useHeaderMenu() {
     
     // Menu data
     menuItems,
+    
+    // Computed styles
+    headerMenuStyle,
     
     // Actions
     handleLayoutClick,
