@@ -62,7 +62,7 @@ function handleAltGrFix(phase, code) {
       clearTimeout(altgrCtrlTimer);
       altgrCtrlTimer = null;
       if (!pressedKeys.value.includes('ControlLeft')) {
-        pressedKeys.value.push('ControlLeft');
+        pressKey('ControlLeft');
       }
     }
   }
