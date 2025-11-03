@@ -43,6 +43,7 @@
     </template>
     <span>{{ $t('settings.network.latency') }}</span>
   </v-tooltip>
+
 </template>
 
 <script setup>

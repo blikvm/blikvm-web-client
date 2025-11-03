@@ -1,23 +1,12 @@
 <template>
   <!-- Navigation bar -->
   <v-row 
-    v-if="footer.showFooter || footer.pinnedFooter" 
     no-gutters 
     dense 
     align="center" 
     class="w-100" 
     style="height: 40px"
   >
-    <!-- Pin button -->
-    <v-col order="first" class="d-flex justify-start align-center">
-      <v-icon
-        color="#76FF03"
-        :class="{ 'pin-active': footer.pinnedFooter }"
-        @click.stop="togglePin"
-      >
-        {{ footer.pinnedFooter ? "mdi-pin-outline" : "mdi-pin-off-outline" }}
-      </v-icon>
-    </v-col>
 
     <v-spacer />
     <v-spacer />
@@ -52,8 +41,8 @@
 
     <v-spacer />
 
-    <!-- Current key press indicator -->
-    <v-col class="d-flex justify-end align-center pa-0 ma-0">
+    <v-col order="last" class="d-flex justify-end align-center pa-0 ma-0">
+      <!-- Current key press indicator -->
       <v-chip
         v-if="device.hid.keyboard.keyPress"
         grow
@@ -65,12 +54,8 @@
       >
         {{ device.hid.keyboard.keyPress }}
       </v-chip>
-    </v-col>
 
-    <v-divider class="mx-3" inset vertical />
-
-    <!-- Lock state indicators -->
-    <v-col order="last" class="d-flex justify-end align-center pa-0 ma-0">
+      <!-- Lock state indicators -->
       <v-chip
         v-for="lock in lockStates"
         :key="lock.name"
@@ -115,10 +100,6 @@ const props = defineProps({
     type: Function,
     required: true
   },
-  togglePin: {
-    type: Function,
-    required: true
-  }
 });
 
 // Composables

@@ -39,7 +39,6 @@
       :lock-states="lockStates"
       :is-touch-device="isTouchDevice"
       :handle-toggle-change="handleToggleChange"
-      :toggle-pin="togglePin"
     />
   </v-footer>
 </template>
@@ -95,7 +94,7 @@ const hasActiveComponents = computed(() =>
 )
 
 const shouldShowFooter = computed(() => 
-  hasActiveComponents.value || footer.value.showFooter || footer.value.pinnedFooter
+  hasActiveComponents.value || footer.value.showFooter
 )
 
 // Business rules for component exclusions
@@ -177,12 +176,6 @@ function handleToggleChange(newToggles) {
   updateVisibility(newToggles)
 }
 
-function togglePin() {
-  footer.value.pinnedFooter = !footer.value.pinnedFooter
-  if (footer.value.pinnedFooter) {
-    footer.value.showFooter = true // Keep menu visible when pinned
-  }
-}
 
 // State synchronization with device store
 watch(() => device.value.showSSHTerminal, (newValue) => {

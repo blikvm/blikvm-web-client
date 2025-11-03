@@ -7,7 +7,7 @@
     <AppNavDrawer v-else />
 
     <v-main class="main-layout">
-      <div class="app-container" @mousemove="handleMouseMove">
+      <div class="app-container">
         <v-container fluid class="video-container">
           <v-progress-linear
             v-if="!hasValidStream"
@@ -53,6 +53,7 @@
   import DialogTextPaste from '@/components/dialog/DialogTextPaste.vue';
   import { useI18n } from 'vue-i18n';
   import { zIndex } from '@/styles/zIndex';
+  import { ref, watch, onMounted } from 'vue';
 
   const store = useAppStore();
   const { device } = useDevice();
@@ -63,20 +64,6 @@
   const { isProcessing, toolbar, showAboutPageDialog, hasValidStream, footer, misc } =
     storeToRefs(store);
   const showInitScreen = ref(true);
-  // TODO 2025-05-18 this needs to be move elsewhere
-  const handleMouseMove = (event) => {
-    const mouseY = event.clientY;
-    const containerHeight = event.currentTarget.clientHeight;
-
-    // Show toolbar if near the top
-    if (toolbar.value) {
-      toolbar.value.visible = mouseY <= 50;
-    }
-    // Show footer if near the bottom (assumes 600px total height)
-    if (footer.value) {
-      footer.value.showFooter = mouseY >= containerHeight - 30;
-    }
-  };
 
   watch(
     () => [
