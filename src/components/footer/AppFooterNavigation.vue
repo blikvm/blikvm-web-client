@@ -129,7 +129,7 @@ const { smAndUp } = useDisplay();
 const menuItems = [
   { id: "keyboard", text: t("common.keyboard"), icon: "mdi-keyboard" },
   { id: "video", text: t("common.video"), icon: "mdi-monitor" },
-  { id: "mouse", text: t("common.mouse"), icon: "mdi-mouse-outline" },
+  { id: "mouse", text: t("common.virtualMouse"), icon: "mdi-mouse-outline" },
   { id: "console", text: t("appFooter.sshTerminal"), icon: "mdi-console-line" },
   { id: "serial", text: t("appFooter.serialTerminal"), icon: "mdi-serial-port" },
   { id: "notifications", text: t("notification.title"), icon: "mdi-bell-outline" }
