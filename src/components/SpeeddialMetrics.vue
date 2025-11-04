@@ -59,7 +59,7 @@
         tooltip: t('device.networkLatency'),
       },
       {
-        text: `${device.value.video.resolution}@${device.value.video.capturedFps} fps`,
+        text: `${device.value.video.resolution}@${device.value.video.sourceFps} fps`,
         color: "device.health.isPowerLedActive ? 'success' : 'success'",
         tooltip: t('video.resolution'),
       },

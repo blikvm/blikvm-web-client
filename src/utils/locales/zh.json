@@ -62,7 +62,7 @@
         "modeField": "视频模式",
         "orientation": "方向",
         "inputFormat": "HDMI输入格式",
-        "liveFormat": "实时比特率/FPS",
+        "liveFormat": "实时比特率 / fps",
         "desiredFpsField": "期望的帧率",
         "mjpegQualityField": "质量",
         "WebRTCBitrateField": "比特率",

@@ -354,7 +354,7 @@
   watch(
     () => ({
       mode: device.value.video.videoMode,
-      fps: device.value.video.capturedFps,
+      fps: device.value.video.sourceFps,
       height: device.value.video.resolutionHeight,
       active: device.value.video.isActive,
     }),
