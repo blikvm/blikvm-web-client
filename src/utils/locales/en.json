@@ -62,7 +62,7 @@
         "modeField": "Video Mode",
         "orientation": "Orientation",
         "inputFormat": "HDMI input format",
-        "liveFormat": "Live Bitrate/FPS",
+        "liveFormat": "Live Bitrate / fps",
         "desiredFpsField": "Desired Frames per Second",
         "mjpegQualityField": "Quality",
         "WebRTCBitrateField": "Bitrate",

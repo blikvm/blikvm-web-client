@@ -30,7 +30,7 @@
     ></v-divider>
   </template>
   {{ video.resolutionWidth }}x{{ video.resolutionHeight }}@{{
-    video.capturedFps
+    video.sourceFps
   }}fps
   <template v-if="$vuetify.display.smAndUp">
     <v-divider
