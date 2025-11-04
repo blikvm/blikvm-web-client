@@ -56,21 +56,22 @@
       ? `linear-gradient(145deg, ${theme}, ${theme}aa)`
       : props.active
         ? activeBg
-        : 'linear-gradient(145deg, #3a3a3d, #2a2a2d)';
+        : 'transparent';
 
     const shadow = theme
       ? `0 0 12px ${theme}`
       : props.active
         ? activeShadow
-        : 'inset 2px 2px 4px #1a1a1d, inset -2px -2px 4px #3a3a3d';
+        : 'none';
 
     return {
       background: bg,
       color: theme ? '#fff' : props.active ? '#fff' : '#ccc',
-      borderRadius: '12px',
+      borderRadius: '8px',
       boxShadow: shadow,
       width,
-      height: '60px',
+      height: '40px',
+      border: 'none',
       display: 'flex',
       flexDirection,
       justifyContent: 'center',
