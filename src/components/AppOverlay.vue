@@ -1,10 +1,9 @@
 <template>
   <v-overlay
-    :model-value="showOverlay"
+    :model-value="showOverlay && isVideoVisible"
     :opacity="0"
-    contained
-    content-class="d-flex flex-column align-center justify-end w-100 h-100 overlay-passthrough"
-    :style="{ zIndex: zIndex.overlay }"
+    content-class="overlay-passthrough"
+    :style="overlayStyle"
     :scrim="false"
     :persistent="true"
     no-click-animation
@@ -12,8 +11,8 @@
 
     <!-- top control bar-->
     <div
-      class="overlay-control-bar d-flex w-100 ga-3 pa-1 justify-end align-center"
-      style="margin-top: 45px; margin-right: 40px"
+      class="overlay-control-bar d-flex ga-3 pa-1 justify-end align-center"
+      style="position: absolute; top: 20px; right: 20px;"
     >
       <!-- Experimental Controls Group -->
       <div v-if="isExperimental" class="control-group">
@@ -55,13 +54,10 @@
       </div>
     </div>
 
-    <v-spacer />
-    <!-- Center control bar -->
-    <v-spacer />
 
     <div
-      class="overlay-control-bar d-flex w-100 ga-3 pa-1 justify-start align-center"
-      style="margin-bottom: 80px; margin-left: 40px"
+      class="overlay-control-bar d-flex ga-3 pa-1 justify-start align-center"
+      style="position: absolute; bottom: 20px; left: 20px;"
     >
       <!-- bottom control bar-->
       <div
@@ -252,7 +248,7 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue';
+  import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
@@ -290,6 +286,7 @@
     isCameraOn,
     audio,
     isRecording,
+    settings,
   } = storeToRefs(store);
 
   defineProps({
@@ -301,6 +298,84 @@
 
   const isHoveringVolume = ref(false);
   const size = 25;
+  
+  // Video element bounds tracking for overlay positioning
+  const videoBounds = ref({ top: 0, left: 0, width: 0, height: 0 });
+  const isVideoVisible = ref(false);
+  const resizeObserver = ref(null);
+  const pollingInterval = ref(null);
+
+  // Get the actual video element (WebRTC or MJPEG)
+  const getVideoElement = () => {
+    return document.getElementById('webrtc-output') || document.getElementById('mjpeg-output');
+  };
+
+  // NO debouncing - immediate updates only
+  const immediateUpdateOverlayPosition = () => {
+    updateOverlayPosition();
+  };
+
+  // Calculate actual video content bounds within video element (excluding black bars)
+  const updateOverlayPosition = () => {
+    const videoElement = getVideoElement();
+    if (!videoElement) {
+      isVideoVisible.value = false;
+      return;
+    }
+
+    const rect = videoElement.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      isVideoVisible.value = false;
+      return;
+    }
+
+    // Get actual video resolution from device state
+    const videoWidth = device.value?.video?.resolutionWidth || 1920;
+    const videoHeight = device.value?.video?.resolutionHeight || 1080;
+    const videoAspectRatio = videoWidth / videoHeight;
+
+    // Calculate video content bounds within the video element (object-fit: contain behavior)
+    const elementAspectRatio = rect.width / rect.height;
+
+    let contentWidth, contentHeight, contentLeft, contentTop;
+
+    if (videoAspectRatio > elementAspectRatio) {
+      // Video is wider than element - limited by width (letterboxed top/bottom)
+      contentWidth = rect.width;
+      contentHeight = rect.width / videoAspectRatio;
+      contentLeft = rect.left;
+      contentTop = rect.top + (rect.height - contentHeight) / 2;
+    } else {
+      // Video is taller than element - limited by height (pillarboxed left/right)
+      contentHeight = rect.height;
+      contentWidth = rect.height * videoAspectRatio;
+      contentTop = rect.top;
+      contentLeft = rect.left + (rect.width - contentWidth) / 2;
+    }
+
+    videoBounds.value = {
+      top: contentTop,
+      left: contentLeft,
+      width: contentWidth,
+      height: contentHeight
+    };
+    isVideoVisible.value = true;
+  };
+
+  // Overlay style to match video element exactly - NO transitions
+  const overlayStyle = computed(() => {
+    const bounds = videoBounds.value;
+    return {
+      position: 'fixed',
+      top: `${bounds.top}px`,
+      left: `${bounds.left}px`,
+      width: `${bounds.width}px`,
+      height: `${bounds.height}px`,
+      zIndex: zIndex.overlay,
+      pointerEvents: 'none'
+    };
+  });
+
   const activeChannel = computed(() => {
     const selectedSwitch = kvmSwitchItems.value.find(
       (item) => item.id === kvmSwitch.value.activeSwitchId
@@ -368,6 +443,89 @@
   const handleVideoRecord = () => {
     videoRecord(isRecording.value);
   };
+
+  // Watch for drawer visibility changes - IMMEDIATE updates only
+  watch(() => settings.value.isVisible, () => {
+    updateOverlayPosition(); // Immediate update
+  });
+
+  // Watch for video resolution changes - IMMEDIATE updates only
+  watch([
+    () => device.value?.video?.resolutionWidth,
+    () => device.value?.video?.resolutionHeight
+  ], () => {
+    updateOverlayPosition();
+  });
+
+  // Set up video bounds tracking and overlay positioning
+  onMounted(() => {
+    // Initial overlay position update
+    nextTick(() => {
+      updateOverlayPosition();
+    });
+
+    // Start continuous polling to track video position changes
+    pollingInterval.value = setInterval(() => {
+      updateOverlayPosition();
+    }, 16); // 60fps polling - tracks video position continuously
+
+    // Set up ResizeObserver to track video element size changes - IMMEDIATE updates
+    if (window.ResizeObserver) {
+      resizeObserver.value = new ResizeObserver(() => {
+        updateOverlayPosition(); // IMMEDIATE - no debouncing
+      });
+
+      // Start observing the video element if it exists
+      const videoElement = getVideoElement();
+      if (videoElement) {
+        resizeObserver.value.observe(videoElement);
+      }
+    }
+
+    // Set up MutationObserver to detect video element changes (H264 ↔ MJPEG)
+    const mutationObserver = new MutationObserver(() => {
+      const videoElement = getVideoElement();
+      if (videoElement && resizeObserver.value) {
+        // Re-observe the new video element
+        resizeObserver.value.disconnect();
+        resizeObserver.value.observe(videoElement);
+        updateOverlayPosition(); // IMMEDIATE - no debouncing
+      }
+    });
+
+    // Watch for changes in the video container
+    const appKvmElement = document.getElementById('appkvm');
+    if (appKvmElement) {
+      mutationObserver.observe(appKvmElement, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    // Listen for window resize and layout changes - IMMEDIATE updates
+    window.addEventListener('resize', updateOverlayPosition);
+    document.addEventListener('overlay-layout-change', updateOverlayPosition);
+
+    // Store mutation observer for cleanup
+    resizeObserver.value.mutationObserver = mutationObserver;
+  });
+
+  onBeforeUnmount(() => {
+    // Clean up polling
+    if (pollingInterval.value) {
+      clearInterval(pollingInterval.value);
+    }
+    
+    // Clean up observers
+    if (resizeObserver.value) {
+      resizeObserver.value.disconnect();
+      if (resizeObserver.value.mutationObserver) {
+        resizeObserver.value.mutationObserver.disconnect();
+      }
+    }
+    window.removeEventListener('resize', updateOverlayPosition);
+    document.removeEventListener('overlay-layout-change', updateOverlayPosition);
+  });
 </script>
 
 <style scoped>
@@ -398,12 +556,15 @@
     position: relative;
     /* Ensure cursor inheritance from parent (KVM) */
     cursor: inherit !important;
-    /* Simple semi-transparent background */
-    background: rgba(0, 0, 0, 0.5);
+    /* No background - overlay is now exactly over video */
+    background: transparent;
+    /* Make sure content fills the overlay exactly */
+    width: 100% !important;
+    height: 100% !important;
   }
 
   /* Force the overlay itself to allow passthrough */
-  :deep(.v-overlay.v-overlay--contained) {
+  :deep(.v-overlay) {
     pointer-events: none !important;
     /* Allow cursor to pass through */
     cursor: inherit !important;
