@@ -316,7 +316,7 @@ export function useVideo() {
       if (currentFrames !== null) {
         const fpsDynamic = Math.max(0, currentFrames - frames);
         try {
-          device.value.video.fps = fpsDynamic;
+          device.value.video.streamFps = fpsDynamic; // Maps from 'fps' to streamFps for clarity
         } catch (e) {
           // ignore assignment error
         }

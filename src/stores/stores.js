@@ -152,7 +152,7 @@ export const useAppStore = defineStore('app', {
         connectionState: 'connecting', // 'connecting', 'no-signal', 'connection-failed'
         connectingTimeout: null,
         bitrate: 0,
-        streamFps: 0,
+        streamFps: 0, // Maps from backend 'fps' property until backend uses streamFps
       },
       hid: {
         isActive: false,
