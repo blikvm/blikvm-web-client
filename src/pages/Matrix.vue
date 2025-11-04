@@ -78,11 +78,13 @@
       device.value.video.videoMode,
       device.value.video.resolution,
       device.value.video.resolutionRatio,
-      device.value.refreshRate,
+      device.value.video.sourceFps,
+      device.value.video.streamFps,
+      device.value.video.bitrate,
     ],
-    ([newVideoMode, newResolution, newResolutionRatio, newRefreshRate]) => {
+    ([newVideoMode, newResolution, newResolutionRatio, newSourceFps, newStreamFps, newBitrate]) => {
       const translatedTitle = t('app.defaultTitle');
-      document.title = `${translatedTitle} ${newVideoMode} ${newResolution}@${newRefreshRate} (${newResolutionRatio}) 30fps xxx kbps`;
+      document.title = `${translatedTitle} ${newVideoMode} ${newResolution}@${newSourceFps}fps (${newResolutionRatio}) ${newStreamFps}fps ${newBitrate}kbps`;
     },
     { immediate: true }
   );
