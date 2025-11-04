@@ -3,54 +3,56 @@
     :model-value="showOverlay"
     :opacity="0"
     contained
-    content-class="d-flex flex-column align-center justify-end w-100 h-100"
+    content-class="d-flex flex-column align-center justify-end w-100 h-100 overlay-passthrough"
     :style="{ zIndex: zIndex.overlay }"
     :scrim="false"
     :persistent="true"
     no-click-animation
   >
-    <!--
-   <v-hover v-slot="{ isHovering, props }">  
--->
 
     <!-- top control bar-->
     <div
       class="overlay-control-bar d-flex w-100 ga-3 pa-1 justify-end align-center"
       style="margin-top: 45px; margin-right: 40px"
     >
-      <KvmHandRaise v-if="isExperimental" />
-      <KvmClipboard v-if="isExperimental" />
+      <!-- Experimental Controls Group -->
+      <div v-if="isExperimental" class="control-group">
+        <KvmHandRaise />
+        <KvmClipboard />
+      </div>
 
-      <v-divider class="mx-3" inset vertical></v-divider>
+      <!-- Recording Controls Group -->
+      <div class="control-group">
+        <v-tooltip location="top" content-class="">
+          <template v-slot:activator="{ props: tooltipProps }">
+            <v-icon
+              v-bind="tooltipProps"
+              :size="size"
+              icon="mdi-camera-outline"
+              @click="takeSnapshot"
+            />
+          </template>
+          <span>Take snapshot</span>
+        </v-tooltip>
 
-      <v-tooltip location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
-          <v-icon
-            v-bind="tooltipProps"
-            :size="size"
-            icon="mdi-camera-outline"
-            @click="takeSnapshot"
-          />
-        </template>
-        <span>Take snapshot</span>
-      </v-tooltip>
-
-      <v-tooltip v-if="device.video.videoMode === 'h264'" location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            class="text-none"
-            :color="isRecording ? '#D32F2F' : '#76FF03'"
-            :prepend-icon="isRecording ? 'mdi-stop' : 'mdi-radiobox-marked'"
-            v-ripple
-            :text="isRecording ? formattedRecordingTime : undefined"
-            :variant="isRecording ? 'tonal' : 'plain'"
-            @click="videoRecord"
-          >
-          </v-btn>
-        </template>
-        <span>{{ isRecording ? 'Stop recording' : 'Start recording' }}</span>
-      </v-tooltip>
+        <v-tooltip v-if="device.video.videoMode === 'h264'" location="top" content-class="">
+          <template v-slot:activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              class="text-none"
+              :color="isRecording ? '#D32F2F' : '#76FF03'"
+              :prepend-icon="isRecording ? 'mdi-stop' : 'mdi-radiobox-marked'"
+              v-ripple
+              :text="isRecording ? formattedRecordingTime : undefined"
+              :variant="isRecording ? 'tonal' : 'plain'"
+              size="small"
+              @click="handleVideoRecord"
+            >
+            </v-btn>
+          </template>
+          <span>{{ isRecording ? t('common.stopRecording') : t('common.startRecording') }}</span>
+        </v-tooltip>
+      </div>
     </div>
 
     <v-spacer />
@@ -59,29 +61,15 @@
 
     <div
       class="overlay-control-bar d-flex w-100 ga-3 pa-1 justify-start align-center"
-      style="margin-bottom: 10px; margin-left: 40px"
+      style="margin-bottom: 80px; margin-left: 40px"
     >
       <!-- bottom control bar-->
       <div
         class="d-flex w-100 ga-3 pa-0 align-center"
-        style="margin-bottom: 10px; margin-left: 40px"
       >
-        <!-- <v-tooltip location="top" content-class="">
-          <template v-slot:activator="{ props: tooltipProps }">
-            <v-icon
-              v-bind="tooltipProps"
-              :icon="isPlaying ? 'mdi-pause' : 'mdi-play'"
-              :color="isHoveringPlaying ? '#76FF03' : undefined"
-              :size="size"
-              @click="isPlaying = !isPlaying"
-              @mouseenter="isHoveringPlaying = true"
-              @mouseleave="isHoveringPlaying = false"
-            />
-          </template>
-          <span>Pause</span>
-        </v-tooltip> -->
 
-        <div v-if="device.video.videoMode === 'h264'">
+        <!-- Audio Controls Group -->
+        <div v-if="device.video.videoMode === 'h264'" class="control-group">
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
               <v-icon
@@ -97,14 +85,12 @@
               canUseMic ? (audio.isMicrophoneOn ? 'Mute' : 'Unmute') : 'need to register mic first'
             }}</span>
           </v-tooltip>
-        </div>
 
-        <div
-          v-if="device.video.videoMode === 'h264'"
-          class="d-inline-flex align-center ga-2"
-          @mouseenter="isHoveringVolume = true"
-          @mouseleave="isHoveringVolume = false"
-        >
+          <div
+            class="d-inline-flex align-center ga-2"
+            @mouseenter="isHoveringVolume = true"
+            @mouseleave="isHoveringVolume = false"
+          >
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
               <v-icon
@@ -126,23 +112,25 @@
             <span>Mute</span>
           </v-tooltip>
 
-          <!-- Only show slider on hover -->
-          <v-slider
-            v-if="isHoveringVolume"
-            v-model="device.video.audioVolume"
-            direction="horizontal"
-            hide-details
-            color="#76FF03"
-            track-color="white"
-            track-size="10"
-            style="width: 150px"
-          />
+            <!-- Only show slider on hover -->
+            <v-slider
+              v-if="isHoveringVolume"
+              v-model="device.video.audioVolume"
+              direction="horizontal"
+              hide-details
+              color="#76FF03"
+              track-color="white"
+              track-size="10"
+              style="width: 150px"
+            />
+          </div>
         </div>
 
         <v-spacer />
 
-        <!-- switch -->
-        <template v-for="channel in filteredChannels" :key="channel.id">
+        <!-- Switch Controls Group -->
+        <div v-if="filteredChannels.length > 0" class="control-group">
+          <template v-for="channel in filteredChannels" :key="channel.id">
           <v-tooltip v-if="channel.override" location="bottom" content-class="">
             <template #activator="{ props }">
               <div v-bind="props">
@@ -174,16 +162,18 @@
             </template>
             <p>{{ displayName(channel) }}</p>
           </v-tooltip>
-        </template>
+          </template>
+        </div>
 
-        <!-- ATX -->
+        <!-- ATX Controls Group -->
+        <div v-if="device.isATXActive" class="control-group">
         <v-menu location="top" v-if="device.isATXActive" :style="{ zIndex: zIndex.overlay }">
           <template v-slot:activator="{ props }">
             <v-btn
               v-bind="props"
               color="#76FF03"
               prepend-icon="mdi-power-settings"
-              size="large"
+              size="default"
               rounded
               text="mytarget"
               variant="plain"
@@ -204,23 +194,12 @@
             </v-list-item>
           </v-list>
         </v-menu>
+        </div>
 
         <v-divider class="mx-3" inset vertical></v-divider>
 
-        <!-- <v-tooltip location="top" content-class="">
-          <template v-slot:activator="{ props: tooltipProps }">
-            <v-icon
-              v-bind="tooltipProps"
-              :color="isMicrophoneOn ? '#76FF03' : undefined"
-              :size="size"
-              icon="mdi-chat-processing-outline"
-              @click="toggleMicrophone"
-            />
-          </template>
-          <span>Chat</span>
-        </v-tooltip> -->
-
-        <div v-if="isExperimental">
+        <!-- Experimental Controls Group -->
+        <div v-if="isExperimental" class="control-group">
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
               <v-icon
@@ -270,25 +249,22 @@
     </div>
   </v-overlay>
 
-  <div v-if="isExperimental">
-    <cursorOverlay :z-index="zIndex.overlay" />
-    <cursorOverlayTom :z-index="zIndex.overlay" />
-    <cursorOverlayDick :z-index="zIndex.overlay" />
-    <cursorOverlayHarry :z-index="zIndex.overlay" />
-  </div>
 </template>
 
 <script setup>
+  import { ref, computed } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
   import { useMicrophone } from '@/composables/useMicrophone';
   import { useCamera } from '@/composables/useCameraWithSwitch';
   import http from '@/utils/http.js';
-  import { zIndex } from '@/styles/zIndex'; // TODO should be constants!
+  import { zIndex } from '@/styles/zIndex';
   import { useHdmiSwitch } from '@/composables/useHdmiSwitch';
   import { useI18n } from 'vue-i18n';
   import { useDiagnostics } from '@/composables/useDiagnostics';
+  import { useRecording } from '@/composables/useRecording';
+  import { useATX } from '@/composables/useATX';
 
   const { startDiagnosticsConnecting } = useDiagnostics();
   const store = useAppStore();
@@ -339,75 +315,21 @@
     return selectedSwitch ? selectedSwitch.channels : [];
   });
 
-  let mediaRecorder;
-  let recordedChunks = [];
-  let fileHandle;
-  let writableStream;
-  let recordingTimer = null; // 用于存储计时器
-  let recordingSeconds = ref(0); // 用于存储录制的秒数
+  // Recording functionality
+  const { formattedRecordingTime, videoRecord } = useRecording(isRecording);
 
-  // 格式化时间为 12h20m3s 格式
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h}h${m}m${s}s`;
-  };
+  // ATX functionality
+  const { triggerPowerButton, atxItems } = useATX(device);
 
-  // 计算格式化后的时间
-  const formattedRecordingTime = computed(() => formatTime(recordingSeconds.value));
-
-  const triggerPowerButton = async (button) => {
-    try {
-      startDiagnosticsConnecting();
-      const response = await http.post(`/atx/click?button=${button}`);
-      console.log(response.data);
-      // return response.data;
-    } catch (error) {
-      console.error('Error during atx button trigger:', error);
-    }
-  };
 
   const displayName = (channel) => {
     return channel.override && channel.override.length > 0 ? channel.override : channel.name;
   };
 
-  const hasParticipants = (channel) => {
-    return false;
-  };
 
   const { turnOnMic, turnOffMic } = useMicrophone(device); // TODO error
   const { startCamera, stopCamera, enterPiP, exitPiP } = useCamera(device); //error
 
-  const atxItems = computed(() => {
-    if (!device.value) return [];
-    return [
-      {
-        icon: 'mdi-power',
-        color: device.value.health.isPowerLedActive ? 'primary' : 'error',
-        title: t('settings.atx.powerOn'),
-        action: 'power',
-      },
-      {
-        icon: 'mdi-power-sleep',
-        color: device.value.health.isPowerLedActive ? 'primary' : 'error',
-        title: t('settings.atx.powerOff'),
-        action: 'power',
-      },
-      {
-        icon: 'mdi-power-off',
-        color: device.value.health.isPowerLedActive ? 'primary' : 'error',
-        title: t('settings.atx.forceOff'),
-        action: 'forcepower',
-      },
-      {
-        icon: 'mdi-restart',
-        color: device.value.health.isPowerLedActive ? 'primary' : 'error',
-        title: t('settings.atx.reset'),
-        action: 'reboot',
-      },
-    ];
-  });
 
   const toggleMicrophone = () => {
     if (audio.value.isMicrophoneOn) {
@@ -436,104 +358,16 @@
   };
 
   const toggleCast = () => {
-    if (isCasting.value) {
-      isCasting.value = !isCasting.value;
-    } else {
-      isCasting.value = !isCasting.value;
-    }
+    isCasting.value = !isCasting.value;
   };
 
   const takeSnapshot = () => {
     device.value.video.isTakeScreenshot = true;
   };
 
-  function videoRecord() {
-    if (isRecording.value) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
-  }
-
-  async function startRecording() {
-    try {
-      console.log('Start recording...');
-
-      recordedChunks = [];
-      const videoId = document.getElementById('webrtc-output');
-      if (!videoId) {
-        console.error('Video element not found');
-        return;
-      }
-      const stream = videoId.captureStream();
-      mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
-
-      mediaRecorder.onstart = function () {
-        isRecording.value = true;
-        console.log('MediaRecorder started');
-
-        // 开始计时器，每秒更新一次录制时间
-        recordingTimer = setInterval(() => {
-          recordingSeconds.value++;
-        }, 1000);
-      };
-
-      mediaRecorder.ondataavailable = async function (event) {
-        console.log('Data available event triggered');
-        if (event.data.size > 0) {
-          recordedChunks.push(event.data);
-          console.log('Writing data chunk, size:', event.data.size);
-          await writableStream.write(event.data);
-          console.log('Data chunk written.');
-        } else {
-          console.log('Data chunk empty');
-        }
-      };
-
-      mediaRecorder.onstop = async function () {
-        console.log('Stopping media recorder...');
-        await writableStream.close();
-        console.log('Writable stream closed.');
-        isRecording.value = false;
-        // 停止计时器
-        clearInterval(recordingTimer);
-        recordingTimer = null;
-      };
-
-      mediaRecorder.onerror = function (event) {
-        console.error('MediaRecorder error:', event.error);
-      };
-
-      // Request file access
-      console.log('Requesting file handle...');
-      fileHandle = await window.showSaveFilePicker({
-        suggestedName: 'recording.webm',
-        types: [
-          {
-            description: 'WebM Video',
-            accept: { 'video/webm': ['.webm'] },
-          },
-        ],
-      });
-
-      console.log('Creating writable stream...');
-      writableStream = await fileHandle.createWritable();
-      mediaRecorder.start(1000); // 每秒生成一个数据块
-      console.log('Media recorder started.');
-    } catch (error) {
-      console.error('Error starting recording:', error);
-    }
-  }
-
-  async function stopRecording() {
-    try {
-      console.log('Stop recording...');
-      mediaRecorder.stop();
-      console.log('Media recorder stopped.');
-    } catch (error) {
-      console.error('Error stopping recording:', error);
-    }
-  }
+  const handleVideoRecord = () => {
+    videoRecord(isRecording.value);
+  };
 </script>
 
 <style scoped>
@@ -558,14 +392,49 @@
     pointer-events: none !important;
   }
 
-  /* Interactive control areas - capture mouse events */
+  /* More specific targeting for our overlay */
+  :deep(.v-overlay__content.overlay-passthrough) {
+    pointer-events: none !important;
+    position: relative;
+    /* Ensure cursor inheritance from parent (KVM) */
+    cursor: inherit !important;
+    /* Simple semi-transparent background */
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  /* Force the overlay itself to allow passthrough */
+  :deep(.v-overlay.v-overlay--contained) {
+    pointer-events: none !important;
+    /* Allow cursor to pass through */
+    cursor: inherit !important;
+  }
+
+  /* Interactive control areas - only capture events on actual controls */
   .overlay-control-bar {
+    pointer-events: none !important;
+    background: none !important;
+  }
+
+  /* Only interactive elements within control bars capture events */
+  .overlay-control-bar .v-btn,
+  .overlay-control-bar .v-icon,
+  .overlay-control-bar .v-slider,
+  .overlay-control-bar [role="button"],
+  .overlay-control-bar .v-input {
+    pointer-events: auto !important;
+  }
+
+  /* Tooltip activators need events but tooltips themselves should not block */
+  .overlay-control-bar .v-tooltip > .v-overlay__activator {
     pointer-events: auto !important;
   }
 
   .overlay-interactive {
     pointer-events: auto !important;
-    cursor: pointer;
+  }
+
+  .overlay-interactive:hover {
+    cursor: pointer !important;
   }
 
   /* Menu and dropdown elements - ensure clickability */
@@ -583,11 +452,48 @@
 
   :deep(.v-list-item) {
     pointer-events: auto !important;
+  }
+
+  :deep(.v-list-item:hover) {
     cursor: pointer !important;
   }
 
-  /* Ensure all interactive elements within control bars work */
-  .overlay-control-bar * {
-    pointer-events: auto !important;
+  /* Interactive elements maintain proper cursor behavior */
+  .overlay-control-bar .v-btn:hover,
+  .overlay-control-bar .v-icon:hover {
+    cursor: pointer !important;
+  }
+
+
+  /* Add subtle background panel for each control group */
+  .control-group {
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px; /* Ensure consistent height for all control groups */
+  }
+
+  /* Ensure consistent sizing for all interactive elements */
+  .overlay-control-bar .v-btn,
+  .overlay-control-bar .v-icon {
+    min-height: 32px;
+    height: 32px;
+  }
+
+  /* Allow ATX power button to be slightly larger */
+  .overlay-control-bar .v-btn[size="default"] {
+    min-height: 36px;
+    height: 36px;
+  }
+
+  /* Volume control container alignment */
+  .overlay-control-bar .d-inline-flex {
+    align-items: center;
+    min-height: 32px;
   }
 </style>
