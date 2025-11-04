@@ -30,8 +30,8 @@
         @hold-start="emitHoldStart('right')"
         @hold-end="emitHoldEnd('right')"
       />
-      <MouseButton icon="mdi-mouse-move-up" color="orange" @click="emitClick('wheel-up')" />
-      <MouseButton icon="mdi-mouse-move-down" color="orange" @click="emitClick('wheel-down')" />
+      <MouseButton icon="mdi-mouse-move-up" color="#76FF03" @click="emitClick('wheel-up')" />
+      <MouseButton icon="mdi-mouse-move-down" color="#76FF03" @click="emitClick('wheel-down')" />
       </v-row>
     </div>
   </v-container>
