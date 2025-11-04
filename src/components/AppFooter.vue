@@ -200,17 +200,6 @@ watch(activeToggle, (newToggle) => {
 // Setup component visibility watcher
 watchToggleChanges(activeToggle)
 
-// Watch for layout changes and notify overlay
-watch(hasActiveComponents, (newValue, oldValue) => {
-  if (newValue !== oldValue) {
-    // Dispatch custom event to notify overlay about layout change
-    const event = new CustomEvent('overlay-layout-change', {
-      detail: { hasActiveComponents: newValue }
-    });
-    document.dispatchEvent(event);
-  }
-}, { immediate: false });
-
 
 // Component lifecycle
 onMounted(() => {

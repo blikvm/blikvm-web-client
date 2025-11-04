@@ -299,23 +299,50 @@
   const isHoveringVolume = ref(false);
   const size = 25;
   
+  // Constants for video positioning
+  const POLLING_INTERVAL_MS = 33; // 30fps polling
+  const DEFAULT_VIDEO_WIDTH = 1920;
+  const DEFAULT_VIDEO_HEIGHT = 1080;
+
   // Video element bounds tracking for overlay positioning
   const videoBounds = ref({ top: 0, left: 0, width: 0, height: 0 });
   const isVideoVisible = ref(false);
-  const resizeObserver = ref(null);
   const pollingInterval = ref(null);
+  
+  // Cache for performance optimization
+  let lastBounds = { top: 0, left: 0, width: 0, height: 0 };
 
   // Get the actual video element (WebRTC or MJPEG)
   const getVideoElement = () => {
     return document.getElementById('webrtc-output') || document.getElementById('mjpeg-output');
   };
 
-  // NO debouncing - immediate updates only
-  const immediateUpdateOverlayPosition = () => {
-    updateOverlayPosition();
+  // Calculate video content bounds (excluding letterbox/pillarbox areas)
+  const calculateVideoContentBounds = (rect, videoAspectRatio) => {
+    const elementAspectRatio = rect.width / rect.height;
+
+    if (videoAspectRatio > elementAspectRatio) {
+      // Letterboxed (black bars top/bottom)
+      const contentHeight = rect.width / videoAspectRatio;
+      return {
+        top: rect.top + (rect.height - contentHeight) / 2,
+        left: rect.left,
+        width: rect.width,
+        height: contentHeight
+      };
+    } else {
+      // Pillarboxed (black bars left/right)
+      const contentWidth = rect.height * videoAspectRatio;
+      return {
+        top: rect.top,
+        left: rect.left + (rect.width - contentWidth) / 2,
+        width: contentWidth,
+        height: rect.height
+      };
+    }
   };
 
-  // Calculate actual video content bounds within video element (excluding black bars)
+  // Update overlay position with optimization
   const updateOverlayPosition = () => {
     const videoElement = getVideoElement();
     if (!videoElement) {
@@ -329,36 +356,20 @@
       return;
     }
 
-    // Get actual video resolution from device state
-    const videoWidth = device.value?.video?.resolutionWidth || 1920;
-    const videoHeight = device.value?.video?.resolutionHeight || 1080;
-    const videoAspectRatio = videoWidth / videoHeight;
-
-    // Calculate video content bounds within the video element (object-fit: contain behavior)
-    const elementAspectRatio = rect.width / rect.height;
-
-    let contentWidth, contentHeight, contentLeft, contentTop;
-
-    if (videoAspectRatio > elementAspectRatio) {
-      // Video is wider than element - limited by width (letterboxed top/bottom)
-      contentWidth = rect.width;
-      contentHeight = rect.width / videoAspectRatio;
-      contentLeft = rect.left;
-      contentTop = rect.top + (rect.height - contentHeight) / 2;
-    } else {
-      // Video is taller than element - limited by height (pillarboxed left/right)
-      contentHeight = rect.height;
-      contentWidth = rect.height * videoAspectRatio;
-      contentTop = rect.top;
-      contentLeft = rect.left + (rect.width - contentWidth) / 2;
+    // Early return if bounds haven't changed (performance optimization)
+    if (rect.top === lastBounds.top && rect.left === lastBounds.left && 
+        rect.width === lastBounds.width && rect.height === lastBounds.height) {
+      return;
     }
 
-    videoBounds.value = {
-      top: contentTop,
-      left: contentLeft,
-      width: contentWidth,
-      height: contentHeight
-    };
+    const videoWidth = device.value?.video?.resolutionWidth || DEFAULT_VIDEO_WIDTH;
+    const videoHeight = device.value?.video?.resolutionHeight || DEFAULT_VIDEO_HEIGHT;
+    const videoAspectRatio = videoWidth / videoHeight;
+
+    const contentBounds = calculateVideoContentBounds(rect, videoAspectRatio);
+
+    videoBounds.value = contentBounds;
+    lastBounds = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
     isVideoVisible.value = true;
   };
 
@@ -376,19 +387,13 @@
     };
   });
 
-  const activeChannel = computed(() => {
-    const selectedSwitch = kvmSwitchItems.value.find(
-      (item) => item.id === kvmSwitch.value.activeSwitchId
-    );
-    return selectedSwitch ? selectedSwitch.activeChannel : -1;
+  // Switch functionality - combine duplicate logic
+  const selectedSwitch = computed(() => {
+    return kvmSwitchItems.value.find(item => item.id === kvmSwitch.value.activeSwitchId);
   });
 
-  const filteredChannels = computed(() => {
-    const selectedSwitch = kvmSwitchItems.value.find(
-      (item) => item.id === kvmSwitch.value.activeSwitchId
-    );
-    return selectedSwitch ? selectedSwitch.channels : [];
-  });
+  const activeChannel = computed(() => selectedSwitch.value?.activeChannel ?? -1);
+  const filteredChannels = computed(() => selectedSwitch.value?.channels ?? []);
 
   // Recording functionality
   const { formattedRecordingTime, videoRecord } = useRecording(isRecording);
@@ -444,87 +449,23 @@
     videoRecord(isRecording.value);
   };
 
-  // Watch for drawer visibility changes - IMMEDIATE updates only
+  // Watch for drawer visibility changes (force immediate update)
   watch(() => settings.value.isVisible, () => {
-    updateOverlayPosition(); // Immediate update
-  });
-
-  // Watch for video resolution changes - IMMEDIATE updates only
-  watch([
-    () => device.value?.video?.resolutionWidth,
-    () => device.value?.video?.resolutionHeight
-  ], () => {
     updateOverlayPosition();
   });
 
-  // Set up video bounds tracking and overlay positioning
+  // Lifecycle management - simplified
   onMounted(() => {
-    // Initial overlay position update
-    nextTick(() => {
-      updateOverlayPosition();
-    });
-
-    // Start continuous polling to track video position changes
-    pollingInterval.value = setInterval(() => {
-      updateOverlayPosition();
-    }, 16); // 60fps polling - tracks video position continuously
-
-    // Set up ResizeObserver to track video element size changes - IMMEDIATE updates
-    if (window.ResizeObserver) {
-      resizeObserver.value = new ResizeObserver(() => {
-        updateOverlayPosition(); // IMMEDIATE - no debouncing
-      });
-
-      // Start observing the video element if it exists
-      const videoElement = getVideoElement();
-      if (videoElement) {
-        resizeObserver.value.observe(videoElement);
-      }
-    }
-
-    // Set up MutationObserver to detect video element changes (H264 ↔ MJPEG)
-    const mutationObserver = new MutationObserver(() => {
-      const videoElement = getVideoElement();
-      if (videoElement && resizeObserver.value) {
-        // Re-observe the new video element
-        resizeObserver.value.disconnect();
-        resizeObserver.value.observe(videoElement);
-        updateOverlayPosition(); // IMMEDIATE - no debouncing
-      }
-    });
-
-    // Watch for changes in the video container
-    const appKvmElement = document.getElementById('appkvm');
-    if (appKvmElement) {
-      mutationObserver.observe(appKvmElement, {
-        childList: true,
-        subtree: true
-      });
-    }
-
-    // Listen for window resize and layout changes - IMMEDIATE updates
-    window.addEventListener('resize', updateOverlayPosition);
-    document.addEventListener('overlay-layout-change', updateOverlayPosition);
-
-    // Store mutation observer for cleanup
-    resizeObserver.value.mutationObserver = mutationObserver;
+    nextTick(updateOverlayPosition);
+    
+    // 30fps polling - sufficient for smooth tracking
+    pollingInterval.value = setInterval(updateOverlayPosition, POLLING_INTERVAL_MS);
   });
 
   onBeforeUnmount(() => {
-    // Clean up polling
     if (pollingInterval.value) {
       clearInterval(pollingInterval.value);
     }
-    
-    // Clean up observers
-    if (resizeObserver.value) {
-      resizeObserver.value.disconnect();
-      if (resizeObserver.value.mutationObserver) {
-        resizeObserver.value.mutationObserver.disconnect();
-      }
-    }
-    window.removeEventListener('resize', updateOverlayPosition);
-    document.removeEventListener('overlay-layout-change', updateOverlayPosition);
   });
 </script>
 
