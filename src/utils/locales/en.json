@@ -447,8 +447,8 @@
     "ok": "OK",
     "configure": "Configure",
     "overlay": "Overlay",
-    "overlayOn": "Turn overlay on",
-    "overlayOff": "Turn overlay off",
+    "overlayOn": "Turn on overlay",
+    "overlayOff": "Turn off overlay",
     "takeSnapshot": "Take snapshot",
     "startRecording": "Start recording",
     "stopRecording": "Stop recording",
@@ -474,7 +474,9 @@
     "video": "Video",
     "sshTerminal": "SSH Terminal",
     "serialTerminal": "Serial Terminal",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "toggleSettings": "Toggle settings",
+    "toggleFooter": "Toggle footer"
   },
   "label": {
     "connected": "Connected",

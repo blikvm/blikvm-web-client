@@ -143,7 +143,7 @@
             size="small"
           >mdi-dock-left</v-icon>
         </template>
-        <span>Settings</span>
+        <span>{{ $t('common.toggleSettings') }}</span>
       </v-tooltip>
 
       <!-- Footer Toggle -->
@@ -156,7 +156,7 @@
             size="small"
           >mdi-dock-bottom</v-icon>
         </template>
-        <span>Footer</span>
+        <span>{{ $t('common.toggleFooter') }}</span>
       </v-tooltip>
 
       <!-- User Menu -->
