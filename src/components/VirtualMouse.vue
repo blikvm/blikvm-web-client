@@ -1,7 +1,6 @@
 <template>
   <v-container class="virtual-mouse" fluid>
     <v-row justify="center" align="center" dense>
-      <!-- 左键：有图标+文字 -->
       <MouseButton
         icon="mdi-mouse-left-click"
         label="Left"
@@ -11,7 +10,6 @@
         @hold-start="emitHoldStart('left')"
         @hold-end="emitHoldEnd('left')"
       />
-      <!-- 中键：无图标+文字 -->
       <MouseButton
         icon="mdi-pan"
         label="Mid"
@@ -21,7 +19,6 @@
         @hold-start="emitHoldStart('mid')"
         @hold-end="emitHoldEnd('mid')"
       />
-      <!-- 右键：有图标+文字 -->
       <MouseButton
         icon="mdi-mouse-right-click"
         label="Right"
@@ -32,9 +29,7 @@
         @hold-start="emitHoldStart('right')"
         @hold-end="emitHoldEnd('right')"
       />
-      <!-- 滚轮上：有图标无文字 -->
       <MouseButton icon="mdi-mouse-move-up" color="orange" @click="emitClick('wheel-up')" />
-      <!-- 滚轮下：有图标无文字 -->
       <MouseButton icon="mdi-mouse-move-down" color="orange" @click="emitClick('wheel-down')" />
     </v-row>
   </v-container>
@@ -51,8 +46,6 @@
     right: false,
   });
   const { handleTouchClick, handleTouchHoldStart, handleTouchHoldEnd } = useTouch();
-
-  const emit = defineEmits(['click', 'hold-start', 'hold-end']);
 
   const emitClick = (btn) => {
     handleTouchClick(btn);
