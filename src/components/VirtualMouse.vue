@@ -1,6 +1,7 @@
 <template>
   <v-container class="virtual-mouse" fluid>
-    <v-row justify="center" align="center" dense>
+    <div class="mouse-container">
+      <v-row justify="center" align="center" dense>
       <MouseButton
         icon="mdi-mouse-left-click"
         label="Left"
@@ -31,7 +32,8 @@
       />
       <MouseButton icon="mdi-mouse-move-up" color="orange" @click="emitClick('wheel-up')" />
       <MouseButton icon="mdi-mouse-move-down" color="orange" @click="emitClick('wheel-down')" />
-    </v-row>
+      </v-row>
+    </div>
   </v-container>
 </template>
 
@@ -64,6 +66,13 @@
 <style scoped>
   .virtual-mouse {
     padding: 4px;
-    border-radius: 16px;
+  }
+  
+  .mouse-container {
+    background: linear-gradient(145deg, #1e1e1e, #0f0f0f);
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: inset 2px 2px 4px #000, inset -2px -2px 4px #2a2a2a;
+    display: inline-block;
   }
 </style>
