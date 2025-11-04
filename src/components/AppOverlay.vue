@@ -123,58 +123,53 @@
         </div>
 
         <v-spacer />
+      </div>
+    </div>
 
-        <!-- Switch Controls Group -->
-        <div v-if="filteredChannels.length > 0" class="control-group">
-          <template v-for="channel in filteredChannels" :key="channel.id">
-          <v-tooltip v-if="channel.override" location="bottom" content-class="">
-            <template #activator="{ props }">
-              <div v-bind="props">
-                <v-btn
-                  size="x-small"
-                  rounded
-                  :color="channel.name == activeChannel ? 'primary' : 'green'"
-                  @click="changeSwitchChannel(channel.name)"
-                >
-                  {{ channel.name }}
-                </v-btn>
-              </div>
+    <!-- Right-aligned controls -->
+    <div
+      class="overlay-control-bar d-flex ga-3 pa-1 justify-end align-center"
+      style="position: absolute; bottom: 20px; right: 8px;"
+    >
+      <!-- Switch Controls Group -->
+        <div v-if="filteredChannels.length > 0" class="control-group switch-controls">
+          <v-btn-toggle
+            :model-value="activeChannel"
+            color="#76FF03"
+            density="compact"
+            @update:model-value="changeSwitchChannel"
+          >
+            <template v-for="channel in filteredChannels" :key="channel.id">
+              <v-tooltip location="bottom" content-class="">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    :value="channel.name"
+                    size="small"
+                    variant="outlined"
+                    class="text-none"
+                  >
+                    {{ channel.name }}
+                  </v-btn>
+                </template>
+                <span>{{ displayName(channel) }}</span>
+              </v-tooltip>
             </template>
-            <p>{{ displayName(channel) }}</p>
-          </v-tooltip>
-
-          <v-tooltip v-else location="bottom" content-class="">
-            <template #activator="{ props }">
-              <div v-bind="props">
-                <v-btn
-                  size="x-small"
-                  rounded
-                  :color="channel.name == activeChannel ? 'primary' : 'green'"
-                  @click="changeSwitchChannel(channel.name)"
-                >
-                  {{ channel.name }}
-                </v-btn>
-              </div>
-            </template>
-            <p>{{ displayName(channel) }}</p>
-          </v-tooltip>
-          </template>
+          </v-btn-toggle>
         </div>
 
         <!-- ATX Controls Group -->
-        <div v-if="device.isATXActive" class="control-group">
+        <div v-if="device.isATXActive" class="control-group atx-controls">
         <v-menu location="top" v-if="device.isATXActive" :style="{ zIndex: zIndex.overlay }">
           <template v-slot:activator="{ props }">
-            <v-btn
+            <v-icon
               v-bind="props"
               color="#76FF03"
-              prepend-icon="mdi-power-settings"
               size="default"
               rounded
-              text="mytarget"
               variant="plain"
-            >
-            </v-btn>
+            >mdi-power-settings
+            </v-icon>
           </template>
 
           <v-list select-strategy="leaf">
@@ -241,7 +236,6 @@
 
           <v-divider class="mx-3" inset vertical></v-divider>
         </div>
-      </div>
     </div>
   </v-overlay>
 
@@ -578,6 +572,17 @@
     align-items: center;
     gap: 8px;
     min-height: 40px; /* Ensure consistent height for all control groups */
+  }
+
+  /* Remove right margins from all control groups in right-aligned container */
+  .overlay-control-bar[style*="right: 20px"] .control-group {
+    margin-right: 0;
+  }
+
+  /* Remove all margins from switch and ATX control groups */
+  .control-group.switch-controls,
+  .control-group.atx-controls {
+    margin: 0;
   }
 
   /* Ensure consistent sizing for all interactive elements */
