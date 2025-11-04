@@ -13,12 +13,12 @@
   >
     <!-- hold 状态：只显示 icon 和 HOLD -->
     <template v-if="isHold">
-      <v-icon v-if="icon" :size="isHold ? ThirtyTwoPx : 24" :color="iconColor">{{ icon }}</v-icon>
+      <v-icon v-if="icon" :size="isHold ? 32 : 24" :color="iconColor">{{ icon }}</v-icon>
       <small class="hold-text">HOLD</small>
     </template>
     <!-- 非 hold 状态：仅显示图标 -->
     <template v-else>
-      <v-icon v-if="icon" :size="isHold ? ThirtyTwoPx : 24" :color="iconColor">{{ icon }}</v-icon>
+      <v-icon v-if="icon" :size="isHold ? 32 : 24" :color="iconColor">{{ icon }}</v-icon>
     </template>
   </v-btn>
 </template>
