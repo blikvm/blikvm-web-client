@@ -115,8 +115,10 @@
 
 <style scoped>
   .user-menu-toolbar {
+    --header-menu-top-offset: 7px;
+    
     position: fixed;
-    top: 7px;
+    top: var(--header-menu-top-offset);
     z-index: 999;
     width: auto;
     border-radius: 30px;

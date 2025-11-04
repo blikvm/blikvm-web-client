@@ -5,6 +5,11 @@ import { useDevice } from '@/composables/useDevice';
 import { useRouter } from 'vue-router';
 import { computed } from 'vue';
 
+// Header menu positioning constants
+const HEADER_MENU_CONSTANTS = {
+  RIGHT_OFFSET: 10 // pixels
+};
+
 export function useHeaderMenu() {
   const store = useAppStore();
   const { device } = useDevice();
@@ -14,7 +19,7 @@ export function useHeaderMenu() {
 
   // Computed style for header menu positioning
   const headerMenuStyle = computed(() => ({
-    right: `calc(10px - ${toolbar.value.offset}px)`,
+    right: `calc(${HEADER_MENU_CONSTANTS.RIGHT_OFFSET}px - ${toolbar.value.offset}px)`,
     transition: 'right 0.2s ease-out'
   }));
 

@@ -181,7 +181,7 @@ export function useDragHandle(options) {
     isDragging.value = true;
     dragState.value.startX = event.clientX;
     dragState.value.startOffset = target.value.offset;
-    dragState.value.maxOffset = calculateMaxOffset ? calculateMaxOffset() : 200;
+    dragState.value.maxOffset = calculateMaxOffset ? calculateMaxOffset() : DRAG_CONSTANTS.DEFAULT_MAX_OFFSET;
 
     // Track listeners for cleanup
     const moveHandler = (e) => handleDragMove(e);
