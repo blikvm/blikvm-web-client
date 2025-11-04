@@ -133,6 +133,7 @@
     >
       <!-- Switch Controls Group -->
         <div v-if="filteredChannels.length > 0" class="control-group switch-controls">
+          <span class="switch-label">{{ t('settings.switch.port') }}</span>
           <v-btn-toggle
             :model-value="activeChannel"
             color="#76FF03"
@@ -140,7 +141,7 @@
             @update:model-value="changeSwitchChannel"
           >
             <template v-for="channel in filteredChannels" :key="channel.id">
-              <v-tooltip location="bottom" content-class="">
+              <v-tooltip location="top" content-class="">
                 <template #activator="{ props }">
                   <v-btn
                     v-bind="props"
@@ -160,31 +161,36 @@
 
         <!-- ATX Controls Group -->
         <div v-if="device.isATXActive" class="control-group atx-controls">
-        <v-menu location="top" v-if="device.isATXActive" :style="{ zIndex: zIndex.overlay }">
-          <template v-slot:activator="{ props }">
-            <v-icon
-              v-bind="props"
-              color="#76FF03"
-              size="default"
-              rounded
-              variant="plain"
-            >mdi-power-settings
-            </v-icon>
-          </template>
+        <v-tooltip location="top" content-class="">
+          <template v-slot:activator="{ props: tooltipProps }">
+            <v-menu location="top" v-if="device.isATXActive" :style="{ zIndex: zIndex.overlay }">
+              <template v-slot:activator="{ props }">
+                <v-icon
+                  v-bind="{ ...props, ...tooltipProps }"
+                  color="#76FF03"
+                  size="default"
+                  rounded
+                  variant="plain"
+                >mdi-power-settings
+                </v-icon>
+              </template>
 
-          <v-list select-strategy="leaf">
-            <v-list-item
-              v-for="(atxItem, atxIndex) in atxItems"
-              :key="atxIndex"
-              :value="atxIndex"
-              active-class="text-green"
-              @click="triggerPowerButton(atxItem.action)"
-            >
-              <v-icon :icon="atxItem.icon" color="#76FF03"></v-icon>
-              {{ atxItem.title }}
-            </v-list-item>
-          </v-list>
-        </v-menu>
+              <v-list select-strategy="leaf">
+                <v-list-item
+                  v-for="(atxItem, atxIndex) in atxItems"
+                  :key="atxIndex"
+                  :value="atxIndex"
+                  active-class="text-green"
+                  @click="triggerPowerButton(atxItem.action)"
+                >
+                  <v-icon :icon="atxItem.icon" color="#76FF03"></v-icon>
+                  {{ atxItem.title }}
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+          <span>{{ t('common.atxPower') }}</span>
+        </v-tooltip>
         </div>
 
         <v-divider class="mx-3" inset vertical></v-divider>
@@ -602,5 +608,14 @@
   .overlay-control-bar .d-inline-flex {
     align-items: center;
     min-height: 32px;
+  }
+
+  /* Switch label styling */
+  .switch-label {
+    color: #76FF03;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 8px;
+    white-space: nowrap;
   }
 </style>

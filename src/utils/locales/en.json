@@ -231,7 +231,8 @@
       "deviceFile": "Device",
       "deviceFileField": "deviceField",
       "deviceFileHelp": "a device in Unix-like operating systems that represents a USB-to-serial adapter.",
-      "deviceFilePlaceholder": "Enter device"
+      "deviceFilePlaceholder": "Enter device",
+      "port": "Switch port"
     },
     "network": {
       "title": "Network",
@@ -477,7 +478,8 @@
     "serialTerminal": "Serial Terminal",
     "notifications": "Notifications",
     "toggleSettings": "Toggle settings",
-    "toggleFooter": "Toggle footer"
+    "toggleFooter": "Toggle footer",
+    "atxPower": "ATX Power"
   },
   "label": {
     "connected": "Connected",
