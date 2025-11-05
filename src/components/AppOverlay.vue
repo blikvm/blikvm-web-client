@@ -1,6 +1,6 @@
 <template>
   <v-overlay
-    :model-value="showOverlay && isVideoVisible"
+    :model-value="showOverlay"
     :opacity="0"
     content-class="overlay-passthrough"
     :style="overlayStyle"
@@ -12,7 +12,7 @@
     <!-- top control bar-->
     <div
       class="overlay-control-bar d-flex ga-3 pa-1 justify-end align-center"
-      style="position: absolute; top: 20px; right: 20px;"
+      :style="`position: absolute; top: ${topControlsPosition}; right: 20px;`"
     >
       <!-- Experimental Controls Group -->
       <div v-if="isExperimental" class="control-group">
@@ -21,7 +21,7 @@
       </div>
 
       <!-- Recording Controls Group -->
-      <div class="control-group">
+      <div v-if="isVideoVisible" class="control-group">
         <v-tooltip location="top" content-class="">
           <template v-slot:activator="{ props: tooltipProps }">
             <v-icon
@@ -57,7 +57,7 @@
 
     <div
       class="overlay-control-bar d-flex ga-3 pa-1 justify-start align-center"
-      style="position: absolute; bottom: 20px; left: 20px;"
+      :style="`position: absolute; bottom: ${bottomControlsPosition}; left: 20px;`"
     >
       <!-- bottom control bar-->
       <div
@@ -65,7 +65,7 @@
       >
 
         <!-- Audio Controls Group -->
-        <div v-if="device.video.videoMode === 'h264'" class="control-group">
+        <div v-if="device.video.videoMode === 'h264' && isVideoVisible" class="control-group">
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
               <v-icon
@@ -129,68 +129,68 @@
     <!-- Right-aligned controls -->
     <div
       class="overlay-control-bar d-flex ga-3 pa-1 justify-end align-center"
-      style="position: absolute; bottom: 20px; right: 8px;"
+      :style="`position: absolute; bottom: ${bottomControlsPosition}; right: 8px;`"
     >
-      <!-- Switch Controls Group -->
-        <div v-if="filteredChannels.length > 0" class="control-group switch-controls">
-          <span class="switch-label">{{ t('settings.switch.port') }}</span>
-          <v-btn-toggle
-            :model-value="activeChannel"
-            color="#76FF03"
-            density="compact"
-            @update:model-value="changeSwitchChannel"
-          >
-            <template v-for="channel in filteredChannels" :key="channel.id">
-              <v-tooltip location="top" content-class="">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    :value="channel.name"
-                    size="small"
-                    variant="outlined"
-                    class="text-none"
-                  >
-                    {{ channel.name }}
-                  </v-btn>
-                </template>
-                <span>{{ displayName(channel) }}</span>
-              </v-tooltip>
-            </template>
-          </v-btn-toggle>
-        </div>
-
-        <!-- ATX Controls Group -->
-        <div v-if="device.isATXActive" class="control-group atx-controls">
-        <v-tooltip location="top" content-class="">
-          <template v-slot:activator="{ props: tooltipProps }">
-            <v-menu location="top" v-if="device.isATXActive" :style="{ zIndex: zIndex.overlay }">
-              <template v-slot:activator="{ props }">
-                <v-icon
-                  v-bind="{ ...props, ...tooltipProps }"
-                  color="#76FF03"
-                  size="default"
-                  rounded
-                  variant="plain"
-                >mdi-power-settings
-                </v-icon>
+      <!-- Combined Switch and ATX Controls Group -->
+        <div v-if="filteredChannels.length > 0 || device.isATXActive" class="control-group switch-controls">
+          <!-- Switch Controls -->
+          <template v-if="filteredChannels.length > 0">
+            <span class="switch-label">{{ t('settings.switch.port') }}</span>
+            <v-btn-toggle
+              :model-value="activeChannel"
+              color="#76FF03"
+              density="compact"
+              @update:model-value="changeSwitchChannel"
+            >
+              <template v-for="channel in filteredChannels" :key="channel.id">
+                <v-tooltip location="top" content-class="">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      :value="channel.name"
+                      size="small"
+                      variant="outlined"
+                      class="text-none"
+                    >
+                      {{ channel.name }}
+                    </v-btn>
+                  </template>
+                  <span>{{ displayName(channel) }}</span>
+                </v-tooltip>
               </template>
-
-              <v-list select-strategy="leaf">
-                <v-list-item
-                  v-for="(atxItem, atxIndex) in atxItems"
-                  :key="atxIndex"
-                  :value="atxIndex"
-                  active-class="text-green"
-                  @click="triggerPowerButton(atxItem.action)"
-                >
-                  <v-icon :icon="atxItem.icon" color="#76FF03"></v-icon>
-                  {{ atxItem.title }}
-                </v-list-item>
-              </v-list>
-            </v-menu>
+            </v-btn-toggle>
           </template>
-          <span>{{ t('common.atxPower') }}</span>
-        </v-tooltip>
+          
+          <!-- ATX Controls -->
+          <v-tooltip v-if="device.isATXActive" location="top" content-class="">
+            <template v-slot:activator="{ props: tooltipProps }">
+              <v-menu location="top" :style="{ zIndex: zIndex.overlay }">
+                <template v-slot:activator="{ props }">
+                  <v-icon
+                    v-bind="{ ...props, ...tooltipProps }"
+                    size="default"
+                    rounded
+                    variant="plain"
+                  >mdi-power-settings
+                  </v-icon>
+                </template>
+
+                <v-list select-strategy="leaf">
+                  <v-list-item
+                    v-for="(atxItem, atxIndex) in atxItems"
+                    :key="atxIndex"
+                    :value="atxIndex"
+                    active-class="text-green"
+                    @click="triggerPowerButton(atxItem.action)"
+                  >
+                    <v-icon :icon="atxItem.icon" color="#76FF03"></v-icon>
+                    {{ atxItem.title }}
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </template>
+            <span>{{ t('common.atxPower') }}</span>
+          </v-tooltip>
         </div>
 
         <v-divider class="mx-3" inset vertical></v-divider>
@@ -287,6 +287,8 @@
     audio,
     isRecording,
     settings,
+    footer,
+    toolbar,
   } = storeToRefs(store);
 
   defineProps({
@@ -303,6 +305,12 @@
   const POLLING_INTERVAL_MS = 33; // 30fps polling
   const DEFAULT_VIDEO_WIDTH = 1920;
   const DEFAULT_VIDEO_HEIGHT = 1080;
+  
+  // Constants for safe positioning
+  const SAFE_TOP_MARGIN = 50; // Safe distance from toolbar
+  const SAFE_BOTTOM_MARGIN = 80; // Safe distance from footer
+  const DEFAULT_TOP_MARGIN = 20; // Default top margin
+  const DEFAULT_BOTTOM_MARGIN = 20; // Default bottom margin
 
   // Video element bounds tracking for overlay positioning
   const videoBounds = ref({ top: 0, left: 0, width: 0, height: 0 });
@@ -373,9 +381,24 @@
     isVideoVisible.value = true;
   };
 
-  // Overlay style to match video element exactly - NO transitions
+  // Overlay style - positioned over video when available, full viewport when no video
   const overlayStyle = computed(() => {
     const bounds = videoBounds.value;
+    
+    // If no video is visible, use full viewport positioning
+    if (!isVideoVisible.value) {
+      return {
+        position: 'fixed',
+        top: '0px',
+        left: '0px',
+        width: '100vw',
+        height: '100vh',
+        zIndex: zIndex.overlay,
+        pointerEvents: 'none'
+      };
+    }
+    
+    // Normal video-bound positioning when video exists
     return {
       position: 'fixed',
       top: `${bounds.top}px`,
@@ -385,6 +408,18 @@
       zIndex: zIndex.overlay,
       pointerEvents: 'none'
     };
+  });
+
+  // Dynamic positioning based on footer/toolbar visibility
+  const topControlsPosition = computed(() => {
+    // Always use safe margin from toolbar for top controls
+    return `${SAFE_TOP_MARGIN}px`;
+  });
+
+  const bottomControlsPosition = computed(() => {
+    // Use safe margin when footer is visible, default margin when hidden
+    const shouldUseSafeMargin = footer.value?.showFooter || footer.value?.pinnedFooter;
+    return shouldUseSafeMargin ? `${SAFE_BOTTOM_MARGIN}px` : `${DEFAULT_BOTTOM_MARGIN}px`;
   });
 
   // Switch functionality - combine duplicate logic
@@ -585,9 +620,8 @@
     margin-right: 0;
   }
 
-  /* Remove all margins from switch and ATX control groups */
-  .control-group.switch-controls,
-  .control-group.atx-controls {
+  /* Remove all margins from switch control group */
+  .control-group.switch-controls {
     margin: 0;
   }
 
