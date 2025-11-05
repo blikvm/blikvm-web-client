@@ -77,7 +77,6 @@ export function useKeyboard() {
       k: newVal,
       ts: performance.now(),
     };
-
     if (device.value.ws && device.value.ws.readyState === WebSocket.OPEN) {
       try {
         //console.log('Sending pressed keys:', JSON.stringify(obj));
@@ -96,6 +95,7 @@ export function useKeyboard() {
     if (handleAltGrFix('down', code, appStore.platform?.isWindows === true)) return;
 
     if (!pressedKeys.value.includes(code)) {
+      device.value.hid.keyboard.keyPress = code;
       pressKey(code);
     }
     //console.log("down code:", code, "pressedKeys:", pressedKeys.value);
@@ -126,8 +126,9 @@ export function useKeyboard() {
   // TODO this is not called?
   const handleKeyPress = (button) => {
     const keyCode = keytoCode(button);
-    console.log('pressed keyCode:', keyCode);
+    // console.log('pressed keyCode:', keyCode);
     if (!pressedKeys.value.includes(keyCode)) {
+      device.value.hid.keyboard.keyPress = keyCode;
       pressedKeys.value.push(keyCode);
     }
   };
@@ -135,7 +136,7 @@ export function useKeyboard() {
   // TODO this is not called?
   const handleKeyReleased = (button) => {
     const keyCode = keytoCode(button);
-    console.log('release keyCode:', keyCode);
+    // console.log('release keyCode:', keyCode);
     const index = pressedKeys.value.indexOf(keyCode);
     if (index > -1) {
       pressedKeys.value.splice(index, 1);

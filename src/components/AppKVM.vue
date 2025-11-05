@@ -207,7 +207,7 @@
   );
 
   // Video, Mouse, Keyboard, OCR, Camera
-  const { keyPress, handleKeyDown, handleKeyUp, releaseAllKey } = useKeyboard();
+  const { handleKeyDown, handleKeyUp, releaseAllKey } = useKeyboard();
   const {
     initVideo,
     destroyJanusConnection,
@@ -333,10 +333,6 @@
       }
     }
   );
-
-  watch(keyPress, (newVal) => {
-    device.value.hid.keyboard.keyPress = newVal;
-  });
 
   watch(
     () => device.value.video.resolution,
