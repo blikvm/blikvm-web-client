@@ -468,7 +468,9 @@
     "video": "视频",
     "sshTerminal": "SSH 终端",
     "serialTerminal": "串行终端",
-    "notifications": "通知"
+    "notifications": "通知",
+    "toggleSettings": "切换设置",
+    "toggleFooter": "切换页脚"
   },
   "label": {
     "connected": "已连接",

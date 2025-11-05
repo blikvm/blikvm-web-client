@@ -339,10 +339,10 @@ export const useAppStore = defineStore('app', {
       expanded: true,
       pinned: true,
       visible: true,
+      offset: 0,
     },
     footer: {
       showFooter: true,
-      pinnedFooter: true,
     },
     ocr: {
       isMenuActive: false,

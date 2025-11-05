@@ -1,5 +1,6 @@
 <template>
   <v-toolbar
+    ref="toolbarRef"
     v-if="toolbar.visible || toolbar.pinned"
     height="30"
     elevation="10"
@@ -8,11 +9,24 @@
     short
     flat
     color="black"
+    :style="toolbarStyle"
+    class="toolbar-auto-hide"
   >
     <template #prepend>
       <div class="toolbar-content">
-        <v-icon color="#76FF03" :class="{ 'pin-active': toolbar.pinned }" @click.stop="pinMenu">
-          {{ toolbar.pinned ? 'mdi-pin-outline' : 'mdi-pin-off-outline' }}
+        <v-icon 
+          ref="dragHandleRef"
+          color="#76FF03" 
+          :class="{ 'pin-active': toolbar.pinned }"
+          class="unified-handle" 
+          role="button"
+          tabindex="0"
+          :aria-label="toolbar.pinned ? 'Pinned' : 'Draggable'"
+          :style="unifiedHandleStyle"
+          @mousedown="handleMouseDown"
+          @keydown="handleKeyDown"
+        >
+          {{ toolbar.pinned ? 'mdi-pin' : 'mdi-drag' }}
         </v-icon>
       </div>
     </template>
@@ -27,126 +41,151 @@
       <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical></v-divider>
     </template>
 
+    <!-- Status Indicator (Connection + Health) -->
     <v-tooltip location="top" content-class="">
       <template v-slot:activator="{ props: tooltipProps }">
         <v-icon
-          :color="device.isDisconnected ? '#D32F2F' : '#76FF03'"
-          class="toolbar-icon"
           v-bind="tooltipProps"
-          style="cursor: pointer"
+          :color="device.isDisconnected ? '#D32F2F' : healthIconColor"
+          class="toolbar-icon"
+          size="small"
         >
-          {{ device.isDisconnected ? 'mdi-lan-disconnect' : 'mdi-lan-connect' }}
+          {{ device.isDisconnected ? 'mdi-lan-disconnect' : 'mdi-heart-pulse' }}
         </v-icon>
       </template>
-      <span>{{ device.isDisconnected ? $t('common.disconnect') : $t('common.connect') }}</span>
+      <span>{{ device.isDisconnected ? $t('common.disconnect') : device.health.status }}</span>
     </v-tooltip>
 
-    <v-tooltip location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon class="toolbar-icon" v-bind="tooltipProps" @click="handleClick('settings')">
-          mdi-cog-outline
-        </v-icon>
-      </template>
-      <span>{{ $t('common.configure') }}</span>
-    </v-tooltip>
+    <!-- Expanded Controls Section -->
+    <template v-if="toolbar.expanded">
+      <!-- KVM Status Icons -->
+      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="device.hid.isActive && device.hid.keyboard.isActive ? '#76FF03' : '#D32F2F'"
+            size="small"
+          >mdi-keyboard</v-icon>
+        </template>
+        <span>{{ $t('common.keyboard') }} {{ device.hid.isActive && device.hid.keyboard.isActive ? $t('common.active') : $t('common.inactive') }}</span>
+      </v-tooltip>
 
-    <v-tooltip location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon
-          v-bind="tooltipProps"
-          :color="showOverlay ? '#76FF03' : '#42A5F5'"
-          @click="handleClick('overlay')"
-        >
-          {{ showOverlay ? 'mdi-layers-outline' : 'mdi-layers-off-outline' }}
-        </v-icon>
-      </template>
-      <span>{{ showOverlay ? $t('common.overlayOff') : $t('common.overlayOn') }}</span>
-    </v-tooltip>
+      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="isVideoActive ? '#76FF03' : '#D32F2F'"
+            size="small"
+          >mdi-monitor</v-icon>
+        </template>
+        <span>{{ $t('settings.device.video.title') }} {{ isVideoActive ? $t('common.active') : $t('common.inactive') }}</span>
+      </v-tooltip>
 
-    <v-tooltip location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon v-bind="tooltipProps" color="#FFD600" @click="handleClick('lock')">
-          mdi-lock
-        </v-icon>
-      </template>
-      <span>{{ $t('common.send') }} Ctrl+Alt+Del</span>
-    </v-tooltip>
+      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="device.hid.isActive && device.hid.mouse.isActive ? '#76FF03' : '#D32F2F'"
+            size="small"
+          >mdi-mouse</v-icon>
+        </template>
+        <span>{{ $t('common.mouse') }} {{ device.hid.isActive && device.hid.mouse.isActive ? $t('common.active') : $t('common.inactive') }}</span>
+      </v-tooltip>
 
-    <v-tooltip v-if="!isFullscreen" location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon v-bind="tooltipProps" @click="toggleFullscreen"> mdi-fullscreen </v-icon>
-      </template>
-      <span>{{ $t('common.fullscreenMode') }}</span>
-    </v-tooltip>
+      <!-- Action Controls -->
+      <v-tooltip location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="showOverlay ? '#76FF03' : '#42A5F5'"
+            @click="handleClick('overlay')"
+            size="small"
+          >{{ showOverlay ? 'mdi-layers-outline' : 'mdi-layers-off-outline' }}</v-icon>
+        </template>
+        <span>{{ showOverlay ? $t('common.overlayOff') : $t('common.overlayOn') }}</span>
+      </v-tooltip>
 
-    <v-tooltip location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon v-bind="tooltipProps" :color="healthIconColor"> mdi-heart-pulse </v-icon>
-      </template>
-      <span>{{ device.health.status }}</span>
-    </v-tooltip>
+      <v-tooltip location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon 
+            v-bind="tooltipProps" 
+            color="#FFD600" 
+            @click="handleClick('lock')"
+            size="small"
+          >mdi-lock</v-icon>
+        </template>
+        <span>{{ $t('common.send') }} Ctrl+Alt+Del</span>
+      </v-tooltip>
 
-    <!-- Always show keyboard, video, mouse icons -->
-    <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon
-          class="toolbar-icon"
-          v-bind="tooltipProps"
-          :color="device.hid.isActive && device.hid.keyboard.isActive ? '#76FF03' : '#D32F2F'"
-          style="cursor: default"
-          >mdi-keyboard</v-icon
-        >
-      </template>
-      <span
-        >{{ $t('common.keyboard') }}
-        {{
-          device.hid.isActive && device.hid.keyboard.isActive
-            ? $t('common.active')
-            : $t('common.inactive')
-        }}</span
-      >
-    </v-tooltip>
+      <v-tooltip v-if="!isFullscreen" location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon 
+            v-bind="tooltipProps" 
+            @click="toggleFullscreen"
+            size="small"
+          >mdi-fullscreen</v-icon>
+        </template>
+        <span>{{ $t('common.fullscreenMode') }}</span>
+      </v-tooltip>
 
-    <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon
-          class="toolbar-icon"
-          v-bind="tooltipProps"
-          :color="isVideoActive ? '#76FF03' : '#D32F2F'"
-          style="cursor: default"
-          >mdi-monitor</v-icon
-        >
-      </template>
-      <span
-        >{{ $t('settings.device.video.title') }}
-        {{ isVideoActive ? $t('common.active') : $t('common.inactive') }}</span
-      >
-    </v-tooltip>
-
-    <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
-        <v-icon
-          class="toolbar-icon"
-          v-bind="tooltipProps"
-          :color="device.hid.isActive && device.hid.mouse.isActive ? '#76FF03' : '#D32F2F'"
-          style="cursor: default"
-          >mdi-mouse</v-icon
-        >
-      </template>
-      <span
-        >{{ $t('common.mouse') }}
-        {{
-          device.hid.isActive && device.hid.mouse.isActive
-            ? $t('common.active')
-            : $t('common.inactive')
-        }}</span
-      >
-    </v-tooltip>
-
-    <AppToolbarOperations v-if="!device?.isDisconnected && toolbar.expanded" />
-    <AppToolbarExpanded v-if="toolbar.expanded" />
+      <AppToolbarOperations v-if="!device?.isDisconnected" />
+      <AppToolbarExpanded />
+    </template>
 
     <template #append>
+      <!-- Settings Toggle -->
+      <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="settings.isVisible ? '#76FF03' : 'white'"
+            @click="handleLayoutClick('left')"
+            size="small"
+          >mdi-dock-left</v-icon>
+        </template>
+        <span>{{ $t('common.toggleSettings') }}</span>
+      </v-tooltip>
+
+      <!-- Footer Toggle -->
+      <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+        <template v-slot:activator="{ props: tooltipProps }">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="footer.showFooter ? '#76FF03' : 'white'"
+            @click="handleLayoutClick('bottom')"
+            size="small"
+          >mdi-dock-bottom</v-icon>
+        </template>
+        <span>{{ $t('common.toggleFooter') }}</span>
+      </v-tooltip>
+
+      <!-- User Menu -->
+      <v-menu v-if="toolbar.expanded" offset-y>
+        <template v-slot:activator="{ props: menuProps }">
+          <v-tooltip location="top" content-class="">
+            <template v-slot:activator="{ props: tooltipProps }">
+              <v-icon
+                v-bind="{ ...menuProps, ...tooltipProps }"
+                color="white"
+                size="small"
+              >mdi-account-circle</v-icon>
+            </template>
+            <span>{{ account.user }}</span>
+          </v-tooltip>
+        </template>
+        <v-list density="compact">
+          <template v-for="item in menuItems" :key="item.id">
+            <v-divider v-if="item.isDivider"></v-divider>
+            <v-list-item v-else @click="handleUserClick(item.id)">
+              <template v-slot:prepend>
+                <v-icon>{{ item.icon }}</v-icon>
+              </template>
+              <v-list-item-title>{{ $t(item.titleKey) }}</v-list-item-title>
+            </v-list-item>
+          </template>
+        </v-list>
+      </v-menu>
+
       <v-icon color="#76FF03" @click.stop="toggleToolbarExpansion">
         {{ toolbar.expanded ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right' }}
       </v-icon>
@@ -160,78 +199,90 @@
   import { useDevice } from '@/composables/useDevice';
   import { useAppKVMVideo } from '@/composables/useAppKVMVideo';
   import { useHealthCheck } from '@/composables/useHealthCheck.js';
-  import { onMounted, onBeforeUnmount } from 'vue';
+  import { useHeaderMenu } from '@/composables/useHeaderMenu';
+  import { useDragHandle, DRAG_CONSTANTS } from '@/composables/useDragHandle';
+  import { useFullscreen } from '@/composables/useFullscreen';
+  import { onMounted, onBeforeUnmount, ref, computed, nextTick } from 'vue';
 
   const store = useAppStore();
 
-  const { settings, footer, isFullscreen, toolbar, showOverlay, showCtrlAltDelDialog, systeminfo } =
+  const { settings, footer, toolbar, showOverlay, showCtrlAltDelDialog, systeminfo } =
     storeToRefs(store);
 
   const { device } = useDevice();
   const { isVideoActive } = useAppKVMVideo(device);
   const { healthIconColor } = useHealthCheck();
+  
+  // Header menu functionality
+  const { account, menuItems, handleLayoutClick, handleUserClick } = useHeaderMenu();
 
-  const pinMenu = () => {
-    toolbar.value.pinned = !toolbar.value.pinned;
-    if (toolbar.value.pinned) {
-      toolbar.value.visible = true; // Keep menu visible when pinned
-    }
-  };
-
-  const toggleToolbarExpansion = () => {
-    if (!toolbar.value) return; // Ensure toolbar is defined
-    console.log('Expand/Collapse toolbar');
-    // Logic for expanding or collapsing the toolbar
-    toolbar.value.expanded = !toolbar.value.expanded;
-  };
-
-  // TODO move to composable
-  // Exit fullscreen mode is handled by browser, so we only need to enter fullscreen mode
-  const toggleFullscreen = () => {
-    const doc = document;
-    const root = doc.documentElement;
-
-    const enterFullscreen =
-      root.requestFullscreen ||
-      root.mozRequestFullScreen ||
-      root.webkitRequestFullScreen ||
-      root.msRequestFullscreen;
-
-    if (
-      !doc.fullscreenElement &&
-      !doc.mozFullScreenElement &&
-      !doc.webkitFullscreenElement &&
-      !doc.msFullscreenElement
-    ) {
-      enterFullscreen.call(root);
-    }
-    // No need to manually exit fullscreen — browser handles that
-  };
-
-  const updateFullscreenStatus = () => {
-    isFullscreen.value = !!(
-      document.fullscreenElement ||
-      document.mozFullScreenElement ||
-      document.webkitFullscreenElement ||
-      document.msFullscreenElement
-    );
-
-    if (isFullscreen.value) {
-      // Hide UI elements in fullscreen mode
+  // Fullscreen functionality
+  const { isFullscreen, toggleFullscreen } = useFullscreen({
+    onEnter: () => {
       settings.value.isVisible = false;
       toolbar.value.visible = false;
       toolbar.value.pinned = false;
       footer.value.showFooter = false;
-      footer.value.pinnedFooter = false;
-    } else {
-      // Restore UI elements when exiting fullscreen mode
-      toolbar.value.visible = true;
+    },
+    onExit: () => {
       toolbar.value.pinned = true;
+      toolbar.value.visible = true;
       footer.value.showFooter = true;
-      footer.value.pinnedFooter = true;
-      // Don't force settings to be visible, let user control it
     }
+  });
+
+  // Template refs
+  const toolbarRef = ref(null);
+  const dragHandleRef = ref(null);
+
+  // Drag functionality
+  const { 
+    isDragging, 
+    dragStyle, 
+    handleStyle, 
+    handleMouseDown: dragHandleMouseDown, 
+    handleKeyDown: dragHandleKeyDown, 
+    handleResize: dragHandleResize,
+    initialize: initializeDrag 
+  } = useDragHandle({
+    target: toolbar,
+    onToggle: () => pinMenu(),
+    onDoubleClick: () => { toolbar.value.offset = 0; },
+    calculateMaxOffset: () => {
+      if (!toolbarRef.value?.$el) return DRAG_CONSTANTS.DEFAULT_MAX_OFFSET;
+      const toolbarWidth = toolbarRef.value.$el.offsetWidth;
+      const viewportWidth = window.innerWidth;
+      return Math.max(DRAG_CONSTANTS.MIN_MAX_OFFSET, (viewportWidth - toolbarWidth) / 2 - DRAG_CONSTANTS.MIN_SAFE_MARGIN);
+    }
+  });
+
+  // Computed styles
+  const toolbarStyle = computed(() => ({
+    left: '50%',
+    transform: `translateX(calc(-50% + ${toolbar.value.offset}px))`,
+    ...dragStyle.value
+  }));
+
+  const unifiedHandleStyle = computed(() => ({
+    ...handleStyle.value,
+    cursor: toolbar.value.pinned ? 'pointer' : handleStyle.value.cursor,
+    marginRight: '4px',
+    transition: 'transform 0.2s ease'
+  }));
+
+  const pinMenu = () => {
+    toolbar.value.pinned = !toolbar.value.pinned;
+    if (toolbar.value.pinned) {
+      toolbar.value.visible = true; // Keep toolbar always visible when pinned
+    }
+    // When unpinned, toolbar will use proximity-based auto-hide from Matrix.vue
   };
+
+  const toggleToolbarExpansion = () => {
+    if (!toolbar.value) return;
+    toolbar.value.expanded = !toolbar.value.expanded;
+  };
+
 
   const handleClick = (value) => {
     switch (value) {
@@ -246,28 +297,70 @@
         break;
 
       default:
-      // TODO
+        break;
     }
   };
 
-  onMounted(() => {
-    document.addEventListener('fullscreenchange', updateFullscreenStatus);
-    document.addEventListener('webkitfullscreenchange', updateFullscreenStatus);
-    document.addEventListener('mozfullscreenchange', updateFullscreenStatus);
-    document.addEventListener('MSFullscreenChange', updateFullscreenStatus);
+  // Unified handle functionality - delegate to drag composable
+  const handleMouseDown = (event) => {
+    // Only allow dragging when not pinned
+    if (!toolbar.value.pinned) {
+      dragHandleMouseDown(event);
+    } else {
+      // When pinned, handle click for unpinning
+      event.preventDefault();
+      event.stopPropagation();
+      pinMenu();
+    }
+  };
+
+  // Keyboard accessibility - delegate to drag composable
+  const handleKeyDown = dragHandleKeyDown;
+
+  // Reset position on window resize - delegate to drag composable
+  const handleResize = dragHandleResize;
+
+  onMounted(async () => {
+    window.addEventListener('resize', handleResize);
+    await initializeDrag();
   });
 
   onBeforeUnmount(() => {
-    document.removeEventListener('fullscreenchange', updateFullscreenStatus);
-    document.removeEventListener('webkitfullscreenchange', updateFullscreenStatus);
-    document.removeEventListener('mozfullscreenchange', updateFullscreenStatus);
-    document.removeEventListener('MSFullscreenChange', updateFullscreenStatus);
+    window.removeEventListener('resize', handleResize);
   });
 </script>
 
 <style scoped>
   .pin-active {
     color: #76ff03;
+  }
+
+  .unified-handle {
+    transition: all 0.2s ease;
+  }
+
+  .unified-handle:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+
+  .unified-handle:focus {
+    outline: 2px solid #76ff03;
+    outline-offset: 2px;
+  }
+
+  .unified-handle:active {
+    transform: scale(0.95);
+  }
+
+  .toolbar-auto-hide {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Smooth auto-hide animation */
+  .toolbar-auto-hide[style*="display: none"] {
+    opacity: 0;
+    transform: translateY(-10px);
   }
 
   .toolbar-collapsed {
@@ -277,7 +370,6 @@
     transform: translateX(-50%);
     border-radius: 30px;
     background-color: var(--v-primary-base);
-    /* TODO do we need this? */
     z-index: 1000;
     transition:
       opacity 0.3s ease,

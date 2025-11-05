@@ -21,7 +21,6 @@
   import 'simple-keyboard/build/css/index.css';
 
   const { device } = useDevice();
-
   const props = defineProps({
     input: String,
   });
@@ -263,7 +262,7 @@
           if (['{shift}', '{shiftleft}', '{shiftright}'].includes(key)) {
             handleShift();
           }
-
+          // TODO
           if (pressedKeys[key]) {
             pressedKeys[key].target.style.backgroundColor = '';
             delete pressedKeys[key];

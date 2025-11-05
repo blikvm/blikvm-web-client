@@ -66,15 +66,10 @@
   // TODO 2025-05-18 this needs to be move elsewhere
   const handleMouseMove = (event) => {
     const mouseY = event.clientY;
-    const containerHeight = event.currentTarget.clientHeight;
 
-    // Show toolbar if near the top
+    // Show toolbar if near the top (industry standard auto-hide)
     if (toolbar.value) {
       toolbar.value.visible = mouseY <= 50;
-    }
-    // Show footer if near the bottom (assumes 600px total height)
-    if (footer.value) {
-      footer.value.showFooter = mouseY >= containerHeight - 30;
     }
   };
 
