@@ -66,22 +66,6 @@
 
         <!-- Audio Controls Group -->
         <div v-if="device.video.videoMode === 'h264' && isVideoVisible" class="control-group">
-          <v-tooltip location="top" content-class="">
-            <template v-slot:activator="{ props: tooltipProps }">
-              <v-icon
-                v-bind="tooltipProps"
-                :color="!canUseMic ? '#9E9E9E' : audio.isMicrophoneOn ? '#76FF03' : undefined"
-                :class="{ 'cursor-not-allowed': !canUseMic }"
-                :size="size"
-                :icon="audio.isMicrophoneOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-                @click="onMicClick"
-              />
-            </template>
-            <span>{{
-              canUseMic ? (audio.isMicrophoneOn ? 'Mute' : 'Unmute') : 'need to register mic first'
-            }}</span>
-          </v-tooltip>
-
           <div
             class="d-inline-flex align-center ga-2"
             @mouseenter="isHoveringVolume = true"
@@ -89,11 +73,11 @@
           >
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
-              <v-icon
+              <v-btn
                 v-bind="tooltipProps"
-                :color="isHoveringVolume || device.video.audioVolume > 0 ? '#76FF03' : undefined"
-                :size="size"
-                :icon="
+                :color="isHoveringVolume || device.video.audioVolume > 0 ? '#76FF03' : '#FFFFFF'"
+                :variant="device.video.audioVolume > 0 ? 'tonal' : 'plain'"
+                :prepend-icon="
                   device.video.audioVolume === 0 || undefined
                     ? 'mdi-volume-mute'
                     : device.video.audioVolume < 30
@@ -102,8 +86,11 @@
                         ? 'mdi-volume-medium'
                         : 'mdi-volume-high'
                 "
+                :size="size"
+                v-ripple
                 @click="device.video.audioVolume = 0"
-              />
+              >
+              </v-btn>
             </template>
             <span>Mute</span>
           </v-tooltip>
@@ -120,6 +107,25 @@
               style="width: 150px"
             />
           </div>
+
+          <v-tooltip location="top" content-class="">
+            <template v-slot:activator="{ props: tooltipProps }">
+              <v-btn
+                v-bind="tooltipProps"
+                :color="!canUseMic ? '#9E9E9E' : audio.isMicrophoneOn ? '#76FF03' : '#FFFFFF'"
+                :variant="audio.isMicrophoneOn ? 'tonal' : 'plain'"
+                :class="{ 'cursor-not-allowed': !canUseMic }"
+                :prepend-icon="audio.isMicrophoneOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+                :size="size"
+                v-ripple
+                @click="onMicClick"
+              >
+              </v-btn>
+            </template>
+            <span>{{
+              canUseMic ? (audio.isMicrophoneOn ? 'Mute' : 'Unmute') : 'need to register mic first'
+            }}</span>
+          </v-tooltip>
         </div>
 
         <v-spacer />
@@ -135,7 +141,17 @@
         <div v-if="filteredChannels.length > 0 || device.isATXActive" class="control-group switch-controls">
           <!-- Switch Controls -->
           <template v-if="filteredChannels.length > 0">
-            <span class="switch-label">{{ t('settings.switch.port') }}</span>
+            <v-tooltip location="top" content-class="">
+              <template v-slot:activator="{ props: tooltipProps }">
+                <v-icon
+                  v-bind="tooltipProps"
+                  icon="mdi-monitor-multiple"
+                  :size="size"
+                  color="#76FF03"
+                />
+              </template>
+              <span>{{ t('settings.switch.port') }}</span>
+            </v-tooltip>
             <v-btn-toggle
               :model-value="activeChannel"
               color="#76FF03"
@@ -308,9 +324,9 @@
   
   // Constants for safe positioning
   const SAFE_TOP_MARGIN = 50; // Safe distance from toolbar
-  const SAFE_BOTTOM_MARGIN = 80; // Safe distance from footer
+  const SAFE_BOTTOM_MARGIN = 30; // Safe distance from footer
   const DEFAULT_TOP_MARGIN = 20; // Default top margin
-  const DEFAULT_BOTTOM_MARGIN = 20; // Default bottom margin
+  const DEFAULT_BOTTOM_MARGIN = 2; // Default bottom margin
 
   // Video element bounds tracking for overlay positioning
   const videoBounds = ref({ top: 0, left: 0, width: 0, height: 0 });
@@ -604,7 +620,6 @@
 
   /* Add subtle background panel for each control group */
   .control-group {
-    background: rgba(0, 0, 0, 0.6) !important;
     backdrop-filter: blur(4px);
     border-radius: 8px;
     padding: 6px 12px;
@@ -613,6 +628,13 @@
     align-items: center;
     gap: 8px;
     min-height: 40px; /* Ensure consistent height for all control groups */
+  }
+
+  /* Recording controls keep their current better appearance (no explicit background - uses Vuetify defaults) */
+  
+  /* Mic/Volume and Switch controls get consistent background */
+  .overlay-control-bar .control-group:not(.recording-controls) {
+    background: rgba(0, 0, 0, 0.6) !important;
   }
 
   /* Remove right margins from all control groups in right-aligned container */
