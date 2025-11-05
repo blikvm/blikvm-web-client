@@ -322,11 +322,9 @@
   const DEFAULT_VIDEO_WIDTH = 1920;
   const DEFAULT_VIDEO_HEIGHT = 1080;
   
-  // Constants for safe positioning
-  const SAFE_TOP_MARGIN = 50; // Safe distance from toolbar
-  const SAFE_BOTTOM_MARGIN = 30; // Safe distance from footer
-  const DEFAULT_TOP_MARGIN = 20; // Default top margin
-  const DEFAULT_BOTTOM_MARGIN = 2; // Default bottom margin
+  // Constants for positioning (based on perfect Case 1b standard)
+  const DEFAULT_TOP_MARGIN = 20; // Top margin (from Case 1b)
+  const DEFAULT_BOTTOM_MARGIN = 20; // Bottom margin (match top for symmetry)
 
   // Video element bounds tracking for overlay positioning
   const videoBounds = ref({ top: 0, left: 0, width: 0, height: 0 });
@@ -397,24 +395,40 @@
     isVideoVisible.value = true;
   };
 
-  // Overlay style - positioned over video when available, full viewport when no video
-  const overlayStyle = computed(() => {
-    const bounds = videoBounds.value;
-    
-    // If no video is visible, use full viewport positioning
-    if (!isVideoVisible.value) {
-      return {
-        position: 'fixed',
-        top: '0px',
-        left: '0px',
-        width: '100vw',
-        height: '100vh',
-        zIndex: zIndex.overlay,
-        pointerEvents: 'none'
-      };
+  // Create simulated video bounds when no actual video is present  
+  const getEffectiveVideoBounds = () => {
+    if (isVideoVisible.value) {
+      return videoBounds.value;
     }
     
-    // Normal video-bound positioning when video exists
+    // Simulate how real video naturally positions to replicate Case 1b behavior
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Real video naturally leaves space for footer when expanded - simulate this
+    const footerSpace = (footer.value?.showFooter || footer.value?.pinnedFooter) ? 250 : 50;
+    const availableHeight = viewportHeight - footerSpace;
+    
+    // Calculate simulated video size (80% of viewport width, maintain 16:9)
+    const simulatedWidth = viewportWidth * 0.8;
+    const simulatedHeight = simulatedWidth * (9/16);
+    
+    // Position like real video would - centered in available space above footer
+    const left = (viewportWidth - simulatedWidth) / 2;
+    const top = Math.max(50, (availableHeight - simulatedHeight) / 2);
+    
+    return {
+      top,
+      left, 
+      width: simulatedWidth,
+      height: simulatedHeight
+    };
+  };
+
+  // Overlay style - always use video-bounds positioning (real or simulated)
+  const overlayStyle = computed(() => {
+    const bounds = getEffectiveVideoBounds();
+    
     return {
       position: 'fixed',
       top: `${bounds.top}px`,
@@ -428,14 +442,13 @@
 
   // Dynamic positioning based on footer/toolbar visibility
   const topControlsPosition = computed(() => {
-    // Always use safe margin from toolbar for top controls
-    return `${SAFE_TOP_MARGIN}px`;
+    // Always use consistent margin within video bounds
+    return `${DEFAULT_TOP_MARGIN}px`;
   });
 
   const bottomControlsPosition = computed(() => {
-    // Use safe margin when footer is visible, default margin when hidden
-    const shouldUseSafeMargin = footer.value?.showFooter || footer.value?.pinnedFooter;
-    return shouldUseSafeMargin ? `${SAFE_BOTTOM_MARGIN}px` : `${DEFAULT_BOTTOM_MARGIN}px`;
+    // Use same margin as perfect Case 1b standard (ignore footer state for symmetry)
+    return `${DEFAULT_BOTTOM_MARGIN}px`;
   });
 
   // Switch functionality - combine duplicate logic
