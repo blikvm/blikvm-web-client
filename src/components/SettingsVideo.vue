@@ -68,38 +68,13 @@
           </v-row>
 
           <br /><br />
-          <div class="d-flex text-caption justify-start">
-            {{ $t('settings.device.video.inputFormat') }}
-          </div>
+          <!-- Input Format Section -->
           <v-row dense no-gutters v-if="device.board.type === '4B' || device.board.type === 'CM4'">
-            <v-col>
-              <v-text-field
-                v-model="device.video.resolution"
-                readonly
-                :label="$t('settings.device.video.inputFormat')"
-                density="compact"
-                tile
-                rounded="lg"
-                color="#76FF03"
-                variant="plain"
-                hide-details
-                single-line
-              >
-                <template v-slot:append>
-                  <div
-                    style="
-                      display: flex;
-                      align-items: center;
-                      margin-left: 8px;
-                      font-size: 0.85rem;
-                      color: #76ff03;
-                      font-weight: 500;
-                    "
-                  >
-                    {{ device.video.capturedFps }} Hz
-                  </div>
-                </template>
-              </v-text-field>
+            <v-col cols="6" class="d-flex align-center">
+              <span class="text-caption">{{ $t('settings.device.video.inputFormat') }}</span>
+            </v-col>
+            <v-col cols="6" class="d-flex align-center justify-end">
+              <span class="metric-display">{{ device.video.resolution }}@{{ device.video.sourceFps }}fps</span>
             </v-col>
           </v-row>
           <v-row dense no-gutters v-else>
@@ -119,38 +94,13 @@
             </v-col>
           </v-row>
 
-          <div class="d-flex text-caption justify-start" v-if="device.video.videoMode === 'h264'">
-            {{ $t('settings.device.video.liveFormat') }}
-          </div>
+          <!-- Live Format Section -->
           <v-row dense no-gutters v-if="device.video.videoMode === 'h264'">
-            <v-col>
-              <v-text-field
-                :model-value="`${device.video.bitrate} kbps`"
-                readonly
-                :label="$t('settings.device.video.liveFormat')"
-                density="compact"
-                tile
-                rounded="lg"
-                color="#76FF03"
-                variant="plain"
-                hide-details
-                single-line
-              >
-                <template v-slot:append>
-                  <div
-                    style="
-                      display: flex;
-                      align-items: center;
-                      margin-left: 8px;
-                      font-size: 0.85rem;
-                      color: #76ff03;
-                      font-weight: 500;
-                    "
-                  >
-                    {{ device.video.fps }} Hz
-                  </div>
-                </template>
-              </v-text-field>
+            <v-col cols="6" class="d-flex align-center">
+              <span class="text-caption">{{ $t('settings.device.video.liveFormat') }}</span>
+            </v-col>
+            <v-col cols="6" class="d-flex align-center justify-end">
+              <span class="metric-display">{{ device.video.bitrate }}kbps / {{ device.video.streamFps }}fps</span>
             </v-col>
           </v-row>
 
@@ -449,5 +399,14 @@
   .selected-orientation {
     background-color: #76ff03 !important;
     color: black !important;
+  }
+
+  .metric-display {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    font-size: 0.85rem;
+    color: #76ff03;
+    font-weight: 500;
   }
 </style>

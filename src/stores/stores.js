@@ -123,7 +123,7 @@ export const useAppStore = defineStore('app', {
         audioMuted: false,
         audioVolume: 0,
         desiredFps: 30,
-        capturedFps: 0,
+        sourceFps: 0,
         WebRTCGop: 30,
         WebRTCMbps: 5,
         audioStream: null,
@@ -152,7 +152,7 @@ export const useAppStore = defineStore('app', {
         connectionState: 'connecting', // 'connecting', 'no-signal', 'connection-failed'
         connectingTimeout: null,
         bitrate: 0,
-        fps: 0,
+        streamFps: 0, // Maps from backend 'fps' property until backend uses streamFps
       },
       hid: {
         isActive: false,

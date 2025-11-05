@@ -143,7 +143,7 @@ const handleWSMessage = (event) => {
       message.data.videoStatus.width,
       message.data.videoStatus.height
     );
-    device.value.video.capturedFps = message.data.videoStatus.capturedFps;
+    device.value.video.sourceFps = message.data.videoStatus.capturedFps;
   }
 
   if (typeof message?.data?.pong === 'number') {
