@@ -343,18 +343,34 @@
   
   // Cache for performance optimization
   let lastBounds = { top: 0, left: 0, width: 0, height: 0 };
+  let lastElementType = null; // Track if we switched between video/container
 
   // Get the actual video element (WebRTC or MJPEG) or video container when no video
   const getVideoElement = () => {
     // First try to find actual video elements
     const videoElement = document.getElementById('webrtc-output') || document.getElementById('mjpeg-output');
     if (videoElement) {
-      return videoElement;
+      // Validate video element has reasonable dimensions before using it
+      // This prevents overlay compression during HDMI activation transition
+      const rect = videoElement.getBoundingClientRect();
+      console.log('Video element dimensions:', rect.width, 'x', rect.height);
+      
+      // Use stricter validation - video must be reasonably sized
+      if (rect.width >= 400 && rect.height >= 200) {
+        console.log('Using video element for overlay tracking');
+        return videoElement;
+      }
+      console.log('Video element too small, using container instead');
+      // Video element exists but dimensions too small - fall back to container
     }
     
-    // No video element found - use the video container instead
+    // No video element found or video not ready - use the video container instead
     // This allows overlay to track the same container that naturally responds to footer changes
-    return document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
+    const container = document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
+    if (container) {
+      console.log('Using container for overlay tracking');
+    }
+    return container;
   };
 
 
@@ -372,9 +388,12 @@
       return;
     }
 
+    const currentElementType = element.tagName;
+    
     // Early return if bounds haven't changed (performance optimization)
     if (rect.top === lastBounds.top && rect.left === lastBounds.left && 
-        rect.width === lastBounds.width && rect.height === lastBounds.height) {
+        rect.width === lastBounds.width && rect.height === lastBounds.height &&
+        currentElementType === lastElementType) {
       return;
     }
 
@@ -389,6 +408,7 @@
     // Track whether we found a real video element
     isVideoVisible.value = element.tagName === 'VIDEO';
     lastBounds = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
+    lastElementType = currentElementType;
   };
 
 
