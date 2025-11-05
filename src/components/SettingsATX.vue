@@ -100,3 +100,10 @@
 
   onMounted(() => {});
 </script>
+
+<style scoped>
+  .transparent-card {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+</style>

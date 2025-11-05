@@ -84,4 +84,9 @@
   const { paste } = storeToRefs(store);
 </script>
 
-<style scoped></style>
+<style scoped>
+  .transparent-card {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+</style>
