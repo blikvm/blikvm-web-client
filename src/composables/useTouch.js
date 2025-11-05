@@ -1,5 +1,6 @@
 'use strict';
 //
+import { onMounted } from 'vue';
 import { RateLimitedMouse } from '../utils/mouse.js';
 import { useDevice } from '@/composables/useDevice';
 

@@ -450,6 +450,7 @@
     "fullscreenMode": "进入全屏模式",
     "keyboard": "键盘",
     "mouse": "鼠标",
+    "virtualMouse": "虚拟鼠标",
     "record": "录制",
     "recordShortcut": "录制快捷键...",
     "dismiss": "撤销",

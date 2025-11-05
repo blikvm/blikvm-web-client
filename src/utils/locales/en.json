@@ -456,6 +456,7 @@
     "fullscreenMode": "Enter full-screen mode",
     "keyboard": "Keyboard",
     "mouse": "Mouse",
+    "virtualMouse": "Virtual Mouse",
     "record": "Record",
     "recordShortcut": "Record shortcut...",
     "dismiss": "Dismiss",
