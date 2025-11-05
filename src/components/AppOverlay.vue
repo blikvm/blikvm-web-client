@@ -9,6 +9,7 @@
     no-click-animation
   >
 
+
     <!-- top control bar-->
     <div
       class="overlay-control-bar d-flex ga-3 pa-1 justify-end align-center"
@@ -305,7 +306,9 @@
     settings,
     footer,
     toolbar,
+    isTouchDevice,
   } = storeToRefs(store);
+
 
   defineProps({
     zIndex: {
@@ -317,10 +320,17 @@
   const isHoveringVolume = ref(false);
   const size = 25;
   
+  // Reference to simulated video element
+  const simulatedVideoRef = ref(null);
+  
   // Constants for video positioning
   const POLLING_INTERVAL_MS = 33; // 30fps polling
   const DEFAULT_VIDEO_WIDTH = 1920;
   const DEFAULT_VIDEO_HEIGHT = 1080;
+  
+  // Constants for simulated video area when no actual video is present (use 1080p like default)
+  const SIMULATED_VIDEO_WIDTH = 1920;
+  const SIMULATED_VIDEO_HEIGHT = 1080;
   
   // Constants for positioning (based on perfect Case 1b standard)
   const DEFAULT_TOP_MARGIN = 20; // Top margin (from Case 1b)
@@ -334,45 +344,29 @@
   // Cache for performance optimization
   let lastBounds = { top: 0, left: 0, width: 0, height: 0 };
 
-  // Get the actual video element (WebRTC or MJPEG)
+  // Get the actual video element (WebRTC or MJPEG) or video container when no video
   const getVideoElement = () => {
-    return document.getElementById('webrtc-output') || document.getElementById('mjpeg-output');
-  };
-
-  // Calculate video content bounds (excluding letterbox/pillarbox areas)
-  const calculateVideoContentBounds = (rect, videoAspectRatio) => {
-    const elementAspectRatio = rect.width / rect.height;
-
-    if (videoAspectRatio > elementAspectRatio) {
-      // Letterboxed (black bars top/bottom)
-      const contentHeight = rect.width / videoAspectRatio;
-      return {
-        top: rect.top + (rect.height - contentHeight) / 2,
-        left: rect.left,
-        width: rect.width,
-        height: contentHeight
-      };
-    } else {
-      // Pillarboxed (black bars left/right)
-      const contentWidth = rect.height * videoAspectRatio;
-      return {
-        top: rect.top,
-        left: rect.left + (rect.width - contentWidth) / 2,
-        width: contentWidth,
-        height: rect.height
-      };
+    // First try to find actual video elements
+    const videoElement = document.getElementById('webrtc-output') || document.getElementById('mjpeg-output');
+    if (videoElement) {
+      return videoElement;
     }
+    
+    // No video element found - use the video container instead
+    // This allows overlay to track the same container that naturally responds to footer changes
+    return document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
   };
+
 
   // Update overlay position with optimization
   const updateOverlayPosition = () => {
-    const videoElement = getVideoElement();
-    if (!videoElement) {
+    const element = getVideoElement();
+    if (!element) {
       isVideoVisible.value = false;
       return;
     }
 
-    const rect = videoElement.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
       isVideoVisible.value = false;
       return;
@@ -384,60 +378,43 @@
       return;
     }
 
-    const videoWidth = device.value?.video?.resolutionWidth || DEFAULT_VIDEO_WIDTH;
-    const videoHeight = device.value?.video?.resolutionHeight || DEFAULT_VIDEO_HEIGHT;
-    const videoAspectRatio = videoWidth / videoHeight;
-
-    const contentBounds = calculateVideoContentBounds(rect, videoAspectRatio);
-
-    videoBounds.value = contentBounds;
-    lastBounds = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
-    isVideoVisible.value = true;
-  };
-
-  // Create simulated video bounds when no actual video is present  
-  const getEffectiveVideoBounds = () => {
-    if (isVideoVisible.value) {
-      return videoBounds.value;
-    }
-    
-    // Simulate how real video naturally positions to replicate Case 1b behavior
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    // Real video naturally leaves space for footer when expanded - simulate this
-    const footerSpace = (footer.value?.showFooter || footer.value?.pinnedFooter) ? 250 : 50;
-    const availableHeight = viewportHeight - footerSpace;
-    
-    // Calculate simulated video size (80% of viewport width, maintain 16:9)
-    const simulatedWidth = viewportWidth * 0.8;
-    const simulatedHeight = simulatedWidth * (9/16);
-    
-    // Position like real video would - centered in available space above footer
-    const left = (viewportWidth - simulatedWidth) / 2;
-    const top = Math.max(50, (availableHeight - simulatedHeight) / 2);
-    
-    return {
-      top,
-      left, 
-      width: simulatedWidth,
-      height: simulatedHeight
+    // Use element bounds directly - works for both video and container
+    videoBounds.value = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height
     };
+    
+    // Track whether we found a real video element
+    isVideoVisible.value = element.tagName === 'VIDEO';
+    lastBounds = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
   };
 
-  // Overlay style - always use video-bounds positioning (real or simulated)
+
+  // Get effective video bounds (uses tracked bounds from updateOverlayPosition)
+  const getEffectiveVideoBounds = () => {
+    // Always use the tracked bounds - works for both real video and container
+    return videoBounds.value;
+  };
+
+  // Overlay style - positioned over video bounds (actual or simulated)
   const overlayStyle = computed(() => {
+    // Get effective bounds (real video or simulated 1920x1080 area)
     const bounds = getEffectiveVideoBounds();
     
-    return {
+    const style = {
       position: 'fixed',
       top: `${bounds.top}px`,
       left: `${bounds.left}px`,
       width: `${bounds.width}px`,
       height: `${bounds.height}px`,
-      zIndex: zIndex.overlay,
+      zIndex: zIndex.diagnostics + 1, // Higher than diagnostics to show overlay even when no video
       pointerEvents: 'none'
     };
+    
+    
+    return style;
   });
 
   // Dynamic positioning based on footer/toolbar visibility
@@ -447,7 +424,7 @@
   });
 
   const bottomControlsPosition = computed(() => {
-    // Use same margin as perfect Case 1b standard (ignore footer state for symmetry)
+    // Use consistent margin for both video and simulated video bounds
     return `${DEFAULT_BOTTOM_MARGIN}px`;
   });
 
