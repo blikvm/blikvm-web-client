@@ -9,7 +9,7 @@ const { misc, devices } = storeToRefs(store);
 
 const isVideoActive = computed(() => {
   return (
-    devices.value.video.sourceFps > 0 &&
+    devices.value.video.capturedFps > 0 &&
     devices.value.video.resolutionHeight > 0 &&
     devices.value.video.isActive === true
   );

@@ -1,0 +1,62 @@
+/* Debug CSS for Mobile Keyboard - Device-Specific Testing */
+
+/* iPhone 12 Pro and similar devices */
+.mobile-keyboard-theme.iphone-12-pro,
+.mobile-keyboard-theme.mobile-optimized {
+  padding: 6px !important;
+  border: 2px solid #76FF03 !important; /* Green border to show it's active */
+}
+
+.mobile-keyboard-theme.iphone-12-pro .hg-button,
+.mobile-keyboard-theme.mobile-optimized .hg-button {
+  font-size: 16px !important;
+  margin: 1.5px !important;
+  min-height: 42px !important;
+  min-width: 28px !important;
+  border-radius: 6px !important;
+  background: rgba(118, 255, 3, 0.15) !important; /* Slightly more visible for testing */
+  border: 2px solid rgba(118, 255, 3, 0.4) !important;
+}
+
+.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{space}"],
+.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{space}"] {
+  min-width: 180px !important;
+  background: rgba(255, 193, 7, 0.2) !important; /* Yellow background for space bar */
+}
+
+.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{numbers}"],
+.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{abc}"],
+.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{numbers}"],
+.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{abc}"] {
+  min-width: 45px !important;
+  font-size: 14px !important;
+  background: rgba(156, 39, 176, 0.3) !important; /* Purple for layout switchers */
+}
+
+.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{backspace}"],
+.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{ent}"],
+.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{backspace}"],
+.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{ent}"] {
+  min-width: 50px !important;
+  background: rgba(244, 67, 54, 0.2) !important; /* Red for action buttons */
+}
+
+.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{shift}"],
+.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{shift}"] {
+  min-width: 48px !important;
+  background: rgba(33, 150, 243, 0.2) !important; /* Blue for shift */
+}
+
+/* Debug info overlay */
+.keyboard-debug-info {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: #76FF03;
+  padding: 4px 8px;
+  font-size: 10px;
+  border-radius: 0 0 4px 0;
+  z-index: 1000;
+  font-family: monospace;
+}

@@ -13,8 +13,10 @@
                 {{ $t('settings.device.audio.title') }}
               </v-col>
               <v-col class="d-flex justify-end align-center">
-                <v-chip :color="micStatus.color">
-                  {{ $t(micStatus.labelKey) }}
+                <v-chip :color="audio.isMicrophoneOn ? '#76FF03' : undefined">
+                  {{
+                    audio.isMicrophoneOn ? $t('common.allowed') : $t('common.blocked')
+                  }}
                 </v-chip>
               </v-col>
             </v-row>
@@ -45,7 +47,6 @@
             </v-col>
           </v-row>
           <v-text-field
-            v-if="device?.mic?.isRegistered && audio?.isMicrophoneOn"
             :model-value="displayMicrophoneName"
             density="compact"
             rounded="lg"
@@ -119,19 +120,6 @@
   const micLevelPct = computed(() => Math.min(100, Math.max(0, Math.round(micLevel.value * 100))));
   const showMicMeter = computed(() => {
     return isPanelOpen.value && !!audio.value.isMicrophoneOn && !!device.value?.video?.audioStream;
-  });
-
-  // Chip status for registration/mic state
-  const micStatus = computed(() => {
-    const registered = !!device.value?.mic?.isRegistered;
-    const micOn = !!audio.value?.isMicrophoneOn;
-    if (!registered) {
-      return { color: '#76FF03', labelKey: 'common.unregister' };
-    }
-    if (!micOn) {
-      return { color: 'orange', labelKey: 'common.blocked' };
-    }
-    return { color: '#76FF03', labelKey: 'common.allowed' };
   });
 
   let audioCtx = null;
