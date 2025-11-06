@@ -1,5 +1,5 @@
 <template>
-  <v-sheet rounded class="w-100 bg-black console-container">
+  <div class="console-container bg-black">
     <!-- Serial Terminal Tabs Header -->
     <v-tabs
       v-model="activeTab"
@@ -12,10 +12,10 @@
     >
       <!-- Connection Status Tab -->
       <v-tab :value="'status'" class="terminal-status-tab" style="min-width: auto; padding: 0 12px">
-        <v-icon :color="isConnected ? 'rgba(255, 255, 255, 0.7)' : '#D32F2F'" size="small" class="mr-2">
+        <v-icon :color="isConnected ? '#76FF03' : '#D32F2F'" size="small" class="mr-2">
           {{ isConnected ? 'mdi-serial-port' : 'mdi-close-circle-outline' }}
         </v-icon>
-        <span class="text-caption" :style="{ color: isConnected ? 'rgba(255, 255, 255, 0.7)' : '#D32F2F' }">
+        <span class="text-caption" :style="{ color: isConnected ? '#76FF03' : '#D32F2F' }">
           {{ isConnected ? 'Serial Console' : t('terminal.disconnected') }}
         </span>
       </v-tab>
@@ -26,7 +26,7 @@
       <v-tab :value="'clear'" @click="clearTerminal" class="terminal-action-tab">
         <v-tooltip location="bottom">
           <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-close-circle-outline </v-icon>
+            <v-icon v-bind="props" color="#76FF03" size="small"> mdi-delete-sweep </v-icon>
           </template>
           <span>{{ t('terminal.clearTerminal') }}</span>
         </v-tooltip>
@@ -35,7 +35,7 @@
       <v-tab :value="'copy'" @click="copyClipboardHandler" class="terminal-action-tab">
         <v-tooltip location="bottom">
           <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-content-copy </v-icon>
+            <v-icon v-bind="props" color="#76FF03" size="small"> mdi-content-copy </v-icon>
           </template>
           <span>{{ t('terminal.copyText') }}</span>
         </v-tooltip>
@@ -44,7 +44,7 @@
       <v-tab :value="'paste'" @click="pasteClipboard" class="terminal-action-tab">
         <v-tooltip location="bottom">
           <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-content-paste </v-icon>
+            <v-icon v-bind="props" color="#76FF03" size="small"> mdi-content-paste </v-icon>
           </template>
           <span>{{ t('terminal.pasteText') }}</span>
         </v-tooltip>
@@ -53,7 +53,7 @@
       <v-tab :value="'scroll-top'" @click="scrollTop" class="terminal-action-tab">
         <v-tooltip location="bottom">
           <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-arrow-up-bold </v-icon>
+            <v-icon v-bind="props" color="#76FF03" size="small"> mdi-arrow-up-bold </v-icon>
           </template>
           <span>{{ t('terminal.scrollToTop') }}</span>
         </v-tooltip>
@@ -62,7 +62,7 @@
       <v-tab :value="'scroll-bottom'" @click="scrollBottom" class="terminal-action-tab">
         <v-tooltip location="bottom">
           <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-arrow-down-bold </v-icon>
+            <v-icon v-bind="props" color="#76FF03" size="small"> mdi-arrow-down-bold </v-icon>
           </template>
           <span>{{ t('terminal.scrollToBottom') }}</span>
         </v-tooltip>
@@ -70,31 +70,25 @@
     </v-tabs>
 
     <!-- Terminal Content -->
-    <v-sheet color="black" class="terminal-sheet-outer w-100" elevation="2" rounded="0 0 lg lg">
-      <v-hover>
-        <template #default="{ props: hoverProps, isHovering }">
-          <v-sheet
-            v-bind="hoverProps"
-            :border="`thin ${isHovering || isKeyboardEventsEnabled ? 'success opacity-75' : ''}`"
-            color="black"
-            class="terminal-sheet-inner"
-            elevation="1"
-            rounded="lg"
-            flat
-            @contextmenu="handleContextMenu"
-            @mouseenter="enableKeyboardEvents"
-            @mouseleave="disableKeyboardEvents"
-            @keydown="handleKeydown"
-            @keyup="handleKeyup"
-            tabindex="0"
-            :aria-label="t('appFooter.serialTerminal')"
-          >
-            <div ref="terminal" class="terminal-content" />
-          </v-sheet>
-        </template>
-      </v-hover>
+    <v-sheet color="black" class="terminal-sheet-outer" elevation="2" rounded="0 0 lg lg">
+      <v-sheet
+        color="black"
+        class="terminal-sheet-inner"
+        elevation="1"
+        rounded="lg"
+        variant="outlined"
+        @contextmenu="handleContextMenu"
+        @mouseenter="enableKeyboardEvents"
+        @mouseleave="disableKeyboardEvents"
+        @keydown="handleKeydown"
+        @keyup="handleKeyup"
+        tabindex="0"
+        :aria-label="t('appFooter.serialTerminal')"
+      >
+        <div ref="terminal" class="terminal-content" />
+      </v-sheet>
     </v-sheet>
-  </v-sheet>
+  </div>
 </template>
 
 <script setup>
@@ -263,7 +257,7 @@
 
   const clearTerminal = () => {
     if (isWsOpen()) {
-      ws.value.send(packStdin('clear\r'));
+      ws.value.send(packStdin('\\x15clear\\n'));
     }
   };
 
@@ -370,18 +364,15 @@
 </script>
 
 <style scoped>
-  .v-sheet {
+  .console-container {
     margin: 0;
-    width: 100%;
-    max-width: none;
-  }
-
-  .v-sheet.console-container {
     padding: 0;
     height: 100%;
   }
 
   .terminal-tabs {
+    border: 1px solid rgba(118, 255, 3, 0.3);
+    border-bottom: 2px solid #76ff03;
     border-radius: 4px 4px 0 0;
 
     /* Make the tab structure more visible */
@@ -421,13 +412,12 @@
     height: calc(100% - 36px); /* Account for tabs height */
     padding: 8px;
     border-top: 1px solid rgba(118, 255, 3, 0.2);
-    width: 100% !important;
-    max-width: none !important;
   }
 
   .terminal-sheet-inner {
     height: 100%;
     padding: 0;
+    border: 1px solid rgba(118, 255, 3, 0.3) !important;
     position: relative;
     overflow: hidden;
     background: linear-gradient(145deg, #000000 0%, #111111 100%);
@@ -435,6 +425,13 @@
     &:focus-visible {
       outline: 2px solid #76ff03;
       outline-offset: -2px;
+    }
+
+    &:hover {
+      border-color: rgba(118, 255, 3, 0.5) !important;
+      box-shadow:
+        0 0 0 1px rgba(118, 255, 3, 0.2),
+        0 4px 12px rgba(118, 255, 3, 0.1);
     }
   }
 

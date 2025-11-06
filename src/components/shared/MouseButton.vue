@@ -13,12 +13,12 @@
   >
     <!-- hold 状态：只显示 icon 和 HOLD -->
     <template v-if="isHold">
-      <v-icon v-if="icon" :size="isHold ? 32 : 24" :color="iconColor">{{ icon }}</v-icon>
+      <v-icon v-if="icon" :size="isHold ? ThirtyTwoPx : 24" :color="iconColor">{{ icon }}</v-icon>
       <small class="hold-text">HOLD</small>
     </template>
     <!-- 非 hold 状态：仅显示图标 -->
     <template v-else>
-      <v-icon v-if="icon" :size="isHold ? 32 : 24" :color="iconColor">{{ icon }}</v-icon>
+      <v-icon v-if="icon" :size="isHold ? ThirtyTwoPx : 24" :color="iconColor">{{ icon }}</v-icon>
     </template>
   </v-btn>
 </template>
@@ -56,22 +56,21 @@
       ? `linear-gradient(145deg, ${theme}, ${theme}aa)`
       : props.active
         ? activeBg
-        : 'transparent';
+        : 'linear-gradient(145deg, #3a3a3d, #2a2a2d)';
 
     const shadow = theme
       ? `0 0 12px ${theme}`
       : props.active
         ? activeShadow
-        : 'none';
+        : 'inset 2px 2px 4px #1a1a1d, inset -2px -2px 4px #3a3a3d';
 
     return {
       background: bg,
       color: theme ? '#fff' : props.active ? '#fff' : '#ccc',
-      borderRadius: '8px',
+      borderRadius: '12px',
       boxShadow: shadow,
       width,
-      height: '40px',
-      border: 'none',
+      height: '60px',
       display: 'flex',
       flexDirection,
       justifyContent: 'center',
