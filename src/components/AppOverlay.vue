@@ -148,7 +148,6 @@
                   v-bind="tooltipProps"
                   icon="mdi-monitor-multiple"
                   :size="size"
-                  color="#76FF03"
                 />
               </template>
               <span>{{ t('settings.switch.port') }}</span>
@@ -344,6 +343,8 @@
   // Cache for performance optimization
   let lastBounds = { top: 0, left: 0, width: 0, height: 0 };
   let lastElementType = null; // Track if we switched between video/container
+  let lastLoggedElementType = null; // Prevent repetitive console logs
+  let lastLoggedDimensions = null; // Prevent repetitive dimension logs
 
   // Get the actual video element (WebRTC or MJPEG) or video container when no video
   const getVideoElement = () => {
@@ -353,22 +354,33 @@
       // Validate video element has reasonable dimensions before using it
       // This prevents overlay compression during HDMI activation transition
       const rect = videoElement.getBoundingClientRect();
-      console.log('Video element dimensions:', rect.width, 'x', rect.height);
+      const currentDimensions = `${rect.width} x ${rect.height}`;
+      if (lastLoggedDimensions !== currentDimensions) {
+        console.log('Video element dimensions:', currentDimensions);
+        lastLoggedDimensions = currentDimensions;
+      }
       
       // Use stricter validation - video must be reasonably sized
       if (rect.width >= 400 && rect.height >= 200) {
-        console.log('Using video element for overlay tracking');
+        if (lastLoggedElementType !== 'video') {
+          console.log('Using video element for overlay tracking');
+          lastLoggedElementType = 'video';
+        }
         return videoElement;
       }
-      console.log('Video element too small, using container instead');
+      if (lastLoggedElementType !== 'small-video') {
+        console.log('Video element too small, using container instead');
+        lastLoggedElementType = 'small-video';
+      }
       // Video element exists but dimensions too small - fall back to container
     }
     
     // No video element found or video not ready - use the video container instead
     // This allows overlay to track the same container that naturally responds to footer changes
     const container = document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
-    if (container) {
+    if (container && lastLoggedElementType !== 'container') {
       console.log('Using container for overlay tracking');
+      lastLoggedElementType = 'container';
     }
     return container;
   };
@@ -429,7 +441,7 @@
       left: `${bounds.left}px`,
       width: `${bounds.width}px`,
       height: `${bounds.height}px`,
-      zIndex: zIndex.diagnostics + 1, // Higher than diagnostics to show overlay even when no video
+      zIndex: zIndex.overlay, // Show overlay controls above diagnostics
       pointerEvents: 'none'
     };
     

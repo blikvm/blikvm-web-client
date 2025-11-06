@@ -5,8 +5,8 @@ export const zIndex = {
   overlayShang: 502,
   video: 600,
   extracText: 601,
-  overlay: 700,        // AppOverlay controls (recording, power, etc.)
-  diagnostics: 800,    // "No Signal" message - blocks overlay when no video
+  diagnostics: 700,    // "No Signal" message
+  overlay: 800,        // AppOverlay controls (recording, power, etc.) - prioritized over diagnostics
   toolbar: 1000,       // AppToolbar - always on top
   modal: 3000,        // Modal dialogs
   tooltip: 4000,      // Tooltips
