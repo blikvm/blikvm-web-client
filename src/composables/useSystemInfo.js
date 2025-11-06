@@ -32,7 +32,6 @@ export async function getSystemInfo(selected = true) {
       device.value.mem.actual = response.data.data.mem.actual;
       device.value.storage.actual = response.data.data.storage.actual;
       device.value.isATXActive = response.data.data.config.isATXActive;
-      device.value.mic.isRegistered = response.data.data.mic.isRegistered;
     } else {
       const title = 'System Info Error';
       const message = response.data.msg;

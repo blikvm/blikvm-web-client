@@ -7,18 +7,18 @@
             <v-col cols="1" class="d-flex justify-start align-center">
               <v-icon color="primary">mdi-toaster-oven</v-icon>
             </v-col>
-            <v-col cols="8" class="d-flex justify-start align-center">
+            <v-col class="d-flex justify-start align-center" cols="8">
               {{ systeminfo.hostname }}</v-col
             >
             <v-col
-              cols="3"
+              colspan="auto"
               class="d-flex justify-end align-center"
               :style="{
-                color: device.isDisconnected ? '#D32F2F' : '#76FF03',
+                color: '#76FF03',
               }"
             >
-              <v-chip prepend-icon="mdi-circle-medium">
-                {{ device.isDisconnected ? $t('common.disconnect') : $t('common.connect') }}
+              <v-chip
+                >{{ device.isDisconnected ? $t('common.disconnect') : $t('common.connect') }}
               </v-chip>
             </v-col>
           </v-row>
@@ -735,13 +735,167 @@
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
-
       <!-- Health Check -->
-      <SettingHealthCheck
-        v-model:innerPanel="innerPanel"
-        :setHealthThreshold="setHealthThreshold"
-      />
+      <v-expansion-panels v-model="innerPanel" multiple>
+        <v-expansion-panel value="health" @group:selected="handlePanelOpen">
+          <v-expansion-panel-title>
+            <template v-slot:default="{ expanded }">
+              <v-row dense no-gutters class="d-flex justify-end align-center">
+                <v-col cols="1">
+                  <v-icon>mdi-hospital</v-icon>
+                </v-col>
+                <v-col class="d-flex justify-start align-center" cols="4">
+                  {{ $t('settings.device.healthCheck.title') }}
+                </v-col>
+                <v-col class="d-flex justify-end align-center">
+                  <HealthCheck />
+                </v-col>
+              </v-row>
+            </template>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <v-card-text class="text-medium-emphasis pa-6">
+              <div class="text-caption">
+                {{ $t('settings.device.healthCheck.ramThreshold') }}
+                ({{ convertBytesToGiB(device.mem.actual, 1) }}/{{
+                  convertBytesToGiB(systeminfo.memTotal)
+                }}GB)
+              </div>
+              <v-row dense no-gutters>
+                <v-col cols="*">
+                  <v-slider
+                    v-model="device.health.ramThreshold"
+                    :max="1"
+                    :min="0.1"
+                    :step="0.1"
+                    v-ripple
+                    :color="ramThresholdColor"
+                    :track-fill-color="ramThresholdColor"
+                    @end="setHealthThreshold"
+                  >
+                    <template v-slot:append>
+                      <div
+                        :style="{
+                          color: ramThresholdColor,
+                          fontWeight: 'bold',
+                          minWidth: '50px',
+                          textAlign: 'right',
+                        }"
+                      >
+                        {{ Math.round(device.health.ramThreshold * 100) }}%
+                      </div>
+                    </template>
+                  </v-slider>
+                </v-col>
+              </v-row>
 
+              <div class="text-caption">
+                {{ $t('settings.device.healthCheck.storageThreshold') }}
+                ({{ convertBytesToGiB(device.storage.actual) }}/{{
+                  convertBytesToGiB(systeminfo.storageTotal)
+                }}GB)
+              </div>
+
+              <v-row dense no-gutters>
+                <v-col cols="*">
+                  <v-slider
+                    v-model="device.health.storageThreshold"
+                    :max="1"
+                    :min="0.1"
+                    :step="0.1"
+                    v-ripple
+                    :color="storageColor"
+                    :track-fill-color="storageColor"
+                    @end="setHealthThreshold"
+                  >
+                    <template v-slot:append>
+                      <div
+                        :style="{
+                          color: storageColor,
+                          fontWeight: 'bold',
+                          minWidth: '50px',
+                          textAlign: 'right',
+                        }"
+                      >
+                        {{ Math.round(device.health.storageThreshold * 100) }}%
+                      </div>
+                    </template>
+                  </v-slider>
+                </v-col>
+              </v-row>
+
+              <div class="text-caption">
+                {{ $t('settings.device.healthCheck.networkLatencyThreshold') }}
+                ({{ $t('common.current') }} {{ device.networkLatency }}ms)
+              </div>
+
+              <v-row dense no-gutters>
+                <v-col cols="*">
+                  <v-slider
+                    v-model="device.health.networkLatencyThreshold"
+                    :max="200"
+                    :min="1"
+                    :step="1"
+                    tick-size="4"
+                    v-ripple
+                    :color="netWorkColor"
+                    :track-fill-color="netWorkColor"
+                    @end="setHealthThreshold"
+                  >
+                    <template v-slot:append>
+                      <div
+                        :style="{
+                          color: netWorkColor,
+                          fontWeight: 'bold',
+                          minWidth: '60px',
+                          textAlign: 'right',
+                        }"
+                      >
+                        {{ device.health.networkLatencyThreshold }}ms
+                      </div>
+                    </template>
+                  </v-slider>
+                </v-col>
+              </v-row>
+
+              <div class="text-caption">
+                {{ $t('settings.device.healthCheck.temperatureThreshold') }}
+                ({{ $t('common.current') }} {{ temperatureConverted }}°{{ misc.temperatureUnit }})
+              </div>
+
+              <v-row dense no-gutters>
+                <v-col cols="*">
+                  <v-slider
+                    :key="misc.temperatureUnit"
+                    v-model="tempThresholdDisplay"
+                    :max="tempMax"
+                    :min="tempMin"
+                    :step="1"
+                    tick-size="4"
+                    v-ripple
+                    :color="temperatureColor"
+                    :track-fill-color="temperatureColor"
+                    @end="setHealthThreshold"
+                  >
+                    <template v-slot:append>
+                      <div
+                        :style="{
+                          color: temperatureColor,
+                          fontWeight: 'bold',
+                          minWidth: '50px',
+                          textAlign: 'right',
+                        }"
+                      >
+                        {{ tempThresholdDisplay }}°{{ misc.temperatureUnit }}
+                      </div>
+                    </template>
+                  </v-slider>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
       <!-- Video -->
       <v-expansion-panels v-model="innerPanel" multiple>
         <v-expansion-panel value="video">
@@ -780,10 +934,6 @@
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
-
-      <!-- Mic Registration -->
-      <SettingsMic v-if="device.board.type === '4B' || device.board.type === 'CM4'" v-model:innerPanel="innerPanel" />
-
       <!-- Keyboard & Mouse -->
       <v-expansion-panels v-model="innerPanel" multiple>
         <v-expansion-panel value="hid">

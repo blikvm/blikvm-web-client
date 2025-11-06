@@ -159,13 +159,10 @@ export function useVirtualMedia() {
   };
 
   function downloadFile(fileName) {
-    if (!fileName) return;
-    // Use relative URL to avoid mixed-content/cert/port mismatch issues
-    const url = `/api/virtual-media/${encodeURIComponent(fileName)}`;
+    const url = `${Config.http_protocol}//${Config.host_ip}${Config.host_port}/api/virtual-media/${encodeURIComponent(fileName)}`;
     const a = document.createElement('a');
     a.href = url;
     a.download = fileName;
-    a.rel = 'noopener noreferrer';
     document.body.appendChild(a);
     a.click();
     a.remove();

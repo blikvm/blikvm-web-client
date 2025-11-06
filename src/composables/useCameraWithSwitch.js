@@ -4,7 +4,7 @@ import { useAppStore } from '@/stores/stores';
 import { storeToRefs } from 'pinia';
 
 const store = useAppStore();
-const { isCameraOn, isShowingPiP } = storeToRefs(store);
+const { isMicrophoneOn, isCameraOn, isShowingPiP } = storeToRefs(store);
 
 export function useCamera(device) {
   const error = ref(null);

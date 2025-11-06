@@ -240,34 +240,19 @@
         try {
           const obj = JSON.parse(raw);
           if (obj && typeof obj === 'object') {
-            if (obj.type === 'start') {
-              appendLine(`[update] started (${obj.mode || 'unknown'})`);
-            } else if (obj.type === 'end') {
-              appendLine('[update] finished');
-              return stopUpgrade();
-            } else if (obj.type === 'busy') {
-              appendLine('[update] busy: another update is running');
-              return stopUpgrade();
-            } else if (obj.type === 'error') {
-              appendLine(`[update] error${obj.message ? `: ${obj.message}` : ''}`);
-              return stopUpgrade();
-            }
-            if (obj.line) {
-              appendLine(String(obj.line));
-            } else if (obj.message && !obj.type) {
-              appendLine(String(obj.message));
-            } else {
-              appendLine(raw);
-            }
-          } else {
-            appendLine(raw);
+            // Prefer plain log/err lines; suppress noisy prefixes
+            if (obj.line) return appendLine(String(obj.line));
+            if (obj.message) return appendLine(String(obj.message));
+            // Friendly hint for start/end events
+            if (obj.type === 'start')
+              return appendLine(`[update] started (${obj.mode || 'unknown'})`);
+            if (obj.type === 'end') return appendLine('[update] finished');
           }
-        } catch {
+          // Fallback to raw text
           appendLine(raw);
-        }
-        if (/Deactivated\s+successfully\.?/i.test(raw)) {
-          appendLine('[update] finished');
-          return stopUpgrade();
+        } catch {
+          // Not JSON, just append as-is
+          appendLine(raw);
         }
       };
       es.onerror = () => {

@@ -1,107 +1,68 @@
 <template>
-  <v-sheet rounded class="w-100 bg-black console-container">
-    <!-- Terminal Tabs Header -->
-    <v-tabs
-      v-model="activeTab"
-      bg-color="black"
-      color="#76FF03"
-      height="35"
-      density="compact"
-      show-arrows
-      class="terminal-tabs"
-    >
-      <!-- Connection Status Tab -->
-      <v-tab :value="'status'" class="terminal-status-tab" style="min-width: auto; padding: 0 12px">
-        <v-icon :color="isConnected ? 'rgba(255, 255, 255, 0.7)' : '#D32F2F'" size="small" class="mr-2">
-          {{ isConnected ? 'mdi-lan-connect' : 'mdi-lan-disconnect' }}
-        </v-icon>
-        <span class="text-caption" :style="{ color: isConnected ? 'rgba(255, 255, 255, 0.7)' : '#D32F2F' }">
-          {{ isConnected ? 'SSH Connection' : t('terminal.disconnected') }}
-        </span>
-      </v-tab>
+  <div
+    ref="terminal"
+    class="terminal-content"
+    @contextmenu="handleContextMenu"
+    @mouseenter="enableKeyboardEvents"
+    @mouseleave="disableKeyboardEvents"
+    @keydown="handleKeydown"
+    @keyup="handleKeyup"
+    tabindex="0"
+  >
+    <!-- Container for floating action buttons -->
+    <div class="fab-container">
+      <v-icon
+        fab
+        v-tooltip="'Clear terminal'"
+        color="#76FF03"
+        class="fab-button"
+        @click="clearTerminal"
+      >
+        $clear
+      </v-icon>
+      <v-icon
+        fab
+        v-tooltip="'Copy to clipboard'"
+        color="#76FF03"
+        class="fab-button"
+        @click="copyClipboardHandler"
+      >
+        mdi-content-copy
+      </v-icon>
+      <v-icon
+        fab
+        v-tooltip="'Paste from clipboard'"
+        color="#76FF03"
+        class="fab-button"
+        @click="pasteClipboard"
+      >
+        mdi-content-paste
+      </v-icon>
+    </div>
 
-      <v-spacer />
+    <div class="scroll-top-button">
+      <v-icon fab v-tooltip="'Scroll to top'" color="#76FF03" class="fab-button" @click="scrollTop">
+        mdi-arrow-up
+      </v-icon>
+    </div>
 
-      <!-- Action Tabs -->
-      <v-tab :value="'clear'" @click="clearTerminal" class="terminal-action-tab">
-        <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-close-circle-outline </v-icon>
-          </template>
-          <span>{{ t('terminal.clearTerminal') }}</span>
-        </v-tooltip>
-      </v-tab>
-
-      <v-tab :value="'copy'" @click="copyClipboardHandler" class="terminal-action-tab">
-        <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-content-copy </v-icon>
-          </template>
-          <span>{{ t('terminal.copyText') }}</span>
-        </v-tooltip>
-      </v-tab>
-
-      <v-tab :value="'paste'" @click="pasteClipboard" class="terminal-action-tab">
-        <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-content-paste </v-icon>
-          </template>
-          <span>{{ t('terminal.pasteText') }}</span>
-        </v-tooltip>
-      </v-tab>
-
-      <v-tab :value="'scroll-top'" @click="scrollTop" class="terminal-action-tab">
-        <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-arrow-up-bold </v-icon>
-          </template>
-          <span>{{ t('terminal.scrollToTop') }}</span>
-        </v-tooltip>
-      </v-tab>
-
-      <v-tab :value="'scroll-bottom'" @click="scrollBottom" class="terminal-action-tab">
-        <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-arrow-down-bold </v-icon>
-          </template>
-          <span>{{ t('terminal.scrollToBottom') }}</span>
-        </v-tooltip>
-      </v-tab>
-    </v-tabs>
-
-    <!-- Terminal Content -->
-    <v-sheet color="black" class="terminal-sheet-outer w-100" elevation="2" rounded="0 0 lg lg">
-      <v-hover>
-        <template #default="{ props: hoverProps, isHovering }">
-          <v-sheet
-            v-bind="hoverProps"
-            :border="`thin ${isHovering || isKeyboardEventsEnabled ? 'success opacity-75' : ''}`"
-            color="black"
-            class="terminal-sheet-inner"
-            elevation="1"
-            rounded="lg"
-            flat
-            @contextmenu="handleContextMenu"
-            @mouseenter="enableKeyboardEvents"
-            @mouseleave="disableKeyboardEvents"
-            @keydown="handleKeydown"
-            @keyup="handleKeyup"
-            tabindex="0"
-            :aria-label="t('terminal.sshTerminalConsole')"
-          >
-            <div ref="terminal" class="terminal-content" />
-          </v-sheet>
-        </template>
-      </v-hover>
-    </v-sheet>
-  </v-sheet>
+    <div class="scroll-bottom-button">
+      <v-icon
+        fab
+        v-tooltip="'Scroll to bottom'"
+        color="#76FF03"
+        class="fab-button"
+        @click="scrollBottom"
+      >
+        mdi-arrow-down
+      </v-icon>
+    </div>
+  </div>
 </template>
 
 <script setup>
-  import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+  import { ref, onMounted, onBeforeUnmount } from 'vue';
   import { useDevice } from '@/composables/useDevice';
-  import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
   import { Terminal } from '@xterm/xterm';
   import { FitAddon } from '@xterm/addon-fit';
   import '@xterm/xterm/css/xterm.css';
@@ -109,25 +70,12 @@
   import Config from '@/config.js';
   import { useAlert } from '@/composables/useAlert.js';
   import { useClipboard } from '@/composables/useClipboard.js';
-  import { useTheme } from 'vuetify';
-  import { useI18n } from 'vue-i18n';
 
-  const store = useAppStore();
-  const { systeminfo } = storeToRefs(store);
   const { device } = useDevice();
   const { sendAlert } = useAlert();
   const { copyClipboard } = useClipboard();
-  const theme = useTheme();
-  const { t } = useI18n();
 
-  // UI state
-  const isConnected = ref(false);
-  const activeTab = ref('status');
-
-  // Detect if user is on macOS
-  const isMacOS = ref(false);
-
-  // WebSocket setup - following existing pattern
+  // TODO this code is (at least) also used in websockets.js, needs to come from composable
   const wsProtocol = Config.http_protocol === 'https:' ? 'wss' : 'ws';
   const token = localStorage.getItem('token');
   const socketUrl = `${wsProtocol}://${Config.host_ip}${Config.host_port}/ssh?token=${token}`;
@@ -135,103 +83,63 @@
   const packStdin = (data) => JSON.stringify({ Op: 'stdin', Data: data });
   const packResize = (cols, rows) => JSON.stringify({ Op: 'resize', Cols: cols, Rows: rows });
 
-  const initText = ref('connecting...\\r\\n'); // TODO localize
+  const initText = ref('connecting...\r\n'); // TODO localize
   const first = ref(true);
   const term = ref(null);
   const fitAddon = ref(null);
   const ws = ref(null);
   const terminal = ref(null);
 
-  // Terminal theme that matches app's color scheme
-  const terminalTheme = computed(() => {
-    const isDark = theme.global.current.value.dark;
-    return {
-      background: '#000000', // Match app's black background
-      foreground: isDark ? '#e6edf3' : '#24292f',
-      cursor: '#76FF03', // Match app's brand color
-      cursorAccent: '#000000',
-      selection: isDark ? '#264f78' : '#005fb8',
-      black: isDark ? '#484f58' : '#24292f',
-      red: isDark ? '#ff7b72' : '#cf222e',
-      green: '#76FF03', // Match app's brand color
-      yellow: isDark ? '#d29922' : '#4d2d00',
-      blue: isDark ? '#58a6ff' : '#0969da',
-      magenta: isDark ? '#bc8cff' : '#8250df',
-      cyan: isDark ? '#39c5cf' : '#1b7c83',
-      white: isDark ? '#b1bac4' : '#656d76',
-      brightBlack: isDark ? '#6e7681' : '#656d76',
-      brightRed: isDark ? '#ffa198' : '#82071e',
-      brightGreen: '#76FF03', // Match app's brand color
-      brightYellow: isDark ? '#e3b341' : '#633c01',
-      brightBlue: isDark ? '#79c0ff' : '#218bff',
-      brightMagenta: isDark ? '#d2a8ff' : '#a475f9',
-      brightCyan: isDark ? '#56d4dd' : '#3192aa',
-      brightWhite: isDark ? '#f0f6fc' : '#1c2128',
-    };
-  });
-
-  const option = computed(() => ({
-    lineHeight: 1.2,
+  const option = {
+    lineHeight: 1.0,
     cursorBlink: true,
     wraparound: true,
     cursorStyle: 'block',
-    fontSize: 13, // Slightly smaller to match app's compact style
-    fontFamily: "'JetBrains Mono', 'Fira Code', Monaco, Menlo, Consolas, 'Courier New', monospace",
-    theme: terminalTheme.value,
-    cols: 100,
-    scrollback: 10000,
-    bellStyle: 'none',
-    allowTransparency: false,
-  }));
+    fontSize: 14,
+    fontFamily: "Monaco, Menlo, Consolas, 'Courier New', monospace",
+    theme: {
+      background: '#181d28',
+    },
+    cols: '100',
+  };
 
+  // TODO this code is (at least) also used in websockets.js, needs to come from composable
+  //     if (ws && ws.readyState === WebSocket.OPEN) ??
   const isWsOpen = () => ws.value && ws.value.readyState === 1;
+
   const isKeyboardEventsEnabled = ref(false);
 
   const enableKeyboardEvents = () => {
     isKeyboardEventsEnabled.value = true;
-    term.value?.focus();
+    term.value?.focus(); // 鼠标进入时聚焦
   };
 
   const disableKeyboardEvents = () => {
     isKeyboardEventsEnabled.value = false;
-    term.value?.blur();
+    term.value?.blur(); // 鼠标离开时移除焦点
   };
 
   const handleKeydown = (event) => {
     if (isKeyboardEventsEnabled.value) {
-      event.stopPropagation();
+      event.stopPropagation(); // 阻止事件冒泡
     }
   };
 
   const handleKeyup = (event) => {
     if (isKeyboardEventsEnabled.value) {
-      event.stopPropagation();
+      event.stopPropagation(); // 阻止事件冒泡
     }
   };
 
   const initTerm = () => {
-    term.value = new Terminal(option.value);
+    term.value = new Terminal(option);
     fitAddon.value = new FitAddon();
     term.value.loadAddon(fitAddon.value);
     term.value.open(terminal.value);
 
-    // Initial fit with retries to handle container width initialization
-    const fitWithRetry = (attempts = 0) => {
-      if (attempts < 5) {
-        setTimeout(() => {
-          if (fitAddon.value && terminal.value) {
-            fitAddon.value.fit();
-            // Retry if the terminal width seems too small (likely not properly sized yet)
-            if (term.value.cols < 50) {
-              fitWithRetry(attempts + 1);
-            }
-          }
-        }, 300 + (attempts * 200));
-      }
-    };
-    fitWithRetry();
-
-    isConnected.value = false;
+    setTimeout(() => {
+      fitAddon.value.fit();
+    }, 500);
   };
 
   const onTerminalKeyPress = () => {
@@ -275,7 +183,9 @@
 
   const clearTerminal = () => {
     if (isWsOpen()) {
-      ws.value.send(packStdin('clear\r'));
+      // Ctrl+U clears the current shell line
+      // Then we send "clear" followed by Enter
+      ws.value.send(packStdin('\x15clear\n'));
     }
   };
 
@@ -312,7 +222,6 @@
   const onOpenSocket = () => {
     ws.value.onopen = () => {
       term.value.reset();
-      isConnected.value = true;
       setTimeout(() => {
         resizeRemoteTerminal();
       }, 500);
@@ -321,10 +230,7 @@
 
   const onCloseSocket = () => {
     ws.value.onclose = () => {
-      isConnected.value = false;
-      term.value.write(
-        '\\r\\n\\x1b[31mConnection lost. Reconnecting in 3 seconds...\\x1b[0m\\r\\n'
-      );
+      term.value.write('Not connected, reconnect in 3 seconds...\r\n');
       if (device.value.showSSHTerminal) {
         setTimeout(() => {
           initSocket();
@@ -337,6 +243,7 @@
     ws.value.onerror = () => {
       const title = '';
       const message = `websocket connection failed, please refresh`;
+
       sendAlert('error', title, message);
     };
   };
@@ -359,20 +266,6 @@
   };
 
   onMounted(() => {
-    // Detect macOS
-    isMacOS.value =
-      navigator.platform.toUpperCase().indexOf('MAC') >= 0 ||
-      navigator.userAgent.toUpperCase().indexOf('MAC') >= 0;
-
-    console.log(
-      'AppConsole - Platform:',
-      navigator.platform,
-      'UserAgent:',
-      navigator.userAgent,
-      'isMacOS:',
-      isMacOS.value
-    );
-
     initTerm();
     initSocket();
     onTerminalResize();
@@ -384,192 +277,66 @@
   });
 </script>
 
-<style scoped>
-  .v-sheet {
+<style scoped lang="scss">
+  body {
     margin: 0;
-    width: 100%;
-    max-width: none;
-  }
-
-  .v-sheet.console-container {
     padding: 0;
-    height: 100%;
-  }
-
-  .terminal-tabs {
-    border-radius: 4px 4px 0 0;
-
-    /* Make the tab structure more visible */
-    :deep(.v-tabs-bar) {
-      background-color: rgba(118, 255, 3, 0.05);
-    }
-
-    :deep(.v-tab) {
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
-
-      &:last-child {
-        border-right: none;
-      }
-    }
-  }
-
-  .terminal-status-tab {
-    pointer-events: none; /* Status tab is not clickable */
-    opacity: 1 !important;
-    background-color: rgba(118, 255, 3, 0.1) !important;
-  }
-
-  .terminal-action-tab {
-    min-width: 40px !important;
-    padding: 0 8px !important;
-
-    &:hover {
-      background-color: rgba(118, 255, 3, 0.15) !important;
-    }
-
-    &.v-tab--selected {
-      background-color: rgba(118, 255, 3, 0.2) !important;
-    }
-  }
-
-  .terminal-sheet-outer {
-    height: calc(100% - 36px); /* Account for tabs height */
-    padding: 8px;
-    border-top: 1px solid rgba(118, 255, 3, 0.2);
-    width: 100% !important;
-    max-width: none !important;
-  }
-
-  .terminal-sheet-inner {
-    height: 100%;
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(145deg, #000000 0%, #111111 100%);
-
-    &:focus-visible {
-      outline: 2px solid #76ff03;
-      outline-offset: -2px;
-    }
-  }
-
-  .terminal-header-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 28px;
-    padding: 0 12px;
-    background: linear-gradient(90deg, rgba(118, 255, 3, 0.1) 0%, rgba(118, 255, 3, 0.05) 100%);
-    border-bottom: 1px solid rgba(118, 255, 3, 0.2);
-  }
-
-  .terminal-window-controls {
-    display: flex;
-    gap: 6px;
-  }
-
-  .control-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-
-    &.control-close {
-      background: #ff5f57;
-      &:hover {
-        background: #ff3b30;
-      }
-    }
-
-    &.control-minimize {
-      background: #ffbd2e;
-      &:hover {
-        background: #ff9500;
-      }
-    }
-
-    &.control-maximize {
-      background: #28ca42;
-      &:hover {
-        background: #30d158;
-      }
-    }
-  }
-
-  .terminal-title {
-    display: flex;
-    align-items: center;
-    color: rgba(255, 255, 255, 0.8);
-
-    &.title-centered {
-      justify-content: center;
-      width: 100%;
-    }
   }
 
   .terminal-content {
+    position: relative;
     height: 100%;
     width: 100%;
-    overflow: hidden;
-    padding: 4px;
+    overflow: hidden; /* Hide the overall scrollbars */
+    z-index: 1000; /* TODO get from style/zindex.js Ensure FABs are above other content */
   }
 
-  /* XTerm styling to match app theme */
-  :deep(.xterm) {
-    overflow: hidden;
-    font-feature-settings:
-      'liga' 1,
-      'calt' 1;
-
-    .xterm-screen,
-    .xterm-rows {
-      overflow: hidden;
-    }
-
-    .xterm-char-measure-element,
-    .xterm-rows {
-      font-variant-ligatures: common-ligatures;
-      font-feature-settings:
-        'liga' 1,
-        'calt' 1;
-    }
+  .xterm {
+    overflow: hidden; /* Prevent scrollbars inside the terminal itself */
   }
 
-  /* Hide scrollbars completely */
-  .terminal-sheet,
-  .terminal-content,
-  :deep(.xterm),
-  :deep(.xterm-viewport),
-  :deep(.xterm-screen) {
-    &::-webkit-scrollbar {
-      display: none;
-    }
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .xterm .xterm-screen {
+    overflow: hidden; /* Ensure the screen area is not showing scrollbars */
   }
 
-  /* Force hide any remaining scrollbars */
-  :deep(.xterm-viewport) {
-    overflow: hidden !important;
+  .xterm .xterm-rows {
+    overflow: hidden; /* Hide any extra scrollbars from rows */
   }
 
-  /* Force 100% width for terminal components like AppNotifications does */
-  :deep(.xterm) {
-    width: 100% !important;
-    max-width: none !important;
+  .terminal-content::-webkit-scrollbar {
+    display: none; /* Hide scrollbars in WebKit browsers (Chrome, Safari, etc.) */
   }
 
-  :deep(.xterm-viewport) {
-    width: 100% !important;
-    max-width: none !important;
+  .terminal-content {
+    -ms-overflow-style: none; /* Hide scrollbar for IE 10+ */
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
   }
 
-  :deep(.xterm-screen) {
-    width: 100% !important;
-    max-width: none !important;
+  .fab-container {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+    z-index: 1000; /* Ensure FABs are above other content */
+    display: flex;
+    flex-direction: column; /* Stack FABs vertically */
+    align-items: flex-end; /* Align FABs to the right */
   }
 
-  :deep(.xterm .xterm-helper-textarea) {
-    width: 100% !important;
+  .fab-button {
+    margin-bottom: 16px; /* Space between each FAB */
+  }
+
+  .scroll-top-button {
+    position: absolute;
+    bottom: -10px;
+    right: 55px;
+    z-index: 1000;
+  }
+
+  .scroll-bottom-button {
+    position: absolute;
+    bottom: -10px;
+    right: 30px;
+    z-index: 1000;
   }
 </style>

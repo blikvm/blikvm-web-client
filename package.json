@@ -1,6 +1,6 @@
 {
   "name": "blikvm-matrix",
-  "version": "2.2.0-alpha",
+  "version": "2.0.6-alpha",
   "build": "2025-05-09 15:13:24",
   "scripts": {
     "dev": "vite --mode development",
@@ -28,12 +28,12 @@
     "opus-recorder": "^8.0.5",
     "pinia-plugin-persistedstate": "^4.5.0",
     "roboto-fontface": "*",
-    "simple-keyboard": "^3.8.59",
-    "simple-keyboard-layouts": "^3.4.95",
-    "vue": "^3.5.17",
+    "simple-keyboard": "^3.8.83",
+    "simple-keyboard-layouts": "^3.4.130",
+    "vue": "^3.5.21",
     "vue-chartjs": "^5.3.2",
-    "vue-i18n": "^11.1.5",
-    "vuetify": "^3.8.11",
+    "vue-i18n": "^11.1.12",
+    "vuetify": "^3.10.0",
     "webrtc-adapter": "^9.0.3"
   },
   "devDependencies": {
@@ -58,6 +58,6 @@
     "vite-plugin-vue-layouts": "^0.11.0",
     "vite-plugin-vuetify": "^2.1.2",
     "vue-router": "^4.5.1",
-    "prettier": "^3.3.3"
+    "prettier": "^3.6.2"
   }
 }

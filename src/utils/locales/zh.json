@@ -60,19 +60,12 @@
         "subtitle": "配置您的视频偏好",
         "isHDMIActivateField": "启用 HDMI?",
         "modeField": "视频模式",
-        "orientation": "方向",
-        "inputFormat": "HDMI输入格式",
-        "liveFormat": "实时比特率 / fps",
+        "orientation": "Orientation", 
+        "resolutionField": "分辨率",
         "desiredFpsField": "期望的帧率",
         "mjpegQualityField": "质量",
         "WebRTCBitrateField": "比特率",
         "WebRTCGopField": "图片组"
-      },
-      "audio": {
-        "title": "音频输入",
-        "subtitle": "配置您的音频偏好",
-        "isRegisteredField": "启用音频输入？",
-        "registerMic": "注册麦克风"
       },
       "hid": {
         "title": "键盘和鼠标",
@@ -450,7 +443,6 @@
     "fullscreenMode": "进入全屏模式",
     "keyboard": "键盘",
     "mouse": "鼠标",
-    "virtualMouse": "虚拟鼠标",
     "record": "录制",
     "recordShortcut": "录制快捷键...",
     "dismiss": "撤销",
@@ -461,17 +453,8 @@
     "server": "后端",
     "used": "已用",
     "free": "剩余",
-    "unregister": "未注册",
-    "allowed": "已允许",
-    "blocked": "已阻止",
     "retry": "立刻重试",
-    "hide": "隐藏",
-    "video": "视频",
-    "sshTerminal": "SSH 终端",
-    "serialTerminal": "串行终端",
-    "notifications": "通知",
-    "toggleSettings": "切换设置",
-    "toggleFooter": "切换页脚"
+    "hide": "隐藏"
   },
   "label": {
     "connected": "已连接",
@@ -543,20 +526,6 @@
     "about": "关于 BliKVM",
     "sshTerminal": "SSH 终端",
     "serialTerminal": "串行终端"
-  },
-  "terminal": {
-    "clearTerminal": "清空终端",
-    "copyText": "复制文本",
-    "pasteText": "粘贴文本",
-    "scrollToTop": "滚动到顶部",
-    "scrollToBottom": "滚动到底部",
-    "connected": "已连接",
-    "disconnected": "已断开",
-    "sshTerminalConsole": "SSH 终端控制台",
-    "copySelection": "复制选中内容或全部文本",
-    "pasteFromClipboard": "从剪贴板粘贴",
-    "scrollToTopAction": "滚动到顶部",
-    "scrollToBottomAction": "滚动到底部"
   },
   "dataIterator": {
     "noDataText": "无可用数据",
