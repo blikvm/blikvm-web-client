@@ -45,70 +45,68 @@
             </template>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
-            <v-card-text class="text-medium-emphasis pa-6">
-              <v-row dense no-gutters>
-                <v-col cols="*">
-                  <v-switch
-                    v-model="prometheusActiveValue"
-                    inset
-                    @update:modelValue="apiPrometheusActive"
-                    :label="$t('settings.integrations.prometheus.isActiveField')"
-                    :disabled="!device.api.prometheus.endpoint"
-                    v-ripple
-                    color="#76FF03"
-                  />
-                </v-col>
-              </v-row>
+            <v-row dense no-gutters>
+              <v-col cols="*">
+                <v-switch
+                  v-model="prometheusActiveValue"
+                  inset
+                  @update:modelValue="apiPrometheusActive"
+                  :label="$t('settings.integrations.prometheus.isActiveField')"
+                  :disabled="!device.api.prometheus.endpoint"
+                  v-ripple
+                  color="#76FF03"
+                />
+              </v-col>
+            </v-row>
 
-              <div class="text-caption">
-                {{ $t('settings.integrations.prometheus.endpointField') }}
-              </div>
-              <v-row dense no-gutters>
-                <v-col cols="*">
-                  <v-text-field
-                    v-model="device.api.prometheus.endpoint"
-                    density="compact"
-                    rounded="lg"
-                    v-ripple
-                    color="#76FF03"
-                    variant="outlined"
-                    hide-details
-                    single-line
-                    @keydown.stop
-                    @keyup.stop
-                    readonly
-                  >
-                    <template #append>
-                      <v-btn
-                        color="#76FF03"
-                        icon="mdi-content-copy"
-                        size="small"
-                        variant="plain"
-                        :disabled="!device.api.prometheus.endpoint"
-                        @click="copyClipboard(device.api.prometheus.endpoint)"
-                      />
-                    </template>
-                  </v-text-field>
-                </v-col>
-              </v-row>
-              <br />
-              <br />
-              <!-- <v-row dense no-gutters>
-                      <v-col cols="*">
-                        <v-field variant="plain" :label="$t('device.api.prometheus.refreshIntervalField')
-                          " active class="align-center">
-                          <v-slider v-model="device.api.prometheus.refreshInterval" max="60" min="0" step="5"
-                            show-ticks="always" tick-size="2" v-ripple color="#76FF03" track-fill-color="#76FF03">
-                            <template v-slot:append>
-                              <v-text-field v-model="device.api.prometheus.refreshInterval" density="compact"
-                                rounded="lg" v-ripple color="#76FF03" style="width: 96px" type="number" suffix="sec"
-                                variant="outlined" hide-details single-line></v-text-field>
-                            </template>
-                          </v-slider>
-                        </v-field>
-                      </v-col>
-                    </v-row> -->
-            </v-card-text>
+            <div class="text-caption">
+              {{ $t('settings.integrations.prometheus.endpointField') }}
+            </div>
+            <v-row dense no-gutters>
+              <v-col cols="*">
+                <v-text-field
+                  v-model="device.api.prometheus.endpoint"
+                  density="compact"
+                  rounded="lg"
+                  v-ripple
+                  color="#76FF03"
+                  variant="outlined"
+                  hide-details
+                  single-line
+                  @keydown.stop
+                  @keyup.stop
+                  readonly
+                >
+                  <template #append>
+                    <v-btn
+                      color="#76FF03"
+                      icon="mdi-content-copy"
+                      size="small"
+                      variant="plain"
+                      :disabled="!device.api.prometheus.endpoint"
+                      @click="copyClipboard(device.api.prometheus.endpoint)"
+                    />
+                  </template>
+                </v-text-field>
+              </v-col>
+            </v-row>
+            <br />
+            <br />
+            <!-- <v-row dense no-gutters>
+                    <v-col cols="*">
+                      <v-field variant="plain" :label="$t('device.api.prometheus.refreshIntervalField')
+                        " active class="align-center">
+                        <v-slider v-model="device.api.prometheus.refreshInterval" max="60" min="0" step="5"
+                          show-ticks="always" tick-size="2" v-ripple color="#76FF03" track-fill-color="#76FF03">
+                          <template v-slot:append>
+                            <v-text-field v-model="device.api.prometheus.refreshInterval" density="compact"
+                              rounded="lg" v-ripple color="#76FF03" style="width: 96px" type="number" suffix="sec"
+                              variant="outlined" hide-details single-line></v-text-field>
+                          </template>
+                        </v-slider>
+                      </v-field>
+                    </v-col>
+                  </v-row> -->
           </v-expansion-panel-text>
         </v-expansion-panel>
 

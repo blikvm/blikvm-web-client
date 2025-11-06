@@ -732,22 +732,6 @@
                 </v-expansion-panel-text>
               </v-expansion-panel>
 
-              <!-- Test Panel X -->
-              <v-expansion-panel value="x">
-                <v-expansion-panel-title>
-                  <v-row dense no-gutters>
-                    <v-col cols="1">
-                      <v-icon>mdi-test-tube</v-icon>
-                    </v-col>
-                    <v-col class="d-flex justify-start align-center" cols="4">
-                      Test Panel X
-                    </v-col>
-                  </v-row>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <div>Test content here</div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
             </v-expansion-panels>
           </v-expansion-panel-text>
         </v-expansion-panel>
