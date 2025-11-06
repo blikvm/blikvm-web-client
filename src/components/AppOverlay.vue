@@ -345,21 +345,17 @@
         }
         return videoElement;
       }
-      if (lastLoggedElementType !== 'small-video') {
-        // console.log('Video element too small, using container instead');
-        lastLoggedElementType = 'small-video';
-      }
       // Video element exists but dimensions too small - fall back to container
+      // Log only once when switching to container mode
+      if (lastLoggedElementType !== 'container') {
+        console.log('Video element too small, using container instead');
+        lastLoggedElementType = 'container';
+      }
     }
 
     // No video element found or video not ready - use the video container instead
     // This allows overlay to track the same container that naturally responds to footer changes
-    const container =
-      document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
-    if (container && lastLoggedElementType !== 'container') {
-      // console.log('Using container for overlay tracking');
-      lastLoggedElementType = 'container';
-    }
+    const container = document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
     return container;
   };
 
