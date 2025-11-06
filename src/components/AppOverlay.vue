@@ -16,7 +16,7 @@
     <!-- top control bar-->
     <div
       class="overlay-control-bar d-flex w-100 ga-3 pa-1 justify-end align-center"
-      style="margin-top: 45px; margin-right: 40px"
+      style="margin-top: 0px; margin-right: 40px"
     >
       <KvmHandRaise v-if="isExperimental" />
       <KvmClipboard v-if="isExperimental" />
@@ -80,24 +80,6 @@
           </template>
           <span>Pause</span>
         </v-tooltip> -->
-
-        <div v-if="device.video.videoMode === 'h264'">
-          <v-tooltip location="top" content-class="">
-            <template v-slot:activator="{ props: tooltipProps }">
-              <v-icon
-                v-bind="tooltipProps"
-                :color="!canUseMic ? '#9E9E9E' : audio.isMicrophoneOn ? '#76FF03' : undefined"
-                :class="{ 'cursor-not-allowed': !canUseMic }"
-                :size="size"
-                :icon="audio.isMicrophoneOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-                @click="onMicClick"
-              />
-            </template>
-            <span>{{
-              canUseMic ? (audio.isMicrophoneOn ? 'Mute' : 'Unmute') : 'need to register mic first'
-            }}</span>
-          </v-tooltip>
-        </div>
 
         <div
           v-if="device.video.videoMode === 'h264'"
@@ -207,7 +189,7 @@
 
         <v-divider class="mx-3" inset vertical></v-divider>
 
-        <!-- <v-tooltip location="top" content-class="">
+        <!--        <v-tooltip location="top" content-class="">
           <template v-slot:activator="{ props: tooltipProps }">
             <v-icon
               v-bind="tooltipProps"
@@ -218,9 +200,23 @@
             />
           </template>
           <span>Chat</span>
-        </v-tooltip> -->
+        </v-tooltip>
+-->
 
         <div v-if="isExperimental">
+          <v-tooltip location="top" content-class="">
+            <template v-slot:activator="{ props: tooltipProps }">
+              <v-icon
+                v-bind="tooltipProps"
+                :color="isMicrophoneOn ? '#76FF03' : undefined"
+                :size="size"
+                :icon="isMicrophoneOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+                @click="toggleMicrophone"
+              />
+            </template>
+            <span>{{ isMicrophoneOn ? 'Mute' : 'Unmute' }}</span>
+          </v-tooltip>
+
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
               <v-icon
@@ -297,12 +293,6 @@
   const { kvmSwitch, changeSwitchChannel } = useHdmiSwitch();
   // Computed property to access hdmiSwitch items
   const kvmSwitchItems = computed(() => kvmSwitch.value.items || []);
-  const canUseMic = computed(() => device.value?.mic?.isRegistered === true);
-
-  const onMicClick = () => {
-    if (!canUseMic.value) return;
-    toggleMicrophone();
-  };
 
   const {
     isProcessing,
@@ -312,7 +302,7 @@
     pipVideoElement,
     isExperimental,
     isCameraOn,
-    audio,
+    isMicrophoneOn,
     isRecording,
   } = storeToRefs(store);
 
@@ -410,7 +400,7 @@
   });
 
   const toggleMicrophone = () => {
-    if (audio.value.isMicrophoneOn) {
+    if (isMicrophoneOn.value) {
       turnOffMic();
     } else {
       turnOnMic();
@@ -537,10 +527,6 @@
 </script>
 
 <style scoped>
-  .cursor-not-allowed {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
   .green-text {
     color: #76ff03;
   }

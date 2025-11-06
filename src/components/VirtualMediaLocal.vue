@@ -201,9 +201,8 @@
                 <v-btn
                   v-bind="props"
                   width="auto"
-                  @click="onMountClick"
-                  :disabled="!canMount || isMounting"
-                  :loading="isMounting"
+                  @click="mountMedia"
+                  :disabled="!canMount"
                   class="flex-grow-1 text-none"
                   flat
                   prepend-icon="mdi-file-download-outline"
@@ -221,9 +220,8 @@
                 <v-btn
                   v-bind="props"
                   width="auto"
-                  @click="onUnmountClick"
-                  :disabled="!canUnmount || isUnmounting"
-                  :loading="isUnmounting"
+                  @click="unmountMedia"
+                  :disabled="!canUnmount"
                   class="flex-grow-1 text-none"
                   flat
                   prepend-icon="mdi-file-document-remove-outline"
@@ -268,7 +266,7 @@
             v-model="device.msd.imageSize"
             min="1"
             :max="maxMSDImageSize"
-            step="1"
+            step="0.1"
             hide-details
             color="#76FF03"
           >
@@ -466,8 +464,6 @@
   const connectionAction = ref(null); // 'connect' or 'disconnect'
   const mountImageAction = ref(null); // 'mount' or 'unmount'
   const loading = ref(false);
-  const isMounting = ref(false);
-  const isUnmounting = ref(false);
 
   // Component state
   const fileInput = ref(null);
@@ -671,30 +667,6 @@
       sendAlert('error', 'MSD', `Error refreshing MSD list:` + error.message);
     } finally {
       loading.value = false;
-    }
-  };
-
-  const onMountClick = async () => {
-    if (isMounting.value) return;
-    isMounting.value = true;
-    try {
-      await mountMedia();
-    } catch (error) {
-      sendAlert('error', 'MSD Mount Error', error?.message || 'Mount failed');
-    } finally {
-      isMounting.value = false;
-    }
-  };
-
-  const onUnmountClick = async () => {
-    if (isUnmounting.value) return;
-    isUnmounting.value = true;
-    try {
-      await unmountMedia();
-    } catch (error) {
-      sendAlert('error', 'MSD Unmount Error', error?.message || 'Unmount failed');
-    } finally {
-      isUnmounting.value = false;
     }
   };
 

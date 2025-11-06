@@ -41,23 +41,14 @@ registerPlugins(app);
   // Ensure the store is initialized before subscribing to changes
   const store = useAppStore();
 
-  // Detect client platform once and store globally for reuse
-  try {
-    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-    const pf = typeof navigator !== 'undefined' ? navigator.platform : '';
-    const isWindows = /Windows/i.test(ua) || /Win/i.test(pf);
-    const isMac = /Macintosh|MacIntel|MacPPC|Mac68K/i.test(pf) || /Mac OS X/i.test(ua);
-    const isLinux = /Linux/i.test(pf) || (/Linux/i.test(ua) && !/Android/i.test(ua));
-    const isChromeOS = /\bCrOS\b/i.test(ua);
-    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
-    store.platform.isWindows = !!isWindows;
-    store.platform.isMac = !!isMac;
-    store.platform.isLinux = !!isLinux && !isChromeOS;
-    store.platform.isChromeOS = !!isChromeOS;
-    store.platform.isMobile = !!isMobile;
-  } catch (e) {
-    console.warn('Platform detection failed:', e);
-  }
+  // const { account, security } = storeToRefs(store);
+  // console.log(account.value.userRole);
+
+  // if (account.value.userRole) {
+  //   updateAbilityForRole(account.value.userRole); // Only call this if the role is valid
+  // } else {
+  //   console.error("User role is undefined or invalid");
+  // }
 
   try {
     const response = await http.get('/auth/state');
