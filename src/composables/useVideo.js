@@ -1,7 +1,7 @@
 'use strict';
 
 import Config from '@/config.js';
-import { Janus } from '@/utils/janus.js';
+import Janus from '@/utils/janus.js';
 import adapter from 'webrtc-adapter';
 import { useDevice } from '@/composables/useDevice';
 import { useAppStore } from '@/stores/stores';
@@ -10,7 +10,7 @@ import { storeToRefs } from 'pinia';
 const store = useAppStore();
 const { device } = useDevice();
 const { audio } = storeToRefs(store);
-
+//
 
 // 单例实例
 let videoSingleton = null;
@@ -20,17 +20,13 @@ export function useVideo() {
     return videoSingleton;
   }
 
-  const __janus = ref(null);
+  const janus = ref(null);
   const wsProtocol = Config.http_protocol === 'https:' ? 'wss' : 'ws';
   const token = localStorage.getItem('token');
   const urlJanus = `${wsProtocol}://${Config.host_ip}${Config.host_port}/janus?token=${token}`;
-  let __handle = null;
+  const uStreamerPluginHandle = ref(null);
   let infoInterval = null;
   let frames = 0;
-  let __orient = 0;
-  let __allow_audio = true;
-  let __allow_mic = false;
-  let __ice = null;
 
   const initMjpeg = () => {
     device.value.mjpegUrl = `${Config.http_protocol}//${Config.host_ip}${Config.host_port}/video/stream`;
@@ -42,208 +38,84 @@ export function useVideo() {
       debug: false,
       dependencies: Janus.useDefaultDependencies(desp),
     });
-    __janus.value = new Janus({
+    janus.value = new Janus({
       server: urlJanus,
-      destroyOnUnload: false,
-      success: __attachJanus,
+      success: attachUStreamerPlugin,
       error: console.error,
     });
   };
 
-  const __sendStart = (jsep) => {
-    if (__handle) {
-      console.log("Sending START ...");
-      __handle.send({ "message": { "request": "start" }, "jsep": jsep });
-    }
-  };
-
-  const destroyJanusConnection = () => {
-    __destroyJanus();
-  };
-
-  const __destroyJanus = () => {
-    if (__janus.value !== null) {
-      __janus.value.destroy();
-    }
-    __stopInfoInterval();
-    if (__handle) {
-      console.log("uStreamer detaching ...:", __handle.getPlugin(), __handle.getId());
-      __handle.detach();
-      __handle = null;
-    }
-    __janus.value = null;
-
-    const videoEl = document.getElementById('webrtc-output');
-    if (videoEl && videoEl.srcObject) {
-      for (let track of videoEl.srcObject.getTracks()) {
-        __removeTrack(track);
-      }
-    }
-  };
-
-  const __sendWatch = () => {
-    if (__handle) {
-      console.log(`Sending WATCH(orient=${__orient}, audio=${__allow_audio}, mic=${audio.value.isMicrophoneOn}) ...`);
-      __handle.send({
-        "message": {
-          "request": "watch", "params": {
-            "orientation": __orient,
-            "audio": __allow_audio,
-            "mic": audio.value.isMicrophoneOn,
-          }
-        }
-      });
-    }
-  };
-
-
   const resetJanus = () => {
-    __destroyJanus();
+    destroyJanusConnection();
     initVideo();
   };
 
-  const __removeTrack = (track) => {
-    let el = document.getElementById('webrtc-output');
-    if (!el.srcObject) {
-      return;
-    }
-    track.stop();
-    el.srcObject.removeTrack(track);
-    if (el.srcObject.getTracks().length === 0) {
-      // MediaStream should be destroyed to prevent old picture freezing
-      // on Janus reconnecting.
-      el.srcObject = null;
-    }
-  }
-
-  const __addTrack = (track) => {
-    let el = document.getElementById('webrtc-output');
-    if (el.srcObject) {
-      for (let tr of el.srcObject.getTracks()) {
-        if (tr.kind === track.kind && tr.id !== track.id) {
-          removeTrack(tr);
-        }
-      }
-    }
-    if (!el.srcObject) {
-      el.srcObject = new MediaStream();
-    }
-    el.srcObject.addTrack(track);
-  };
-
-  const __attachJanus = () => {
-    if (__janus.value === null) {
-      return;
-    }
+  const attachUStreamerPlugin = () => {
     console.log('attach ustreamer plugin');
-    __janus.value.attach({
+    janus.value.attach({
       plugin: 'janus.plugin.ustreamer',
-      opaqueId: "oid-" + Janus.randomString(12),
-
-      success: (handle) => {
-        __handle = handle;
-        console.log("uStreamer attached:", handle.getPlugin(), handle.getId());
-        console.log("Sending FEATURES ...");
-        __handle.send({ "message": { "request": "features" } });
+      success: (pluginHandle) => {
+        console.log('attach ustreamer plugin success');
+        uStreamerPluginHandle.value = pluginHandle;
+        uStreamerPluginHandle.value.send({
+          message: {
+            request: 'watch',
+            params: {
+              audio: true,
+              video: true,
+              mic: audio.value.isMicrophoneOn,
+            },
+          },
+        });
       },
-
-      error: (error) => {
-        console.error('Can\'t attach uStreamer:', error);
-        __destroyJanus();
-      },
-
-      connectionState: (state) => {
-        console.log("Peer connection state changed to", state);
-        if (state === "failed") {
-          __destroyJanus();
-        }
-      },
-
-      iceState: (state) => {
-        console.log("ICE state changed to", state);
-      },
-
-      webrtcState: function (up) {
-        console.log("Janus says our WebRTC PeerConnection is", (up ? "up" : "down"), "now");
-      },
-
-      onmessage: (msg, jsep) => {
-
-        if (msg.result) {
-          console.log("Got uStreamer result message:", msg.result); // starting, started, stopped
-          if (msg.result.status === "started") {
-
-          } else if (msg.result.status === "stopped") {
-
-          } else if (msg.result.status === "features") {
-            console.log("audio:", msg.result.features.audio, "mic:", msg.result.features.mic);
-            __ice = msg.result.features.ice;
-            __sendWatch();
-          }
-        } else if (msg.error_code || msg.error) {
-          console.error("Got uStreamer error message:", msg.error_code, "-", msg.error);
+      error: console.error,
+      onmessage: (msg, jsepOffer) => {
+        if (msg.error_code === 503) {
+          console.log('attach ustreamer error code 503');
+          uStreamerPluginHandle.value.send({ message: { request: 'watch' } });
           return;
-        } else {
-          console.log("Got uStreamer other message:", msg);
         }
 
-        if (jsep) {
-          console.log("Handling SDP:", jsep);
-          let tracks = [{ "type": "video", "capture": false, "recv": true, "add": true }];
-          if (__allow_audio) {
-            tracks.push({ "type": "audio", "capture": audio.value.isMicrophoneOn, "recv": true, "add": true });
-          }
-          console.log("Creating answer with tracks:", tracks);
-          __handle.createAnswer({
-            jsep: jsep,
-
-            tracks: tracks,
-
-
-
-            // Chrome is playing OPUS as mono without this hack
-            //   - https://issues.webrtc.org/issues/41481053 - IT'S NOT FIXED!
-            //   - https://github.com/ossrs/srs/pull/2683/files
-            customizeSdp: (jsep) => {
-              jsep.sdp = jsep.sdp.replace("useinbandfec=1", "useinbandfec=1;stereo=1");
+        if (jsepOffer) {
+          // console.log('attach ustreamer jsepoffered sdp:', jsepOffer.sdp  );
+          uStreamerPluginHandle.value.createAnswer({
+            jsep: jsepOffer,
+            media: { audioSend: audio.value.isMicrophoneOn, videoSend: false },
+            stream: device.value.video.audioStream,
+            success: (jsepAnswer) => {
+              console.log('attach ustreamer createAnswer success sdp:', jsepAnswer.sdp);
+              uStreamerPluginHandle.value.send({
+                message: { request: 'start', params: { audio: true, video: true } },
+                jsep: jsepAnswer,
+              });
+              onVideoLoaded();
             },
-
-
-            success: (jsep) => {
-              console.log('Got SDP:', jsep);
-              __sendStart(jsep);
-            },
-
-
-            error: (error) => {
-              console.error("Error on SDP handling:", error);
-            }
+            error: console.error,
           });
         }
       },
-      onremotetrack: (track, id, added, meta) => {
-				// Chrome sends `muted` notifiation for tracks in `disconnected` ICE state
-				// and Janus.js just removes muted track from list of available tracks.
-				// But track still exists actually so it's safe to just ignore
-				// reason === "mute" and "unmute".
-        let reason = (meta || {}).reason;
-        console.log('Got onRemoteTrack:', id, added, reason, track, meta);
-        if (added && reason === "created") {
-					__addTrack(track);
-					if (track.kind === "video") {
-						__startInfoInterval();
-					}
-				} else if (!added && reason === "ended") {
-					__removeTrack(track);
-				}
-      },
-
-
-      oncleanup: () => {
-				console.log("Got a cleanup notification");
-				__stopInfoInterval();
-			},
+      onremotetrack: onRemoteTrack,
+      oncleanup: onCleanup,
     });
+  };
+
+  const seenRemoteTracks = new Set();
+  const onRemoteTrack = (track, id, added) => {
+    const key = `${id}:${track.kind}`;
+    console.log('Got onRemoteTrack:', id, added, track, 'key:', key);
+    if (added) {
+      if (seenRemoteTracks.has(key)) return;
+      const videoElement = document.getElementById('webrtc-output');
+      if (videoElement.srcObject === null) {
+        videoElement.srcObject = new MediaStream();
+      }
+      console.log('Adding track to remote stream:', track);
+      videoElement.srcObject.addTrack(track);
+      seenRemoteTracks.add(key);
+      if (track.kind === 'video') {
+        startInfoInterval();
+      }
+    }
   };
 
   const clearImageSource = () => {
@@ -255,7 +127,21 @@ export function useVideo() {
     }
   };
 
+  const destroyJanusConnection = () => {
+    stopInfoInterval();
 
+    const videoEl = document.getElementById('webrtc-output');
+    if (janus.value) {
+      janus.value.destroy();
+      janus.value = null;
+      console.log('Janus destroyed');
+    }
+    if (videoEl && videoEl.srcObject) {
+      videoEl.srcObject.getTracks().forEach((track) => track.stop());
+      videoEl.srcObject = null;
+    }
+    seenRemoteTracks.clear();
+  };
 
   const adjustVolume = (value) => {
     const videoElement = document.getElementById('webrtc-output');
@@ -274,13 +160,18 @@ export function useVideo() {
     console.log('onVideoLoaded');
   };
 
-  const __startInfoInterval = () => {
-    __stopInfoInterval();
+  const onCleanup = () => {
+    console.log('Got a cleanup notification');
+    stopInfoInterval();
+  };
+
+  const startInfoInterval = () => {
+    stopInfoInterval();
     updateInfo();
     infoInterval = setInterval(updateInfo, 1000);
   };
 
-  const __stopInfoInterval = () => {
+  const stopInfoInterval = () => {
     if (infoInterval !== null) {
       clearInterval(infoInterval);
     }
@@ -288,8 +179,9 @@ export function useVideo() {
   };
 
   const updateInfo = () => {
-    if (__handle !== null) {
+    if (uStreamerPluginHandle.value !== null) {
       let info = '';
+      // 获取视频元素
       const el = document.getElementById('webrtc-output');
       let currentFrames = null;
       if (el && el.webkitDecodedFrameCount !== undefined) {
@@ -297,29 +189,12 @@ export function useVideo() {
       } else if (el && el.mozPaintedFrames !== undefined) {
         currentFrames = el.mozPaintedFrames;
       }
-      
-      let bitrateKbps = null;
-      if (typeof __handle.getBitrate === 'function') {
-        const br = `${__handle.getBitrate()}`; // e.g. "1234 kbits/sec"
-        const m = br.match(/([0-9]+(?:\.[0-9]+)?)/);
-        if (m) {
-          bitrateKbps = Number(m[1]);
-        }
-      }
-      if (bitrateKbps !== null && !Number.isNaN(bitrateKbps)) {
-        try {
-          device.value.video.bitrate = Math.round(bitrateKbps);
-        } catch (e) {
-          // ignore assignment error, but keep UI info string updated
-        }
+      // 假设 getBitrate() 方法存在于 handle
+      if (typeof uStreamerPluginHandle.value.getBitrate === 'function') {
+        info = `${uStreamerPluginHandle.value.getBitrate()}`.replace('kbits/sec', 'kbps');
       }
       if (currentFrames !== null) {
-        const fpsDynamic = Math.max(0, currentFrames - frames);
-        try {
-          device.value.video.streamFps = fpsDynamic; // Maps from 'fps' to streamFps for clarity
-        } catch (e) {
-          // ignore assignment error
-        }
+        info += ` / ${Math.max(0, currentFrames - frames)} fps dynamic`;
         frames = currentFrames;
       }
       // to do, how to show this info @ronan

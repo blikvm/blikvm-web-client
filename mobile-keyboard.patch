@@ -1,0 +1,2143 @@
+From 8550a22aabaea0b30284d57c122c597efa6057b0 Mon Sep 17 00:00:00 2001
+From: m50S79sM6SRNp8Jn <ronanvanriet@ymail.com>
+Date: Wed, 17 Sep 2025 22:03:57 +0100
+Subject: [PATCH] feat: implement modular mobile keyboard architecture with
+ mobile-first design
+
+- Create composable architecture for keyboard types (base, mobile, international)
+- Add MobileKeyboard Vue component with props and event handling
+- Implement mobile-first CSS design using flexbox for responsive scaling
+- Add mobile keyboard toggle button to AppFooter navigation
+- Support debug mode with device detection and viewport information
+- Design optimized for touch devices with proper button sizing and spacing
+---
+ src/components/AppFooter.vue                  |  58 +-
+ src/components/keyboards/KeyboardTest.vue     | 410 ++++++++++++++
+ src/components/keyboards/MobileKeyboard.vue   | 533 ++++++++++++++++++
+ src/components/keyboards/mobile-debug.css     |  62 ++
+ src/components/keyboards/mobile-keyboard.css  | 169 ++++++
+ src/composables/keyboards/index.js            |  13 +
+ .../keyboards/useInternationalKeyboard.js     | 227 ++++++++
+ src/composables/keyboards/useKeyboardBase.js  | 100 ++++
+ .../keyboards/useKeyboardManager.js           | 210 +++++++
+ .../keyboards/useMobileKeyboard.js            | 165 ++++++
+ 10 files changed, 1946 insertions(+), 1 deletion(-)
+ create mode 100644 src/components/keyboards/KeyboardTest.vue
+ create mode 100644 src/components/keyboards/MobileKeyboard.vue
+ create mode 100644 src/components/keyboards/mobile-debug.css
+ create mode 100644 src/components/keyboards/mobile-keyboard.css
+ create mode 100644 src/composables/keyboards/index.js
+ create mode 100644 src/composables/keyboards/useInternationalKeyboard.js
+ create mode 100644 src/composables/keyboards/useKeyboardBase.js
+ create mode 100644 src/composables/keyboards/useKeyboardManager.js
+ create mode 100644 src/composables/keyboards/useMobileKeyboard.js
+
+diff --git a/src/components/AppFooter.vue b/src/components/AppFooter.vue
+index 7bc8292c..d66f8a7c 100755
+--- a/src/components/AppFooter.vue
++++ b/src/components/AppFooter.vue
+@@ -2,7 +2,7 @@
+   <!-- NOTE: there are two footers-->
+   <v-footer
+     v-if="
+-      showKeyboard || showVirtualMouse || device.showSSHTerminal || showSerial || showNotifications
++      showKeyboard || showMobileKeyboard || showVirtualMouse || device.showSSHTerminal || showSerial || showNotifications
+     "
+     class="pb-0 d-flex flex-column bg-black"
+   >
+@@ -52,6 +52,24 @@
+       </v-col>
+     </v-row>
+ 
++    <!-- Mobile Keyboard Section -->
++    <v-row v-if="showMobileKeyboard" class="mt-2">
++      <v-col cols="12" class="d-flex justify-center">
++        <div class="mobile-keyboard-wrapper" style="width: 100%; max-width: 800px;">
++          <MobileKeyboard
++            :show-header="true"
++            :show-input-display="true"
++            :show-status-bar="true"
++            :show-close-button="true"
++            input-placeholder="Type here..."
++            @input-change="onMobileKeyboardInput"
++            @key-press="onMobileKeyboardKeyPress"
++            @close="handleClick('mobile-keyboard')"
++          />
++        </div>
++      </v-col>
++    </v-row>
++
+     <v-row v-if="showVirtualMouse && isTouchDevice" dense no-gutters align="center" class="w-100">
+       <v-col cols="12" class="d-flex justify-center">
+         <VirtualMouse />
+@@ -206,6 +224,7 @@
+   import myKeyboard from '@/components/MySimpleKeyboard2';
+   import KeyboardShortcuts from '@/components/KeyboardShortcuts.vue';
+   import AppNotification from './AppNotifications.vue';
++  import MobileKeyboard from '@/components/keyboards/MobileKeyboard.vue';
+   import { useKeymap } from '@/composables/useKeymap';
+   import { useI18n } from 'vue-i18n';
+   import { useDisplay } from 'vuetify';
+@@ -219,6 +238,7 @@
+   const { handleKeyPress, handleKeyReleased } = useKeyboard(device.value.ws);
+   const { t } = useI18n();
+   const showKeyboard = ref(false);
++  const showMobileKeyboard = ref(false);
+   const showVirtualMouse = ref(false);
+   const showSerial = ref(false);
+   const showNotifications = ref(false);
+@@ -237,6 +257,7 @@
+ 
+   const baseItems = [
+     { id: 'keyboard', text: t('common.keyboard'), icon: 'mdi-keyboard' },
++    { id: 'mobile-keyboard', text: 'Mobile Keyboard', icon: 'mdi-keyboard-variant' },
+     { id: 'mouse', text: t('common.mouse'), icon: 'mdi-mouse-outline' },
+     { id: 'console', text: t('appFooter.sshTerminal'), icon: 'mdi-console-line' },
+     { id: 'serial', text: t('appFooter.serialTerminal'), icon: 'mdi-console-line' },
+@@ -253,15 +274,25 @@
+         showKeyboard.value = !showKeyboard.value;
+         // Hide other non-terminal items when keyboard is shown
+         if (showKeyboard.value) {
++          showMobileKeyboard.value = false;
+           showVirtualMouse.value = false;
+           showNotifications.value = false;
+         }
+         break;
++      case 'mobile-keyboard':
++        showMobileKeyboard.value = !showMobileKeyboard.value;
++        showKeyboard.value = false;
++        showVirtualMouse.value = false;
++        device.value.showSSHTerminal = false;
++        showSerial.value = false;
++        showNotifications.value = false;
++        break;
+       case 'mouse':
+         showVirtualMouse.value = !showVirtualMouse.value;
+         // Hide other non-terminal items when mouse is shown
+         if (showVirtualMouse.value) {
+           showKeyboard.value = false;
++          showMobileKeyboard.value = false;
+           showNotifications.value = false;
+         }
+         break;
+@@ -271,6 +302,7 @@
+         if (device.value.showSSHTerminal) {
+           showVirtualMouse.value = false;
+           showKeyboard.value = false;
++          showMobileKeyboard.value = false;
+           showNotifications.value = false;
+         }
+         break;
+@@ -280,6 +312,8 @@
+         if (showSerial.value) {
+           showVirtualMouse.value = false;
+           showKeyboard.value = false;
++          showMobileKeyboard.value = false;
++          device.value.showSSHTerminal = false;
+           showNotifications.value = false;
+         }
+         break;
+@@ -289,6 +323,7 @@
+         if (showNotifications.value) {
+           showVirtualMouse.value = false;
+           showKeyboard.value = false;
++          showMobileKeyboard.value = false;
+           device.value.showSSHTerminal = false;
+           showSerial.value = false;
+         }
+@@ -297,12 +332,27 @@
+         isExperimental.value = !isExperimental.value;
+         showVirtualMouse.value = false;
+         showKeyboard.value = false;
++        showMobileKeyboard.value = false;
+         device.value.showSSHTerminal = false;
++        showSerial.value = false;
+         showNotifications.value = false;
+         break;
+     }
+   };
+ 
++  // Mobile keyboard event handlers
++  const onMobileKeyboardInput = (input) => {
++    console.log('Mobile keyboard input:', input);
++    // You can add additional logic here to handle the mobile keyboard input
++    // For example, send it to the device or update a global state
++  };
++
++  const onMobileKeyboardKeyPress = (button) => {
++    console.log('Mobile keyboard key pressed:', button);
++    // You can add additional logic here to handle specific key presses
++    // For example, special handling for function keys
++  };
++
+   // Terminal resize methods
+   const startResize = (event) => {
+     event.preventDefault();
+@@ -402,6 +452,12 @@
+     cursor: default;
+   }
+ 
++  .mobile-keyboard-wrapper {
++    border-radius: 8px;
++    overflow: hidden;
++    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
++  }
++
+   .terminal-container {
+     min-height: 300px; /* Ensure reasonable terminal height */
+   }
+diff --git a/src/components/keyboards/KeyboardTest.vue b/src/components/keyboards/KeyboardTest.vue
+new file mode 100644
+index 00000000..a58adac3
+--- /dev/null
++++ b/src/components/keyboards/KeyboardTest.vue
+@@ -0,0 +1,410 @@
++<template>
++  <div class="keyboard-test-container">
++    <v-card class="mx-auto" max-width="800">
++      <v-card-title class="d-flex align-center">
++        <v-icon color="#76FF03" class="mr-2">mdi-keyboard-variant</v-icon>
++        Keyboard Testing Interface
++      </v-card-title>
++      
++      <v-card-text>
++        <!-- Keyboard Manager Controls -->
++        <div class="mb-4">
++          <h3 class="text-h6 mb-2">Keyboard Manager</h3>
++          
++          <v-row dense>
++            <v-col cols="auto">
++              <v-select
++                v-model="selectedKeyboardType"
++                :items="keyboardTypes"
++                item-title="label"
++                item-value="value"
++                label="Keyboard Type"
++                density="compact"
++                variant="outlined"
++                color="#76FF03"
++                @update:model-value="switchKeyboard"
++              />
++            </v-col>
++            
++            <v-col cols="auto">
++              <v-btn
++                :color="isKeyboardVisible ? '#D32F2F' : '#76FF03'"
++                variant="outlined"
++                @click="toggleKeyboard"
++              >
++                {{ isKeyboardVisible ? 'Hide' : 'Show' }} Keyboard
++              </v-btn>
++            </v-col>
++            
++            <v-col cols="auto">
++              <v-chip
++                :color="isKeyboardInitialized ? '#76FF03' : '#D32F2F'"
++                size="small"
++              >
++                {{ isKeyboardInitialized ? 'Initialized' : 'Not Ready' }}
++              </v-chip>
++            </v-col>
++          </v-row>
++        </div>
++
++        <!-- Current Input Display -->
++        <div class="mb-4">
++          <h3 class="text-h6 mb-2">Current Input</h3>
++          <v-textarea
++            v-model="currentInputText"
++            label="Keyboard Output"
++            variant="outlined"
++            color="#76FF03"
++            rows="3"
++            readonly
++            :placeholder="inputPlaceholder"
++          />
++          
++          <div class="d-flex gap-2 mt-2">
++            <v-btn
++              size="small"
++              variant="outlined"
++              color="#76FF03"
++              @click="clearInput"
++            >
++              Clear Input
++            </v-btn>
++            
++            <v-btn
++              size="small"
++              variant="outlined"
++              color="#76FF03"
++              @click="copyInput"
++            >
++              Copy Input
++            </v-btn>
++          </div>
++        </div>
++
++        <!-- Keyboard Capabilities -->
++        <div class="mb-4">
++          <h3 class="text-h6 mb-2">Current Keyboard Capabilities</h3>
++          <div class="capabilities-grid">
++            <v-chip
++              v-for="(value, key) in capabilities"
++              :key="key"
++              size="small"
++              :color="value ? '#76FF03' : 'grey'"
++              class="ma-1"
++            >
++              {{ formatCapabilityName(key) }}: {{ value ? 'Yes' : 'No' }}
++            </v-chip>
++          </div>
++          
++          <!-- Language Selection for International Keyboard -->
++          <div v-if="capabilities.hasLanguages && selectedKeyboardType === 'international'" class="mt-3">
++            <v-select
++              v-model="selectedLanguage"
++              :items="availableLanguages"
++              item-title="name"
++              item-value="code"
++              label="Language"
++              density="compact"
++              variant="outlined"
++              color="#76FF03"
++              @update:model-value="switchLanguage"
++            />
++          </div>
++        </div>
++
++        <!-- Event Log -->
++        <div class="mb-4">
++          <h3 class="text-h6 mb-2">Event Log</h3>
++          <v-sheet
++            color="black"
++            class="event-log pa-3"
++            max-height="200"
++            style="overflow-y: auto;"
++          >
++            <div
++              v-for="(event, index) in eventLog"
++              :key="index"
++              class="event-item text-caption"
++              :class="getEventClass(event.type)"
++            >
++              <span class="event-time">[{{ event.time }}]</span>
++              <span class="event-type">{{ event.type }}:</span>
++              <span class="event-data">{{ event.data }}</span>
++            </div>
++            <div v-if="eventLog.length === 0" class="text-center text-medium-emphasis">
++              No events yet...
++            </div>
++          </v-sheet>
++          
++          <v-btn
++            size="small"
++            variant="text"
++            color="#76FF03"
++            @click="clearEventLog"
++            class="mt-2"
++          >
++            Clear Log
++          </v-btn>
++        </div>
++
++        <!-- Mobile Keyboard Component Test -->
++        <div v-if="selectedKeyboardType === 'mobile' && isKeyboardVisible">
++          <h3 class="text-h6 mb-2">Mobile Keyboard Component</h3>
++          <MobileKeyboard
++            :show-header="true"
++            :show-input-display="true"
++            :show-status-bar="true"
++            :show-close-button="true"
++            input-placeholder="Mobile keyboard test..."
++            @input-change="onMobileInputChange"
++            @key-press="onMobileKeyPress"
++            @ready="onMobileKeyboardReady"
++            @close="onMobileKeyboardClose"
++          />
++        </div>
++
++        <!-- Keyboard Container for Manager -->
++        <div v-else-if="isKeyboardVisible" class="keyboard-container">
++          <h3 class="text-h6 mb-2">{{ selectedKeyboardType.charAt(0).toUpperCase() + selectedKeyboardType.slice(1) }} Keyboard</h3>
++          <div 
++            ref="keyboardContainer" 
++            class="keyboard-wrapper"
++          />
++        </div>
++      </v-card-text>
++    </v-card>
++  </div>
++</template>
++
++<script setup>
++import { ref, computed, onMounted, nextTick } from 'vue';
++import { useKeyboardManager } from '@/composables/keyboards/useKeyboardManager.js';
++import { useClipboard } from '@/composables/useClipboard.js';
++import MobileKeyboard from './MobileKeyboard.vue';
++
++// Composables
++const keyboardManager = useKeyboardManager();
++const { copyClipboard } = useClipboard();
++
++// Template refs
++const keyboardContainer = ref(null);
++
++// Component state
++const selectedKeyboardType = ref('mobile');
++const selectedLanguage = ref('en');
++const eventLog = ref([]);
++const currentInputText = ref('');
++
++// Keyboard types for selection
++const keyboardTypes = [
++  { label: 'Mobile Keyboard', value: 'mobile' },
++  { label: 'International Keyboard', value: 'international' },
++];
++
++// Computed properties
++const isKeyboardVisible = computed(() => keyboardManager.isKeyboardVisible.value);
++const isKeyboardInitialized = computed(() => keyboardManager.isCurrentKeyboardInitialized.value);
++const capabilities = computed(() => keyboardManager.getKeyboardCapabilities());
++const availableLanguages = computed(() => {
++  const keyboard = keyboardManager.getCurrentKeyboard.value;
++  return keyboard?.getAvailableLanguages?.() || [];
++});
++
++const inputPlaceholder = computed(() => {
++  return `Type using ${selectedKeyboardType.value} keyboard...`;
++});
++
++// Methods
++const addEvent = (type, data) => {
++  const time = new Date().toLocaleTimeString();
++  eventLog.value.unshift({ type, data, time });
++  
++  // Keep only last 50 events
++  if (eventLog.value.length > 50) {
++    eventLog.value = eventLog.value.slice(0, 50);
++  }
++};
++
++const switchKeyboard = async (type) => {
++  addEvent('SWITCH', `Switching to ${type} keyboard`);
++  
++  const success = await keyboardManager.switchKeyboardType(type);
++  if (success) {
++    selectedKeyboardType.value = type;
++    currentInputText.value = '';
++    addEvent('SUCCESS', `Switched to ${type} keyboard`);
++  } else {
++    addEvent('ERROR', `Failed to switch to ${type} keyboard`);
++  }
++};
++
++const toggleKeyboard = async () => {
++  if (selectedKeyboardType.value === 'mobile') {
++    // Mobile keyboard is handled by component
++    keyboardManager.isKeyboardVisible.value = !keyboardManager.isKeyboardVisible.value;
++    addEvent('TOGGLE', `Mobile keyboard ${keyboardManager.isKeyboardVisible.value ? 'shown' : 'hidden'}`);
++    return;
++  }
++
++  const success = await keyboardManager.toggleKeyboard(keyboardContainer.value);
++  const action = isKeyboardVisible.value ? 'shown' : 'hidden';
++  
++  if (success) {
++    addEvent('TOGGLE', `Keyboard ${action}`);
++  } else {
++    addEvent('ERROR', `Failed to ${action} keyboard`);
++  }
++};
++
++const clearInput = () => {
++  currentInputText.value = '';
++  keyboardManager.clearInput();
++  addEvent('CLEAR', 'Input cleared');
++};
++
++const copyInput = async () => {
++  if (currentInputText.value) {
++    try {
++      await copyClipboard(currentInputText.value);
++      addEvent('COPY', 'Input copied to clipboard');
++    } catch (error) {
++      addEvent('ERROR', 'Failed to copy to clipboard');
++    }
++  }
++};
++
++const switchLanguage = async (languageCode) => {
++  const keyboard = keyboardManager.getCurrentKeyboard.value;
++  if (keyboard?.switchLanguage) {
++    const success = await keyboard.switchLanguage(languageCode);
++    if (success) {
++      addEvent('LANGUAGE', `Switched to ${languageCode}`);
++    } else {
++      addEvent('ERROR', `Failed to switch to ${languageCode}`);
++    }
++  }
++};
++
++const clearEventLog = () => {
++  eventLog.value = [];
++};
++
++const formatCapabilityName = (key) => {
++  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
++};
++
++const getEventClass = (type) => {
++  switch (type) {
++    case 'ERROR':
++      return 'event-error';
++    case 'SUCCESS':
++      return 'event-success';
++    case 'INPUT':
++      return 'event-input';
++    case 'KEY':
++      return 'event-key';
++    default:
++      return 'event-default';
++  }
++};
++
++// Mobile keyboard event handlers
++const onMobileInputChange = (input) => {
++  currentInputText.value = input;
++  addEvent('INPUT', `Input changed: "${input}"`);
++};
++
++const onMobileKeyPress = (button) => {
++  addEvent('KEY', `Key pressed: ${button}`);
++};
++
++const onMobileKeyboardReady = () => {
++  addEvent('SUCCESS', 'Mobile keyboard ready');
++};
++
++const onMobileKeyboardClose = () => {
++  keyboardManager.isKeyboardVisible.value = false;
++  addEvent('TOGGLE', 'Mobile keyboard closed');
++};
++
++// Setup keyboard manager input watching
++const setupInputWatcher = () => {
++  // Watch for input changes from keyboard manager
++  setInterval(() => {
++    const managerInput = keyboardManager.getCurrentInput();
++    if (managerInput !== currentInputText.value && selectedKeyboardType.value !== 'mobile') {
++      currentInputText.value = managerInput;
++    }
++  }, 100);
++};
++
++// Lifecycle
++onMounted(() => {
++  addEvent('INIT', 'Keyboard test interface initialized');
++  setupInputWatcher();
++});
++</script>
++
++<style scoped>
++.keyboard-test-container {
++  padding: 16px;
++  background: #000000;
++  min-height: 100vh;
++}
++
++.capabilities-grid {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 4px;
++}
++
++.keyboard-wrapper {
++  min-height: 250px;
++  border: 1px solid rgba(118, 255, 3, 0.3);
++  border-radius: 8px;
++  padding: 8px;
++  background: rgba(0, 0, 0, 0.5);
++}
++
++.event-log {
++  border: 1px solid rgba(118, 255, 3, 0.3);
++  border-radius: 4px;
++  font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
++}
++
++.event-item {
++  margin-bottom: 4px;
++  display: flex;
++  gap: 8px;
++}
++
++.event-time {
++  color: #76FF03;
++  font-weight: 500;
++}
++
++.event-type {
++  font-weight: 600;
++  min-width: 60px;
++}
++
++.event-error {
++  color: #D32F2F;
++}
++
++.event-success {
++  color: #76FF03;
++}
++
++.event-input {
++  color: #42A5F5;
++}
++
++.event-key {
++  color: #FFD600;
++}
++
++.event-default {
++  color: #ffffff;
++}
++</style>
+\ No newline at end of file
+diff --git a/src/components/keyboards/MobileKeyboard.vue b/src/components/keyboards/MobileKeyboard.vue
+new file mode 100644
+index 00000000..4ee3d657
+--- /dev/null
++++ b/src/components/keyboards/MobileKeyboard.vue
+@@ -0,0 +1,533 @@
++<template>
++  <div class="mobile-keyboard-container">
++    <!-- Keyboard Header -->
++    <div v-if="showHeader" class="keyboard-header">
++      <div class="keyboard-info">
++        <v-icon color="#76FF03" size="small" class="mr-2">
++          mdi-keyboard
++        </v-icon>
++        <span class="text-caption">
++          {{ currentLayoutName.toUpperCase() }} Layout
++        </span>
++      </div>
++      
++      <div class="keyboard-actions">
++        <v-btn
++          v-if="showLanguageToggle"
++          size="small"
++          variant="text"
++          color="#76FF03"
++          @click="toggleLayoutMode"
++        >
++          {{ isNumbersLayout ? 'ABC' : '123' }}
++        </v-btn>
++        
++        <v-btn
++          size="small"
++          variant="text"
++          color="#76FF03"
++          @click="clearInput"
++        >
++          <v-icon size="small">mdi-backspace-outline</v-icon>
++        </v-btn>
++        
++        <v-btn
++          v-if="showCloseButton"
++          size="small"
++          variant="text"
++          color="#D32F2F"
++          @click="$emit('close')"
++        >
++          <v-icon size="small">mdi-close</v-icon>
++        </v-btn>
++      </div>
++    </div>
++
++    <!-- Input Display -->
++    <div v-if="showInputDisplay" class="keyboard-input-display">
++      <v-text-field
++        :model-value="currentInput"
++        :placeholder="inputPlaceholder"
++        readonly
++        density="compact"
++        variant="outlined"
++        color="#76FF03"
++        class="keyboard-input"
++        @click="focusKeyboard"
++      >
++        <template v-slot:append>
++          <v-btn
++            size="small"
++            variant="text"
++            color="#76FF03"
++            @click="copyToClipboard"
++          >
++            <v-icon size="small">mdi-content-copy</v-icon>
++          </v-btn>
++        </template>
++      </v-text-field>
++    </div>
++
++    <!-- Keyboard Container -->
++    <div 
++      ref="keyboardContainer" 
++      class="keyboard-wrapper"
++      :class="{ 'keyboard-minimal': !showHeader && !showInputDisplay }"
++    >
++      <!-- Debug Info Overlay -->
++      <div v-if="debugMode" class="keyboard-debug-info">
++        <div>Viewport: {{ viewportInfo.width }}×{{ viewportInfo.height }}</div>
++        <div>Screen: {{ viewportInfo.screenWidth }}×{{ viewportInfo.screenHeight }}</div>
++        <div>Device: {{ deviceType }} | DPR: {{ viewportInfo.devicePixelRatio }}</div>
++        <div>DevTools: {{ viewportInfo.isDevTools ? 'YES' : 'NO' }}</div>
++        <div>Theme: {{ themeClass }}</div>
++      </div>
++    </div>
++
++    <!-- Status Bar -->
++    <div v-if="showStatusBar" class="keyboard-status">
++      <div class="status-left">
++        <v-chip
++          size="x-small"
++          :color="isInitialized ? '#76FF03' : '#D32F2F'"
++          variant="flat"
++        >
++          {{ isInitialized ? 'Ready' : 'Loading...' }}
++        </v-chip>
++      </div>
++      
++      <div class="status-right">
++        <span class="text-caption text-medium-emphasis">
++          {{ inputLength }} chars
++        </span>
++      </div>
++    </div>
++  </div>
++</template>
++
++<script setup>
++import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
++import { useMobileKeyboard } from '@/composables/keyboards/useMobileKeyboard.js';
++import { useClipboard } from '@/composables/useClipboard.js';
++import './mobile-keyboard.css';
++import './mobile-debug.css';
++
++// Props
++const props = defineProps({
++  showHeader: {
++    type: Boolean,
++    default: true
++  },
++  showInputDisplay: {
++    type: Boolean,
++    default: true
++  },
++  showStatusBar: {
++    type: Boolean,
++    default: true
++  },
++  showLanguageToggle: {
++    type: Boolean,
++    default: true
++  },
++  showCloseButton: {
++    type: Boolean,
++    default: false
++  },
++  inputPlaceholder: {
++    type: String,
++    default: 'Type here...'
++  },
++  theme: {
++    type: String,
++    default: 'mobile-keyboard-theme'
++  },
++  autoFocus: {
++    type: Boolean,
++    default: true
++  },
++  debugMode: {
++    type: Boolean,
++    default: true // Enable debug mode by default for testing
++  }
++});
++
++// Debug state
++const viewportInfo = ref({
++  width: 0,
++  height: 0,
++  devicePixelRatio: 0,
++  userAgent: ''
++});
++
++// Detect viewport and device info
++const updateViewportInfo = () => {
++  const documentElement = document.documentElement;
++  const body = document.body;
++  
++  viewportInfo.value = {
++    width: window.innerWidth,
++    height: window.innerHeight,
++    screenWidth: window.screen?.width || 0,
++    screenHeight: window.screen?.height || 0,
++    clientWidth: documentElement?.clientWidth || 0,
++    clientHeight: documentElement?.clientHeight || 0,
++    devicePixelRatio: window.devicePixelRatio || 1,
++    userAgent: navigator.userAgent.substring(0, 50) + '...',
++    isDevTools: window.navigator?.webdriver || window.outerHeight - window.innerHeight > 200
++  };
++};
++
++// More flexible device detection
++const deviceType = computed(() => {
++  const w = viewportInfo.value.width;
++  const h = viewportInfo.value.height;
++  
++  // iPhone 12 Pro detection (more flexible)
++  if ((w >= 375 && w <= 414) && (h >= 800 || (h >= 375 && h <= 414))) {
++    return 'iphone-12-pro';
++  }
++  
++  // Pixel 7 detection
++  if ((w >= 360 && w <= 393) && (h >= 800 || (h >= 360 && h <= 393))) {
++    return 'pixel-7';
++  }
++  
++  // Small phones
++  if (w <= 359) {
++    return 'small-phone';
++  }
++  
++  // Large phones/tablets
++  if (w >= 415) {
++    return 'large-device';
++  }
++  
++  return 'unknown';
++});
++
++// Better iPhone 12 Pro detection
++const isIPhone12Pro = computed(() => {
++  return deviceType.value === 'iphone-12-pro';
++});
++
++// More comprehensive theme class detection
++const themeClass = computed(() => {
++  let classes = [props.theme];
++  
++  if (props.debugMode) {
++    // Always add device-specific class for testing
++    classes.push(deviceType.value);
++    
++    // Force iPhone styles for widths that could be iPhone
++    if (viewportInfo.value.width <= 414) {
++      classes.push('mobile-optimized');
++    }
++  }
++  
++  return classes.join(' ');
++});
++
++// Emits
++const emit = defineEmits(['input-change', 'key-press', 'close', 'ready']);
++
++// Composables
++const mobileKeyboard = useMobileKeyboard();
++const { copyClipboard } = useClipboard();
++
++// Template refs
++const keyboardContainer = ref(null);
++
++// Computed properties
++const currentInput = computed(() => mobileKeyboard.currentInput.value);
++const currentLayoutName = computed(() => mobileKeyboard.currentLayoutName.value);
++const isInitialized = computed(() => mobileKeyboard.isInitialized.value);
++const isNumbersLayout = computed(() => mobileKeyboard.isNumbersLayout());
++const inputLength = computed(() => currentInput.value.length);
++
++// Methods
++const initializeKeyboard = async () => {
++  if (!keyboardContainer.value) {
++    console.error('Keyboard container not available');
++    return;
++  }
++
++  await nextTick();
++  
++  const options = {
++    theme: `hg-theme-default ${themeClass.value}`,
++    // Custom onChange to emit to parent
++    onChange: (input) => {
++      mobileKeyboard.onInputChange(input);
++      emit('input-change', input);
++    },
++    // Custom onKeyPress to emit to parent
++    onKeyPress: (button) => {
++      mobileKeyboard.onKeyPress(button);
++      emit('key-press', button);
++    }
++  };
++
++  const success = await mobileKeyboard.initializeKeyboard(keyboardContainer.value, options);
++  
++  if (success) {
++    console.log('Mobile keyboard component initialized');
++    emit('ready');
++    
++    if (props.autoFocus) {
++      focusKeyboard();
++    }
++  }
++};
++
++const toggleLayoutMode = () => {
++  if (isNumbersLayout.value) {
++    mobileKeyboard.handleNumbers(); // Switch to ABC
++  } else {
++    mobileKeyboard.handleNumbers(); // Switch to 123
++  }
++};
++
++const clearInput = () => {
++  mobileKeyboard.clearInput();
++  emit('input-change', '');
++};
++
++const focusKeyboard = () => {
++  // Focus the keyboard for better mobile experience
++  if (keyboardContainer.value) {
++    const keyboardElement = keyboardContainer.value.querySelector('.hg-theme-default');
++    if (keyboardElement) {
++      keyboardElement.focus();
++    }
++  }
++};
++
++const copyToClipboard = async () => {
++  if (currentInput.value) {
++    try {
++      await copyClipboard(currentInput.value);
++      console.log('Input copied to clipboard');
++    } catch (error) {
++      console.error('Failed to copy to clipboard:', error);
++    }
++  }
++};
++
++// Watch for theme changes
++watch(() => props.theme, (newTheme) => {
++  if (isInitialized.value) {
++    mobileKeyboard.setTheme(newTheme);
++  }
++});
++
++// Lifecycle
++onMounted(async () => {
++  updateViewportInfo();
++  window.addEventListener('resize', updateViewportInfo);
++  await initializeKeyboard();
++});
++
++onBeforeUnmount(() => {
++  window.removeEventListener('resize', updateViewportInfo);
++  mobileKeyboard.destroyKeyboard();
++});
++
++// Expose methods for parent component
++defineExpose({
++  setInput: mobileKeyboard.setInput,
++  getInput: mobileKeyboard.getInput,
++  clearInput,
++  setLayout: mobileKeyboard.setLayout,
++  getCurrentLayout: mobileKeyboard.getCurrentLayout,
++  focusKeyboard,
++  isInitialized
++});
++</script>
++
++<style scoped>
++.mobile-keyboard-container {
++  background: #000000;
++  border: 1px solid rgba(118, 255, 3, 0.3);
++  border-radius: 8px;
++  overflow: hidden;
++}
++
++.keyboard-header {
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++  padding: 8px 12px;
++  background: rgba(118, 255, 3, 0.1);
++  border-bottom: 1px solid rgba(118, 255, 3, 0.2);
++}
++
++.keyboard-info {
++  display: flex;
++  align-items: center;
++  color: #76FF03;
++}
++
++.keyboard-actions {
++  display: flex;
++  gap: 4px;
++}
++
++.keyboard-input-display {
++  padding: 12px;
++  background: rgba(0, 0, 0, 0.5);
++}
++
++.keyboard-input {
++  font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
++}
++
++.keyboard-wrapper {
++  padding: 8px;
++  min-height: 200px;
++}
++
++.keyboard-wrapper.keyboard-minimal {
++  padding: 4px;
++}
++
++.keyboard-status {
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++  padding: 6px 12px;
++  background: rgba(118, 255, 3, 0.05);
++  border-top: 1px solid rgba(118, 255, 3, 0.1);
++}
++
++.status-left {
++  display: flex;
++  align-items: center;
++}
++
++.status-right {
++  display: flex;
++  align-items: center;
++}
++
++/* Simple Keyboard Theme Customization */
++:deep(.hg-theme-default) {
++  background-color: transparent;
++  border: none;
++  border-radius: 4px;
++}
++
++:deep(.hg-button) {
++  background: rgba(118, 255, 3, 0.1);
++  border: 1px solid rgba(118, 255, 3, 0.3);
++  color: #ffffff;
++  border-radius: 4px;
++  margin: 2px;
++  font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
++  transition: all 0.2s ease;
++}
++
++:deep(.hg-button:hover) {
++  background: rgba(118, 255, 3, 0.2);
++  border-color: rgba(118, 255, 3, 0.5);
++}
++
++:deep(.hg-button:active) {
++  background: rgba(118, 255, 3, 0.3);
++  transform: scale(0.95);
++}
++
++:deep(.hg-button.hg-functionBtn) {
++  background: rgba(118, 255, 3, 0.2);
++  color: #76FF03;
++  font-weight: 500;
++}
++
++:deep(.hg-button.hg-functionBtn:hover) {
++  background: rgba(118, 255, 3, 0.3);
++}
++
++/* iPhone 12 Pro and similar (375-414px width) */
++@media (max-width: 414px) and (min-width: 375px) {
++  .keyboard-wrapper {
++    padding: 6px;
++    min-height: 220px;
++  }
++  
++  .keyboard-header {
++    padding: 8px 12px;
++  }
++  
++  .keyboard-input-display {
++    padding: 10px;
++  }
++  
++  .keyboard-status {
++    padding: 6px 12px;
++  }
++}
++
++/* Pixel 7 and similar Android devices (360-393px width) */
++@media (max-width: 393px) and (min-width: 360px) {
++  .keyboard-wrapper {
++    padding: 4px;
++    min-height: 200px;
++  }
++  
++  .keyboard-header {
++    padding: 6px 10px;
++  }
++  
++  .keyboard-input-display {
++    padding: 8px;
++  }
++  
++  .keyboard-status {
++    padding: 4px 10px;
++  }
++}
++
++/* Smaller phones (320-359px width) */
++@media (max-width: 359px) {
++  .keyboard-wrapper {
++    padding: 3px;
++    min-height: 180px;
++  }
++  
++  .keyboard-header {
++    padding: 4px 8px;
++  }
++  
++  .keyboard-input-display {
++    padding: 6px;
++  }
++  
++  .keyboard-status {
++    padding: 3px 8px;
++  }
++}
++
++/* Landscape orientation for mobile */
++@media (orientation: landscape) and (max-height: 500px) {
++  .mobile-keyboard-container {
++    border-radius: 4px;
++  }
++  
++  .keyboard-wrapper {
++    min-height: 160px;
++    padding: 2px;
++  }
++  
++  .keyboard-header {
++    padding: 4px 8px;
++  }
++  
++  .keyboard-input-display {
++    padding: 4px;
++  }
++  
++  .keyboard-status {
++    padding: 2px 8px;
++  }
++}
++</style>
+\ No newline at end of file
+diff --git a/src/components/keyboards/mobile-debug.css b/src/components/keyboards/mobile-debug.css
+new file mode 100644
+index 00000000..54831fd7
+--- /dev/null
++++ b/src/components/keyboards/mobile-debug.css
+@@ -0,0 +1,62 @@
++/* Debug CSS for Mobile Keyboard - Device-Specific Testing */
++
++/* iPhone 12 Pro and similar devices */
++.mobile-keyboard-theme.iphone-12-pro,
++.mobile-keyboard-theme.mobile-optimized {
++  padding: 6px !important;
++  border: 2px solid #76FF03 !important; /* Green border to show it's active */
++}
++
++.mobile-keyboard-theme.iphone-12-pro .hg-button,
++.mobile-keyboard-theme.mobile-optimized .hg-button {
++  font-size: 16px !important;
++  margin: 1.5px !important;
++  min-height: 42px !important;
++  min-width: 28px !important;
++  border-radius: 6px !important;
++  background: rgba(118, 255, 3, 0.15) !important; /* Slightly more visible for testing */
++  border: 2px solid rgba(118, 255, 3, 0.4) !important;
++}
++
++.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{space}"],
++.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{space}"] {
++  min-width: 180px !important;
++  background: rgba(255, 193, 7, 0.2) !important; /* Yellow background for space bar */
++}
++
++.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{numbers}"],
++.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{abc}"],
++.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{numbers}"],
++.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{abc}"] {
++  min-width: 45px !important;
++  font-size: 14px !important;
++  background: rgba(156, 39, 176, 0.3) !important; /* Purple for layout switchers */
++}
++
++.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{backspace}"],
++.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{ent}"],
++.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{backspace}"],
++.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{ent}"] {
++  min-width: 50px !important;
++  background: rgba(244, 67, 54, 0.2) !important; /* Red for action buttons */
++}
++
++.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{shift}"],
++.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{shift}"] {
++  min-width: 48px !important;
++  background: rgba(33, 150, 243, 0.2) !important; /* Blue for shift */
++}
++
++/* Debug info overlay */
++.keyboard-debug-info {
++  position: absolute;
++  top: 0;
++  left: 0;
++  background: rgba(0, 0, 0, 0.8);
++  color: #76FF03;
++  padding: 4px 8px;
++  font-size: 10px;
++  border-radius: 0 0 4px 0;
++  z-index: 1000;
++  font-family: monospace;
++}
+\ No newline at end of file
+diff --git a/src/components/keyboards/mobile-keyboard.css b/src/components/keyboards/mobile-keyboard.css
+new file mode 100644
+index 00000000..b1fc5ccd
+--- /dev/null
++++ b/src/components/keyboards/mobile-keyboard.css
+@@ -0,0 +1,169 @@
++/* Mobile-First Keyboard - Designed specifically for mobile devices */
++
++/* Base keyboard theme - Mobile optimized from the start */
++.mobile-keyboard-theme {
++  background-color: transparent !important;
++  border: none !important;
++  border-radius: 6px;
++  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
++  padding: 4px !important;
++  width: 100% !important;
++  max-width: 100vw !important;
++}
++
++/* Mobile-first button styling */
++.mobile-keyboard-theme .hg-button {
++  background: rgba(118, 255, 3, 0.1) !important;
++  border: 1px solid rgba(118, 255, 3, 0.3) !important;
++  color: #ffffff !important;
++  border-radius: 4px !important;
++  margin: 1px !important;
++  font-size: 14px !important;
++  font-weight: 500 !important;
++  transition: all 0.15s ease !important;
++  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
++  min-height: 36px !important;
++  min-width: 20px !important;
++  flex: 1 !important;
++  display: flex !important;
++  align-items: center !important;
++  justify-content: center !important;
++  -webkit-tap-highlight-color: transparent !important;
++  user-select: none !important;
++}
++
++/* Button hover effect */
++.mobile-keyboard-theme .hg-button:hover {
++  background: rgba(118, 255, 3, 0.2) !important;
++  border-color: rgba(118, 255, 3, 0.5) !important;
++  transform: translateY(-1px) !important;
++  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
++}
++
++/* Button active/pressed effect */
++.mobile-keyboard-theme .hg-button:active,
++.mobile-keyboard-theme .hg-button.hg-activeButton {
++  background: rgba(118, 255, 3, 0.3) !important;
++  transform: translateY(0) scale(0.95) !important;
++  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
++}
++
++/* Function buttons (special keys) */
++.mobile-keyboard-theme .hg-button.hg-functionBtn {
++  background: rgba(118, 255, 3, 0.2) !important;
++  color: #76FF03 !important;
++  font-weight: 600 !important;
++  border: 2px solid rgba(118, 255, 3, 0.4) !important;
++}
++
++.mobile-keyboard-theme .hg-button.hg-functionBtn:hover {
++  background: rgba(118, 255, 3, 0.3) !important;
++  border-color: rgba(118, 255, 3, 0.6) !important;
++}
++
++/* Mobile-first special button styling */
++.mobile-keyboard-theme .hg-button[data-skbtn="{space}"] {
++  flex: 3 !important;
++  background: rgba(118, 255, 3, 0.15) !important;
++}
++
++.mobile-keyboard-theme .hg-button[data-skbtn="{backspace}"],
++.mobile-keyboard-theme .hg-button[data-skbtn="{ent}"] {
++  flex: 1.5 !important;
++  background: rgba(255, 193, 7, 0.2) !important;
++  color: #FFD600 !important;
++  border-color: rgba(255, 193, 7, 0.4) !important;
++}
++
++.mobile-keyboard-theme .hg-button[data-skbtn="{shift}"] {
++  flex: 1.2 !important;
++  background: rgba(33, 150, 243, 0.2) !important;
++  color: #42A5F5 !important;
++  border-color: rgba(33, 150, 243, 0.4) !important;
++}
++
++.mobile-keyboard-theme .hg-button[data-skbtn="{numbers}"],
++.mobile-keyboard-theme .hg-button[data-skbtn="{abc}"] {
++  flex: 1.2 !important;
++  background: rgba(156, 39, 176, 0.2) !important;
++  color: #CE93D8 !important;
++  border-color: rgba(156, 39, 176, 0.4) !important;
++}
++
++/* Mobile-first row styling */
++.mobile-keyboard-theme .hg-row {
++  display: flex !important;
++  justify-content: space-between !important;
++  margin-bottom: 2px !important;
++  width: 100% !important;
++  gap: 1px !important;
++}
++
++/* Mobile-first responsive design - no desktop breakpoints needed */
++/* The keyboard is designed ONLY for mobile devices */
++
++/* Small phones (iPhone SE, etc.) */
++@media screen and (max-width: 375px) {
++  .mobile-keyboard-theme {
++    padding: 2px !important;
++  }
++  
++  .mobile-keyboard-theme .hg-button {
++    font-size: 12px !important;
++    min-height: 32px !important;
++  }
++}
++
++/* Standard phones (iPhone 12 Pro, most Android) */
++@media screen and (min-width: 376px) and (max-width: 414px) {
++  .mobile-keyboard-theme .hg-button {
++    font-size: 14px !important;
++    min-height: 36px !important;
++  }
++}
++
++/* Large phones and small tablets */
++@media screen and (min-width: 415px) and (max-width: 768px) {
++  .mobile-keyboard-theme .hg-button {
++    font-size: 16px !important;
++    min-height: 40px !important;
++  }
++}
++
++/* Landscape orientation - compact for all mobile devices */
++@media screen and (orientation: landscape) and (max-height: 500px) {
++  .mobile-keyboard-theme {
++    padding: 1px !important;
++  }
++  
++  .mobile-keyboard-theme .hg-button {
++    min-height: 28px !important;
++    font-size: 12px !important;
++    margin: 0.5px !important;
++  }
++  
++  .mobile-keyboard-theme .hg-row {
++    margin-bottom: 1px !important;
++  }
++}
++
++/* Mobile-first accessibility and interaction */
++.mobile-keyboard-theme .hg-button {
++  -webkit-tap-highlight-color: transparent;
++  user-select: none;
++  -webkit-user-select: none;
++  -moz-user-select: none;
++  -ms-user-select: none;
++}
++
++/* Active button feedback */
++.mobile-keyboard-theme .hg-button.hg-activeButton {
++  box-shadow: 0 0 6px rgba(118, 255, 3, 0.6) !important;
++  transform: scale(0.95) !important;
++}
++
++/* Focus accessibility */
++.mobile-keyboard-theme .hg-button:focus {
++  outline: 2px solid #76FF03 !important;
++  outline-offset: 1px !important;
++}
+\ No newline at end of file
+diff --git a/src/composables/keyboards/index.js b/src/composables/keyboards/index.js
+new file mode 100644
+index 00000000..3c339dfd
+--- /dev/null
++++ b/src/composables/keyboards/index.js
+@@ -0,0 +1,13 @@
++'use strict';
++
++// Export all keyboard composables for easy importing
++export { useKeyboardBase } from './useKeyboardBase.js';
++export { useMobileKeyboard } from './useMobileKeyboard.js';
++export { useInternationalKeyboard } from './useInternationalKeyboard.js';
++export { useKeyboardManager } from './useKeyboardManager.js';
++
++// Re-export for backwards compatibility and convenience
++export * from './useKeyboardBase.js';
++export * from './useMobileKeyboard.js';
++export * from './useInternationalKeyboard.js';
++export * from './useKeyboardManager.js';
+\ No newline at end of file
+diff --git a/src/composables/keyboards/useInternationalKeyboard.js b/src/composables/keyboards/useInternationalKeyboard.js
+new file mode 100644
+index 00000000..92d1c909
+--- /dev/null
++++ b/src/composables/keyboards/useInternationalKeyboard.js
+@@ -0,0 +1,227 @@
++'use strict';
++
++import { ref, nextTick } from 'vue';
++import Keyboard from 'simple-keyboard';
++import 'simple-keyboard/build/css/index.css';
++import { useKeyboardBase } from './useKeyboardBase.js';
++
++// Import international layouts from simple-keyboard-layouts
++// These will be loaded dynamically based on language selection
++const availableLanguages = {
++  'en': { name: 'English', module: null }, // Default, no import needed
++  'es': { name: 'Español', module: () => import('simple-keyboard-layouts/build/layouts/spanish') },
++  'fr': { name: 'Français', module: () => import('simple-keyboard-layouts/build/layouts/french') },
++  'de': { name: 'Deutsch', module: () => import('simple-keyboard-layouts/build/layouts/german') },
++  'it': { name: 'Italiano', module: () => import('simple-keyboard-layouts/build/layouts/italian') },
++  'pt': { name: 'Português', module: () => import('simple-keyboard-layouts/build/layouts/portuguese') },
++  'ru': { name: 'Русский', module: () => import('simple-keyboard-layouts/build/layouts/russian') },
++  'ar': { name: 'العربية', module: () => import('simple-keyboard-layouts/build/layouts/arabic') },
++  'zh': { name: '中文', module: () => import('simple-keyboard-layouts/build/layouts/chinese') },
++  'ja': { name: '日本語', module: () => import('simple-keyboard-layouts/build/layouts/japanese') },
++  'ko': { name: '한국어', module: () => import('simple-keyboard-layouts/build/layouts/korean') },
++};
++
++/**
++ * International keyboard composable supporting multiple languages
++ */
++export function useInternationalKeyboard() {
++  const base = useKeyboardBase();
++  
++  // International-specific state
++  const currentLanguage = ref('en');
++  const currentLayoutName = ref('default');
++  const loadedLayouts = ref({});
++  const isLoadingLayout = ref(false);
++
++  // Default English layout
++  const defaultLayouts = {
++    default: [
++      "` 1 2 3 4 5 6 7 8 9 0 - = {backspace}",
++      "{tab} q w e r t y u i o p [ ] \\",
++      "{capslock} a s d f g h j k l ; ' {enter}",
++      "{shift} z x c v b n m , . / {shift}",
++      ".com @ {space}"
++    ],
++    shift: [
++      "~ ! @ # $ % ^ & * ( ) _ + {backspace}",
++      "{tab} Q W E R T Y U I O P { } |",
++      "{capslock} A S D F G H J K L : \" {enter}",
++      "{shift} Z X C V B N M < > ? {shift}",
++      ".com @ {space}"
++    ]
++  };
++
++  // Display names for special keys (international)
++  const display = {
++    "{backspace}": "⌫",
++    "{enter}": "↵",
++    "{shift}": "⇧",
++    "{tab}": "⇥",
++    "{capslock}": "⇪",
++    "{space}": " ",
++    ".com": ".com",
++    "@": "@"
++  };
++
++  // Load language layout dynamically
++  const loadLanguageLayout = async (languageCode) => {
++    if (loadedLayouts.value[languageCode]) {
++      return loadedLayouts.value[languageCode];
++    }
++
++    if (languageCode === 'en') {
++      loadedLayouts.value[languageCode] = defaultLayouts;
++      return defaultLayouts;
++    }
++
++    const language = availableLanguages[languageCode];
++    if (!language || !language.module) {
++      console.warn(`Language ${languageCode} not supported, falling back to English`);
++      return defaultLayouts;
++    }
++
++    try {
++      isLoadingLayout.value = true;
++      const layoutModule = await language.module();
++      const layout = layoutModule.default || layoutModule;
++      
++      loadedLayouts.value[languageCode] = layout;
++      console.log(`Loaded layout for ${language.name}:`, layout);
++      return layout;
++    } catch (error) {
++      console.error(`Failed to load layout for ${languageCode}:`, error);
++      return defaultLayouts;
++    } finally {
++      isLoadingLayout.value = false;
++    }
++  };
++
++  // Handle international-specific key presses
++  const handleKeyPress = (button) => {
++    console.log("International keyboard button pressed:", button);
++    
++    // Handle layout switching
++    if (button === "{shift}") {
++      handleShift();
++    } else if (button === "{capslock}") {
++      handleCapsLock();
++    }
++    
++    // Call base onKeyPress for additional processing
++    base.onKeyPress(button);
++  };
++
++  // Handle shift key toggle
++  const handleShift = () => {
++    const newLayout = currentLayoutName.value === "default" ? "shift" : "default";
++    currentLayoutName.value = newLayout;
++    base.setLayout(newLayout);
++  };
++
++  // Handle caps lock
++  const handleCapsLock = () => {
++    const newLayout = currentLayoutName.value === "default" ? "shift" : "default";
++    currentLayoutName.value = newLayout;
++    base.setLayout(newLayout);
++  };
++
++  // Switch language
++  const switchLanguage = async (languageCode) => {
++    if (!availableLanguages[languageCode]) {
++      console.warn(`Language ${languageCode} not available`);
++      return false;
++    }
++
++    try {
++      const layout = await loadLanguageLayout(languageCode);
++      currentLanguage.value = languageCode;
++      
++      if (base.keyboardInstance.value) {
++        base.keyboardInstance.value.setOptions({
++          layout: layout,
++          layoutName: currentLayoutName.value
++        });
++      }
++      
++      console.log(`Switched to language: ${availableLanguages[languageCode].name}`);
++      return true;
++    } catch (error) {
++      console.error(`Failed to switch to language ${languageCode}:`, error);
++      return false;
++    }
++  };
++
++  // Initialize international keyboard
++  const initializeInternationalKeyboard = async (container, options = {}) => {
++    if (!container) {
++      console.error('International keyboard container not provided');
++      return false;
++    }
++
++    await nextTick();
++
++    try {
++      const layout = await loadLanguageLayout(currentLanguage.value);
++      
++      const keyboardOptions = {
++        onChange: base.onInputChange,
++        onKeyPress: handleKeyPress,
++        layoutName: currentLayoutName.value,
++        layout: layout,
++        display: display,
++        theme: "hg-theme-default international-keyboard-theme",
++        ...options
++      };
++
++      base.keyboardInstance.value = new Keyboard(container, keyboardOptions);
++      base.isInitialized.value = true;
++      
++      console.log('International keyboard initialized:', base.keyboardInstance.value);
++      return true;
++    } catch (error) {
++      console.error('Failed to initialize international keyboard:', error);
++      return false;
++    }
++  };
++
++  // Get available languages
++  const getAvailableLanguages = () => {
++    return Object.entries(availableLanguages).map(([code, info]) => ({
++      code,
++      name: info.name
++    }));
++  };
++
++  // Get current language info
++  const getCurrentLanguageInfo = () => {
++    return {
++      code: currentLanguage.value,
++      name: availableLanguages[currentLanguage.value]?.name || 'Unknown'
++    };
++  };
++
++  return {
++    // Inherit from base
++    ...base,
++    
++    // International-specific state
++    currentLanguage,
++    currentLayoutName,
++    loadedLayouts,
++    isLoadingLayout,
++    availableLanguages,
++    
++    // International-specific methods
++    initializeInternationalKeyboard,
++    loadLanguageLayout,
++    switchLanguage,
++    handleShift,
++    handleCapsLock,
++    getAvailableLanguages,
++    getCurrentLanguageInfo,
++    
++    // Override base methods with international-specific implementations
++    initializeKeyboard: initializeInternationalKeyboard,
++    onKeyPress: handleKeyPress,
++  };
++}
+\ No newline at end of file
+diff --git a/src/composables/keyboards/useKeyboardBase.js b/src/composables/keyboards/useKeyboardBase.js
+new file mode 100644
+index 00000000..b50b30a2
+--- /dev/null
++++ b/src/composables/keyboards/useKeyboardBase.js
+@@ -0,0 +1,100 @@
++'use strict';
++
++import { ref, onMounted, onBeforeUnmount } from 'vue';
++
++/**
++ * Base keyboard composable that provides common functionality for all keyboard types
++ */
++export function useKeyboardBase() {
++  const keyboardInstance = ref(null);
++  const currentInput = ref('');
++  const isInitialized = ref(false);
++  
++  // Common keyboard events
++  const onInputChange = (input) => {
++    currentInput.value = input;
++    console.log('Keyboard input changed:', input);
++  };
++
++  const onKeyPress = (button) => {
++    console.log('Key pressed:', button);
++    // This will be overridden by specific keyboard implementations
++  };
++
++  // Keyboard lifecycle management
++  const initializeKeyboard = (container, options = {}) => {
++    if (!container) {
++      console.error('Keyboard container not provided');
++      return false;
++    }
++
++    try {
++      // This will be implemented by specific keyboard types
++      isInitialized.value = true;
++      return true;
++    } catch (error) {
++      console.error('Failed to initialize keyboard:', error);
++      return false;
++    }
++  };
++
++  const destroyKeyboard = () => {
++    if (keyboardInstance.value && keyboardInstance.value.destroy) {
++      keyboardInstance.value.destroy();
++    }
++    keyboardInstance.value = null;
++    isInitialized.value = false;
++  };
++
++  // Input management
++  const setInput = (input) => {
++    if (keyboardInstance.value && keyboardInstance.value.setInput) {
++      keyboardInstance.value.setInput(input);
++      currentInput.value = input;
++    }
++  };
++
++  const getInput = () => {
++    return currentInput.value;
++  };
++
++  const clearInput = () => {
++    setInput('');
++  };
++
++  // Layout management
++  const setLayout = (layoutName) => {
++    if (keyboardInstance.value && keyboardInstance.value.setOptions) {
++      keyboardInstance.value.setOptions({
++        layoutName: layoutName
++      });
++    }
++  };
++
++  const getCurrentLayout = () => {
++    return keyboardInstance.value?.options?.layoutName || 'default';
++  };
++
++  // Cleanup on unmount
++  onBeforeUnmount(() => {
++    destroyKeyboard();
++  });
++
++  return {
++    // State
++    keyboardInstance,
++    currentInput,
++    isInitialized,
++    
++    // Methods
++    initializeKeyboard,
++    destroyKeyboard,
++    setInput,
++    getInput,
++    clearInput,
++    setLayout,
++    getCurrentLayout,
++    onInputChange,
++    onKeyPress,
++  };
++}
+\ No newline at end of file
+diff --git a/src/composables/keyboards/useKeyboardManager.js b/src/composables/keyboards/useKeyboardManager.js
+new file mode 100644
+index 00000000..494fb1c1
+--- /dev/null
++++ b/src/composables/keyboards/useKeyboardManager.js
+@@ -0,0 +1,210 @@
++'use strict';
++
++import { ref, computed, watch } from 'vue';
++import { useMobileKeyboard } from './useMobileKeyboard.js';
++import { useInternationalKeyboard } from './useInternationalKeyboard.js';
++
++/**
++ * Central keyboard manager that handles multiple keyboard types
++ */
++export function useKeyboardManager() {
++  // Available keyboard types
++  const KEYBOARD_TYPES = {
++    MOBILE: 'mobile',
++    INTERNATIONAL: 'international',
++    VIRTUAL: 'virtual', // For future expansion
++    GAMING: 'gaming',   // For future expansion
++  };
++
++  // Current keyboard state
++  const currentKeyboardType = ref(KEYBOARD_TYPES.MOBILE);
++  const isKeyboardVisible = ref(false);
++  const keyboardContainer = ref(null);
++  
++  // Keyboard instances
++  const keyboards = ref({
++    [KEYBOARD_TYPES.MOBILE]: null,
++    [KEYBOARD_TYPES.INTERNATIONAL]: null,
++  });
++
++  // Initialize keyboard instances
++  const initializeKeyboards = () => {
++    keyboards.value[KEYBOARD_TYPES.MOBILE] = useMobileKeyboard();
++    keyboards.value[KEYBOARD_TYPES.INTERNATIONAL] = useInternationalKeyboard();
++  };
++
++  // Get current active keyboard
++  const getCurrentKeyboard = computed(() => {
++    return keyboards.value[currentKeyboardType.value];
++  });
++
++  // Check if current keyboard is initialized
++  const isCurrentKeyboardInitialized = computed(() => {
++    const keyboard = getCurrentKeyboard.value;
++    return keyboard?.isInitialized?.value || false;
++  });
++
++  // Switch keyboard type
++  const switchKeyboardType = async (type) => {
++    if (!Object.values(KEYBOARD_TYPES).includes(type)) {
++      console.warn(`Unknown keyboard type: ${type}`);
++      return false;
++    }
++
++    // Hide current keyboard first
++    if (isKeyboardVisible.value) {
++      await hideKeyboard();
++    }
++
++    currentKeyboardType.value = type;
++    console.log(`Switched to keyboard type: ${type}`);
++    return true;
++  };
++
++  // Show keyboard
++  const showKeyboard = async (container = null) => {
++    try {
++      const targetContainer = container || keyboardContainer.value;
++      if (!targetContainer) {
++        console.error('No keyboard container available');
++        return false;
++      }
++
++      const keyboard = getCurrentKeyboard.value;
++      if (!keyboard) {
++        console.error('No keyboard instance available');
++        return false;
++      }
++
++      // Initialize keyboard if not already done
++      if (!keyboard.isInitialized.value) {
++        const success = await keyboard.initializeKeyboard(targetContainer);
++        if (!success) {
++          console.error('Failed to initialize keyboard');
++          return false;
++        }
++      }
++
++      isKeyboardVisible.value = true;
++      console.log(`${currentKeyboardType.value} keyboard shown`);
++      return true;
++    } catch (error) {
++      console.error('Error showing keyboard:', error);
++      return false;
++    }
++  };
++
++  // Hide keyboard
++  const hideKeyboard = async () => {
++    try {
++      const keyboard = getCurrentKeyboard.value;
++      if (keyboard && keyboard.isInitialized.value) {
++        keyboard.destroyKeyboard();
++      }
++      
++      isKeyboardVisible.value = false;
++      console.log(`${currentKeyboardType.value} keyboard hidden`);
++      return true;
++    } catch (error) {
++      console.error('Error hiding keyboard:', error);
++      return false;
++    }
++  };
++
++  // Toggle keyboard visibility
++  const toggleKeyboard = async (container = null) => {
++    if (isKeyboardVisible.value) {
++      return await hideKeyboard();
++    } else {
++      return await showKeyboard(container);
++    }
++  };
++
++  // Set keyboard container
++  const setKeyboardContainer = (container) => {
++    keyboardContainer.value = container;
++  };
++
++  // Get current input from active keyboard
++  const getCurrentInput = () => {
++    const keyboard = getCurrentKeyboard.value;
++    return keyboard?.getInput?.() || '';
++  };
++
++  // Set input to active keyboard
++  const setInput = (input) => {
++    const keyboard = getCurrentKeyboard.value;
++    if (keyboard?.setInput) {
++      keyboard.setInput(input);
++    }
++  };
++
++  // Clear input from active keyboard
++  const clearInput = () => {
++    const keyboard = getCurrentKeyboard.value;
++    if (keyboard?.clearInput) {
++      keyboard.clearInput();
++    }
++  };
++
++  // Get keyboard capabilities
++  const getKeyboardCapabilities = () => {
++    const keyboard = getCurrentKeyboard.value;
++    const capabilities = {
++      type: currentKeyboardType.value,
++      hasLayouts: false,
++      hasLanguages: false,
++      hasThemes: false,
++      layouts: [],
++      languages: [],
++    };
++
++    if (currentKeyboardType.value === KEYBOARD_TYPES.MOBILE) {
++      capabilities.hasLayouts = true;
++      capabilities.hasThemes = true;
++      capabilities.layouts = keyboard?.getAvailableLayouts?.() || [];
++    } else if (currentKeyboardType.value === KEYBOARD_TYPES.INTERNATIONAL) {
++      capabilities.hasLayouts = true;
++      capabilities.hasLanguages = true;
++      capabilities.languages = keyboard?.getAvailableLanguages?.() || [];
++    }
++
++    return capabilities;
++  };
++
++  // Watch for keyboard type changes and cleanup
++  watch(currentKeyboardType, async (newType, oldType) => {
++    if (oldType && isKeyboardVisible.value) {
++      await hideKeyboard();
++    }
++  });
++
++  // Initialize keyboards on setup
++  initializeKeyboards();
++
++  return {
++    // Constants
++    KEYBOARD_TYPES,
++    
++    // State
++    currentKeyboardType,
++    isKeyboardVisible,
++    keyboardContainer,
++    keyboards,
++    
++    // Computed
++    getCurrentKeyboard,
++    isCurrentKeyboardInitialized,
++    
++    // Methods
++    switchKeyboardType,
++    showKeyboard,
++    hideKeyboard,
++    toggleKeyboard,
++    setKeyboardContainer,
++    getCurrentInput,
++    setInput,
++    clearInput,
++    getKeyboardCapabilities,
++  };
++}
+\ No newline at end of file
+diff --git a/src/composables/keyboards/useMobileKeyboard.js b/src/composables/keyboards/useMobileKeyboard.js
+new file mode 100644
+index 00000000..5a5b9749
+--- /dev/null
++++ b/src/composables/keyboards/useMobileKeyboard.js
+@@ -0,0 +1,165 @@
++'use strict';
++
++import { ref, nextTick } from 'vue';
++import Keyboard from 'simple-keyboard';
++import 'simple-keyboard/build/css/index.css';
++import { useKeyboardBase } from './useKeyboardBase.js';
++
++/**
++ * Mobile keyboard composable using simple-keyboard
++ * Based on the provided JavaScript code
++ */
++export function useMobileKeyboard() {
++  const base = useKeyboardBase();
++  
++  // Mobile-specific state
++  const currentLayoutName = ref('default');
++  
++  // Mobile keyboard layouts
++  const layouts = {
++    default: [
++      "q w e r t y u i o p",
++      "a s d f g h j k l",
++      "{shift} z x c v b n m {backspace}",
++      "{numbers} {space} {ent}"
++    ],
++    shift: [
++      "Q W E R T Y U I O P",
++      "A S D F G H J K L",
++      "{shift} Z X C V B N M {backspace}",
++      "{numbers} {space} {ent}"
++    ],
++    numbers: [
++      "1 2 3", 
++      "4 5 6", 
++      "7 8 9", 
++      "{abc} 0 {backspace}"
++    ]
++  };
++
++  // Display names for special keys
++  const display = {
++    "{numbers}": "123",
++    "{ent}": "return",
++    "{escape}": "esc ⎋",
++    "{tab}": "tab ⇥",
++    "{backspace}": "⌫",
++    "{capslock}": "caps lock ⇪",
++    "{shift}": "⇧",
++    "{controlleft}": "ctrl ⌃",
++    "{controlright}": "ctrl ⌃",
++    "{altleft}": "alt ⌥",
++    "{altright}": "alt ⌥",
++    "{metaleft}": "cmd ⌘",
++    "{metaright}": "cmd ⌘",
++    "{abc}": "ABC"
++  };
++
++  // Handle mobile-specific key presses
++  const handleKeyPress = (button) => {
++    console.log("Mobile keyboard button pressed:", button);
++    
++    // Handle layout switching
++    if (button === "{shift}" || button === "{lock}") {
++      handleShift();
++    } else if (button === "{numbers}" || button === "{abc}") {
++      handleNumbers();
++    }
++    
++    // Call base onKeyPress for additional processing
++    base.onKeyPress(button);
++  };
++
++  // Handle shift key toggle
++  const handleShift = () => {
++    const newLayout = currentLayoutName.value === "default" ? "shift" : "default";
++    currentLayoutName.value = newLayout;
++    base.setLayout(newLayout);
++  };
++
++  // Handle numbers/letters toggle
++  const handleNumbers = () => {
++    const newLayout = currentLayoutName.value !== "numbers" ? "numbers" : "default";
++    currentLayoutName.value = newLayout;
++    base.setLayout(newLayout);
++  };
++
++  // Initialize mobile keyboard
++  const initializeMobileKeyboard = async (container, options = {}) => {
++    if (!container) {
++      console.error('Mobile keyboard container not provided');
++      return false;
++    }
++
++    await nextTick();
++
++    try {
++      const keyboardOptions = {
++        onChange: base.onInputChange,
++        onKeyPress: handleKeyPress,
++        mergeDisplay: true,
++        layoutName: currentLayoutName.value,
++        layout: layouts,
++        display: display,
++        theme: "hg-theme-default mobile-keyboard-theme",
++        ...options
++      };
++
++      base.keyboardInstance.value = new Keyboard(container, keyboardOptions);
++      base.isInitialized.value = true;
++      
++      console.log('Mobile keyboard initialized:', base.keyboardInstance.value);
++      return true;
++    } catch (error) {
++      console.error('Failed to initialize mobile keyboard:', error);
++      return false;
++    }
++  };
++
++  // Set mobile keyboard theme
++  const setTheme = (themeName) => {
++    if (base.keyboardInstance.value) {
++      base.keyboardInstance.value.setOptions({
++        theme: `hg-theme-default ${themeName}`
++      });
++    }
++  };
++
++  // Get available layouts
++  const getAvailableLayouts = () => {
++    return Object.keys(layouts);
++  };
++
++  // Check if current layout is numbers
++  const isNumbersLayout = () => {
++    return currentLayoutName.value === 'numbers';
++  };
++
++  // Check if current layout is shift
++  const isShiftLayout = () => {
++    return currentLayoutName.value === 'shift';
++  };
++
++  return {
++    // Inherit from base
++    ...base,
++    
++    // Mobile-specific state
++    currentLayoutName,
++    layouts,
++    display,
++    
++    // Mobile-specific methods
++    initializeMobileKeyboard,
++    handleShift,
++    handleNumbers,
++    setTheme,
++    getAvailableLayouts,
++    isNumbersLayout,
++    isShiftLayout,
++    
++    // Override base methods with mobile-specific implementations
++    initializeKeyboard: initializeMobileKeyboard,
++    onKeyPress: handleKeyPress,
++  };
++}
+\ No newline at end of file
+-- 
+2.39.5
+

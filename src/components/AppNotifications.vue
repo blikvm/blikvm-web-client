@@ -1,5 +1,5 @@
 <template>
-  <v-sheet rounded class="w-100">
+  <v-sheet rounded>
     <!-- <v-card-title class="d-flex justify-start align-center">
       {{ $t('notification.title') }}
     </v-card-title> -->
@@ -64,9 +64,9 @@
   // Table state
   const page = ref(1);
   const headers = [
-    { title: 'timestamp', key: 'ts', align: 'start', sortable: true, width: '180px' },
-    { title: 'Message Type', key: 'messageType', align: 'start', sortable: true, width: '120px' },
-    { title: 'Source', key: 'module', align: 'start', sortable: true, width: '150px' },
+    { title: 'timestamp', key: 'ts', align: 'start', sortable: true },
+    { title: 'Message Type', key: 'messageType', align: 'start', sortable: true },
+    { title: 'Source', key: 'module', align: 'start', sortable: true },
     { title: 'Message', key: 'message', align: 'start', sortable: false },
   ];
   const serverItems = ref([]);
@@ -142,24 +142,3 @@
     loading.value = false;
   }
 </script>
-
-<style scoped>
-.v-sheet {
-  margin: 0;
-  width: 100%;
-  max-width: none;
-}
-
-:deep(.v-data-table) {
-  width: 100% !important;
-}
-
-:deep(.v-data-table .v-table__wrapper) {
-  width: 100% !important;
-}
-
-:deep(.v-data-table table) {
-  width: 100% !important;
-  table-layout: fixed;
-}
-</style>
