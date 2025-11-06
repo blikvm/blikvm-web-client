@@ -23,7 +23,7 @@ import { defineStore } from 'pinia';
 
 export const useAppStore = defineStore('app', {
   persist: {
-    pick: ['settings', 'systeminfo', 'mic'], // Persist settings and systeminfo
+    pick: ['settings', 'systeminfo'], // Persist settings and systeminfo
   },
   state: () => ({
     // default store values
@@ -123,7 +123,7 @@ export const useAppStore = defineStore('app', {
         audioMuted: false,
         audioVolume: 0,
         desiredFps: 30,
-        sourceFps: 0,
+        capturedFps: 0,
         WebRTCGop: 30,
         WebRTCMbps: 5,
         audioStream: null,
@@ -151,8 +151,6 @@ export const useAppStore = defineStore('app', {
         isTakeScreenshot: false,
         connectionState: 'connecting', // 'connecting', 'no-signal', 'connection-failed'
         connectingTimeout: null,
-        bitrate: 0,
-        streamFps: 0, // Maps from backend 'fps' property until backend uses streamFps
       },
       hid: {
         isActive: false,
@@ -339,10 +337,10 @@ export const useAppStore = defineStore('app', {
       expanded: true,
       pinned: true,
       visible: true,
-      offset: 0,
     },
     footer: {
       showFooter: true,
+      pinnedFooter: true,
     },
     ocr: {
       isMenuActive: false,
@@ -382,15 +380,6 @@ export const useAppStore = defineStore('app', {
     audio: {
       isMicrophoneOn: false,
       microphoneName: '',
-    },
-
-    // Client platform flags (set at startup in main.js)
-    platform: {
-      isWindows: false,
-      isMac: false,
-      isLinux: false,
-      isChromeOS: false,
-      isMobile: false,
     },
 
     error: null,

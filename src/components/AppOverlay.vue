@@ -16,7 +16,7 @@
     <!-- top control bar-->
     <div
       class="overlay-control-bar d-flex w-100 ga-3 pa-1 justify-end align-center"
-      style="margin-top: 45px; margin-right: 40px"
+      style="margin-top: 0px; margin-right: 40px"
     >
       <KvmHandRaise v-if="isExperimental" />
       <KvmClipboard v-if="isExperimental" />

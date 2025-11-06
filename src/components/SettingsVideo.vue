@@ -68,15 +68,41 @@
           </v-row>
 
           <br /><br />
-          <!-- Input Format Section -->
+          <div class="d-flex text-caption justify-start">
+            {{ $t('settings.device.video.resolutionField') }}
+          </div>
           <v-row dense no-gutters v-if="device.board.type === '4B' || device.board.type === 'CM4'">
-            <v-col cols="6" class="d-flex align-center">
-              <span class="text-caption">{{ $t('settings.device.video.inputFormat') }}</span>
-            </v-col>
-            <v-col cols="6" class="d-flex align-center justify-end">
-              <span class="metric-display">{{ device.video.resolution }}@{{ device.video.sourceFps }}fps</span>
+            <v-col>
+              <v-text-field
+                v-model="device.video.resolution"
+                readonly
+                :label="$t('settings.device.video.resolutionField')"
+                density="compact"
+                tile
+                rounded="lg"
+                color="#76FF03"
+                variant="plain"
+                hide-details
+                single-line
+              >
+                <template v-slot:append>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      margin-left: 8px;
+                      font-size: 0.85rem;
+                      color: #76ff03;
+                      font-weight: 500;
+                    "
+                  >
+                    {{ device.video.capturedFps }} Hz
+                  </div>
+                </template>
+              </v-text-field>
             </v-col>
           </v-row>
+
           <v-row dense no-gutters v-else>
             <v-col cols="12">
               <v-select
@@ -91,16 +117,6 @@
                 tile
                 @update:modelValue="setResolution"
               />
-            </v-col>
-          </v-row>
-
-          <!-- Live Format Section -->
-          <v-row dense no-gutters v-if="device.video.videoMode === 'h264'">
-            <v-col cols="6" class="d-flex align-center">
-              <span class="text-caption">{{ $t('settings.device.video.liveFormat') }}</span>
-            </v-col>
-            <v-col cols="6" class="d-flex align-center justify-end">
-              <span class="metric-display">{{ device.video.bitrate }}kbps / {{ device.video.streamFps }}fps</span>
             </v-col>
           </v-row>
 
@@ -262,7 +278,7 @@
               <v-slider
                 v-model="device.video.WebRTCGop"
                 :max="60"
-                :min="0"
+                :min="1"
                 :step="1"
                 show-ticks="always"
                 tick-size="2"
@@ -399,14 +415,5 @@
   .selected-orientation {
     background-color: #76ff03 !important;
     color: black !important;
-  }
-
-  .metric-display {
-    display: flex;
-    align-items: center;
-    margin-left: 8px;
-    font-size: 0.85rem;
-    color: #76ff03;
-    font-weight: 500;
   }
 </style>

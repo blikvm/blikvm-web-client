@@ -263,6 +263,7 @@
             <Wol />
           </v-expansion-panel-text>
         </v-expansion-panel>
+        <SettingsWifi />
       </v-expansion-panels>
     </v-expansion-panel-text>
   </v-expansion-panel>
@@ -274,6 +275,7 @@
   import http from '@/utils/http.js';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
+  import SettingsWifi from '@/components/SettingsWifi.vue';
 
   const store = useAppStore();
   const { isExperimental, systeminfo } = storeToRefs(store);

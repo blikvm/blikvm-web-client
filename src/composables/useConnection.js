@@ -1,7 +1,6 @@
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useAppStore } from '@/stores/stores';
 import { storeToRefs } from 'pinia';
-import { startSession } from '@/composables/session.js';
 
 export function useConnection(device) {
   const store = useAppStore();
@@ -15,8 +14,7 @@ export function useConnection(device) {
   // Calculate next delay based on reconnect count (matches AppKVM.vue logic)
   const calculateNextDelay = () => {
     const currentAttempt = Math.max(0, device.value.reconnectCount - 1);
-    // Keep in sync with session.js attemptReconnect() delays (in seconds): [1s, 10s, 20s, 40s]
-    const delays = [1, 10, 20, 40];
+    const delays = [10, 20, 40]; // 10s, 20s, then 40s
     return delays[Math.min(currentAttempt, delays.length - 1)];
   };
 
@@ -30,8 +28,12 @@ export function useConnection(device) {
     try {
       if (device.value.ws && device.value.ws.readyState !== WebSocket.OPEN) {
         stopCountdown();
-        // Trigger reconnect by calling startSession directly
-        startSession();
+        // Trigger reconnect by calling createWebSocket directly
+        if (window.wsManager && typeof window.wsManager.createWebSocket === 'function') {
+          window.wsManager.createWebSocket();
+        } else {
+          console.warn('WebSocket manager not available for retry');
+        }
       }
     } catch (error) {
       console.error('Error during manual retry:', error);
@@ -48,6 +50,7 @@ export function useConnection(device) {
     countdownSeconds.value = totalSeconds;
     maxCountdownSeconds.value = totalSeconds;
     nextReconnectTime.value = Date.now() + totalSeconds * 1000;
+
     countdownInterval = setInterval(() => {
       const remaining = Math.ceil((nextReconnectTime.value - Date.now()) / 1000);
       countdownSeconds.value = Math.max(0, remaining);

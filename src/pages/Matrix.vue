@@ -66,10 +66,15 @@
   // TODO 2025-05-18 this needs to be move elsewhere
   const handleMouseMove = (event) => {
     const mouseY = event.clientY;
+    const containerHeight = event.currentTarget.clientHeight;
 
-    // Show toolbar if near the top (industry standard auto-hide)
+    // Show toolbar if near the top
     if (toolbar.value) {
       toolbar.value.visible = mouseY <= 50;
+    }
+    // Show footer if near the bottom (assumes 600px total height)
+    if (footer.value) {
+      footer.value.showFooter = mouseY >= containerHeight - 30;
     }
   };
 
@@ -78,13 +83,11 @@
       device.value.video.videoMode,
       device.value.video.resolution,
       device.value.video.resolutionRatio,
-      device.value.video.sourceFps,
-      device.value.video.streamFps,
-      device.value.video.bitrate,
+      device.value.refreshRate,
     ],
-    ([newVideoMode, newResolution, newResolutionRatio, newSourceFps, newStreamFps, newBitrate]) => {
+    ([newVideoMode, newResolution, newResolutionRatio, newRefreshRate]) => {
       const translatedTitle = t('app.defaultTitle');
-      document.title = `${translatedTitle} ${newVideoMode} ${newResolution}@${newSourceFps}fps (${newResolutionRatio}) ${newStreamFps}fps ${newBitrate}kbps`;
+      document.title = `${translatedTitle} ${newVideoMode} ${newResolution}@${newRefreshRate} (${newResolutionRatio}) 30fps xxx kbps`;
     },
     { immediate: true }
   );
