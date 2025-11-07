@@ -356,20 +356,20 @@
       const rect = videoElement.getBoundingClientRect();
       const currentDimensions = `${rect.width} x ${rect.height}`;
       if (lastLoggedDimensions !== currentDimensions) {
-        console.log('Video element dimensions:', currentDimensions);
+        // console.log('Video element dimensions:', currentDimensions);
         lastLoggedDimensions = currentDimensions;
       }
       
       // Use stricter validation - video must be reasonably sized
       if (rect.width >= 400 && rect.height >= 200) {
         if (lastLoggedElementType !== 'video') {
-          console.log('Using video element for overlay tracking');
+          // console.log('Using video element for overlay tracking');
           lastLoggedElementType = 'video';
         }
         return videoElement;
       }
       if (lastLoggedElementType !== 'small-video') {
-        console.log('Video element too small, using container instead');
+        // console.log('Video element too small, using container instead');
         lastLoggedElementType = 'small-video';
       }
       // Video element exists but dimensions too small - fall back to container
