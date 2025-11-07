@@ -7,7 +7,7 @@
             <v-col cols="1">
               <v-icon color="#FF7043">mdi-monitor-dashboard</v-icon>
             </v-col>
-            <v-col class="d-flex justify-start align-center" cols="4">
+            <v-col class="d-flex justify-start align-center" cols="11">
               {{ $t('settings.gui.title') }}
             </v-col>
           </v-row>
@@ -426,6 +426,11 @@
 </script>
 
 <style scoped>
+  .transparent-card {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
   .v-list-item {
     position: relative;
     overflow: visible !important;
