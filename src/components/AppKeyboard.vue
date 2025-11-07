@@ -98,7 +98,7 @@
         '{tab}': 'Tab',
         '{backspace}': 'Backspace',
         '{enter}': 'Enter',
-        '{capslock}': 'Caps lock',
+        '{capslock}': 'Caps',
         '{shiftleft}': 'Shift',
         '{shiftright}': 'Shift',
         '{controlleft}': 'Ctrl',

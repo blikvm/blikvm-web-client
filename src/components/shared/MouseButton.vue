@@ -45,7 +45,7 @@
     // 优先根据交互态着色：HOLD 红，其次点击闪烁绿；否则沿用 active 或灰
     const theme = isHold.value ? HOLD_COLOR : isClickFlash.value ? CLICK_COLOR : null;
 
-    const width = isHold.value ? '60px' : props.icon ? '40px' : '40px';
+    const width = isHold.value ? '66px' : props.icon ? '48px' : '48px';
     const flexDirection = isHold.value ? 'column' : 'row';
     const gap = isHold.value ? '2px' : '0';
 
@@ -70,7 +70,7 @@
       borderRadius: '8px',
       boxShadow: shadow,
       width,
-      height: '40px',
+      height: '48px',
       border: 'none',
       display: 'flex',
       flexDirection,

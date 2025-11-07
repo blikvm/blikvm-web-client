@@ -1,7 +1,7 @@
 <template>
-  <v-container class="virtual-mouse" fluid>
+  <div class="virtual-mouse">
     <div class="mouse-container">
-      <v-row justify="center" align="center" dense>
+      <v-row justify="center" align="center" class="mouse-button-row">
       <MouseButton
         icon="mdi-mouse-left-click"
         label="Left"
@@ -34,7 +34,7 @@
       <MouseButton icon="mdi-mouse-move-down" color="#76FF03" @click="emitClick('wheel-down')" />
       </v-row>
     </div>
-  </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -65,14 +65,43 @@
 
 <style scoped>
   .virtual-mouse {
-    padding: 4px;
+    padding: 8px;
   }
   
   .mouse-container {
     background: linear-gradient(145deg, #1e1e1e, #0f0f0f);
     border-radius: 12px;
-    padding: 4px;
+    padding: 8px;
     box-shadow: inset 2px 2px 4px #000, inset -2px -2px 4px #2a2a2a;
     display: inline-block;
+  }
+  
+  /* Touch-optimized button spacing */
+  .mouse-button-row {
+    gap: 8px;
+  }
+  
+  /* Additional spacing for touch targets */
+  .mouse-button-row :deep(.mouse-btn) {
+    margin: 4px;
+  }
+  
+  /* Ensure minimum touch target spacing */
+  @media (max-width: 768px) {
+    .virtual-mouse {
+      padding: 12px;
+    }
+    
+    .mouse-container {
+      padding: 12px;
+    }
+    
+    .mouse-button-row {
+      gap: 12px;
+    }
+    
+    .mouse-button-row :deep(.mouse-btn) {
+      margin: 6px;
+    }
   }
 </style>

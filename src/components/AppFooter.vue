@@ -22,12 +22,18 @@
 
       <!-- Desktop Keyboard Section -->
       <AppFooterDesktopKeyboard
+        v-if="!isTouchDevice"
         :show-keyboard="showKeyboard"
         :is-experimental="isExperimental"
         :device="device"
         :handle-key-press="handleKeyPress"
         :handle-key-released="handleKeyReleased"
       />
+
+      <!-- Mobile Keyboard Section -->
+      <div v-if="showMobileKeyboard">
+        <AppMobileKeyboard />
+      </div>
 
     </div>
 
@@ -54,11 +60,12 @@ import { useComponentVisibility } from "@/composables/useComponentVisibility"
 import { useLockStates } from "@/composables/useLockStates"
 
 // Component imports
-import AppFooterVirtualMouse from "@/components/footer/AppFooterVirtualMouse.vue"
-import AppFooterNotifications from "@/components/footer/AppFooterNotifications.vue"
-import AppFooterTerminals from "@/components/footer/AppFooterTerminals.vue"
-import AppFooterDesktopKeyboard from "@/components/footer/AppFooterDesktopKeyboard.vue"
 import AppFooterNavigation from "@/components/footer/AppFooterNavigation.vue"
+import AppFooterDesktopKeyboard from "@/components/footer/AppFooterDesktopKeyboard.vue"
+import AppMobileKeyboard from "@/components/keyboard/AppMobileKeyboard.vue"
+import AppFooterVirtualMouse from "@/components/footer/AppFooterVirtualMouse.vue"
+import AppFooterTerminals from "@/components/footer/AppFooterTerminals.vue"
+import AppFooterNotifications from "@/components/footer/AppFooterNotifications.vue"
 
 // Composables and stores
 const store = useAppStore()

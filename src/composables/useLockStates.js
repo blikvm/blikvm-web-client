@@ -10,9 +10,9 @@ export function useLockStates(device) {
    * @returns {Array} Array of lock state objects with name and active status
    */
   const lockStates = computed(() => [
-    { name: 'Caps lock', active: device.value.hid.keyboard.isCapsLock },
-    { name: 'Num lock', active: device.value.hid.keyboard.isNumLock },
-    { name: 'Scroll lock', active: device.value.hid.keyboard.isScrollLock }
+    { name: 'Caps', active: device.value.hid.keyboard.isCapsLock },
+    { name: 'Num', active: device.value.hid.keyboard.isNumLock },
+    { name: 'Scroll', active: device.value.hid.keyboard.isScrollLock }
   ]);
 
   return {

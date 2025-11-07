@@ -20,7 +20,7 @@
         :model-value="activeToggle"
         multiple
         color="#76FF03"
-        density="compact"
+        :density="isTouchDevice ? 'default' : 'compact'"
         @update:model-value="handleToggleChange"
       >
         <v-btn
@@ -28,9 +28,9 @@
           :key="item.id"
           :value="item.id"
           :prepend-icon="item.icon"
-          size="small"
+          :size="isTouchDevice ? 'default' : 'small'"
           variant="outlined"
-          class="text-none"
+          :class="['text-none', { 'touch-optimized': isTouchDevice }]"
           :style="item.id === 'video' ? 'pointer-events: none;' : ''"
         >
           <span v-if="activeToggle.includes(item.id)">{{ item.text }}</span>
@@ -116,7 +116,7 @@ const menuItems = [
   { id: "notifications", text: t("notification.title"), icon: "mdi-bell-outline" }
 ];
 
-// Computed properties
+// Computed properties  
 const availableMenuItems = computed(() => 
   menuItems.filter(item => item.id !== 'mouse' || props.isTouchDevice)
 );
@@ -131,5 +131,27 @@ const availableMenuItems = computed(() =>
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* Touch-optimized button styling */
+.touch-optimized {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  padding: 8px 12px !important;
+  margin: 0 4px !important;
+}
+
+/* Ensure touch targets have proper spacing */
+.touch-optimized + .touch-optimized {
+  margin-left: 8px !important;
+}
+
+/* Larger touch targets for better accessibility */
+@media (max-width: 768px) {
+  .touch-optimized {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    font-size: 14px !important;
+  }
 }
 </style>
