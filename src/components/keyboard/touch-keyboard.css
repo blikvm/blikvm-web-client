@@ -1,7 +1,7 @@
-/* Mobile-First Keyboard - Designed specifically for mobile devices */
+/* Touch-First Keyboard - Designed specifically for touch devices */
 
-/* Base keyboard theme - Mobile optimized from the start */
-.mobile-keyboard-theme {
+/* Base keyboard theme - Touch optimized from the start */
+.touch-keyboard-theme {
   background-color: transparent !important;
   border: none !important;
   border-radius: 6px;
@@ -11,8 +11,8 @@
   max-width: 100vw !important;
 }
 
-/* Mobile-first button styling */
-.mobile-keyboard-theme .hg-button {
+/* Touch-first button styling */
+.touch-keyboard-theme .hg-button {
   background: rgba(118, 255, 3, 0.1) !important;
   border: 1px solid rgba(118, 255, 3, 0.3) !important;
   color: #ffffff !important;
@@ -33,7 +33,7 @@
 }
 
 /* Button hover effect */
-.mobile-keyboard-theme .hg-button:hover {
+.touch-keyboard-theme .hg-button:hover {
   background: rgba(118, 255, 3, 0.2) !important;
   border-color: rgba(118, 255, 3, 0.5) !important;
   transform: translateY(-1px) !important;
@@ -41,57 +41,57 @@
 }
 
 /* Button active/pressed effect */
-.mobile-keyboard-theme .hg-button:active,
-.mobile-keyboard-theme .hg-button.hg-activeButton {
+.touch-keyboard-theme .hg-button:active,
+.touch-keyboard-theme .hg-button.hg-activeButton {
   background: rgba(118, 255, 3, 0.3) !important;
   transform: translateY(0) scale(0.95) !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Function buttons (special keys) */
-.mobile-keyboard-theme .hg-button.hg-functionBtn {
+.touch-keyboard-theme .hg-button.hg-functionBtn {
   background: rgba(118, 255, 3, 0.2) !important;
   color: #76FF03 !important;
   font-weight: 600 !important;
   border: 2px solid rgba(118, 255, 3, 0.4) !important;
 }
 
-.mobile-keyboard-theme .hg-button.hg-functionBtn:hover {
+.touch-keyboard-theme .hg-button.hg-functionBtn:hover {
   background: rgba(118, 255, 3, 0.3) !important;
   border-color: rgba(118, 255, 3, 0.6) !important;
 }
 
-/* Mobile-first special button styling */
-.mobile-keyboard-theme .hg-button[data-skbtn="{space}"] {
+/* Touch-first special button styling */
+.touch-keyboard-theme .hg-button[data-skbtn="{space}"] {
   flex: 3 !important;
   background: rgba(118, 255, 3, 0.15) !important;
 }
 
-.mobile-keyboard-theme .hg-button[data-skbtn="{backspace}"],
-.mobile-keyboard-theme .hg-button[data-skbtn="{ent}"] {
+.touch-keyboard-theme .hg-button[data-skbtn="{backspace}"],
+.touch-keyboard-theme .hg-button[data-skbtn="{ent}"] {
   flex: 1.5 !important;
   background: rgba(255, 193, 7, 0.2) !important;
   color: #FFD600 !important;
   border-color: rgba(255, 193, 7, 0.4) !important;
 }
 
-.mobile-keyboard-theme .hg-button[data-skbtn="{shift}"] {
+.touch-keyboard-theme .hg-button[data-skbtn="{shift}"] {
   flex: 1.2 !important;
   background: rgba(33, 150, 243, 0.2) !important;
   color: #42A5F5 !important;
   border-color: rgba(33, 150, 243, 0.4) !important;
 }
 
-.mobile-keyboard-theme .hg-button[data-skbtn="{numbers}"],
-.mobile-keyboard-theme .hg-button[data-skbtn="{abc}"] {
+.touch-keyboard-theme .hg-button[data-skbtn="{numbers}"],
+.touch-keyboard-theme .hg-button[data-skbtn="{abc}"] {
   flex: 1.2 !important;
   background: rgba(156, 39, 176, 0.2) !important;
   color: #CE93D8 !important;
   border-color: rgba(156, 39, 176, 0.4) !important;
 }
 
-/* Mobile-first row styling */
-.mobile-keyboard-theme .hg-row {
+/* Touch-first row styling */
+.touch-keyboard-theme .hg-row {
   display: flex !important;
   justify-content: space-between !important;
   margin-bottom: 2px !important;
@@ -99,16 +99,16 @@
   gap: 1px !important;
 }
 
-/* Mobile-first responsive design - no desktop breakpoints needed */
-/* The keyboard is designed ONLY for mobile devices */
+/* Touch-first responsive design - no desktop breakpoints needed */
+/* The keyboard is designed ONLY for touch devices */
 
 /* Small phones (iPhone SE, etc.) */
 @media screen and (max-width: 375px) {
-  .mobile-keyboard-theme {
+  .touch-keyboard-theme {
     padding: 2px !important;
   }
   
-  .mobile-keyboard-theme .hg-button {
+  .touch-keyboard-theme .hg-button {
     font-size: 12px !important;
     min-height: 32px !important;
   }
@@ -116,7 +116,7 @@
 
 /* Standard phones (iPhone 12 Pro, most Android) */
 @media screen and (min-width: 376px) and (max-width: 414px) {
-  .mobile-keyboard-theme .hg-button {
+  .touch-keyboard-theme .hg-button {
     font-size: 14px !important;
     min-height: 36px !important;
   }
@@ -124,31 +124,31 @@
 
 /* Large phones and small tablets */
 @media screen and (min-width: 415px) and (max-width: 768px) {
-  .mobile-keyboard-theme .hg-button {
+  .touch-keyboard-theme .hg-button {
     font-size: 16px !important;
     min-height: 40px !important;
   }
 }
 
-/* Landscape orientation - compact for all mobile devices */
+/* Landscape orientation - compact for all touch devices */
 @media screen and (orientation: landscape) and (max-height: 500px) {
-  .mobile-keyboard-theme {
+  .touch-keyboard-theme {
     padding: 1px !important;
   }
   
-  .mobile-keyboard-theme .hg-button {
+  .touch-keyboard-theme .hg-button {
     min-height: 28px !important;
     font-size: 12px !important;
     margin: 0.5px !important;
   }
   
-  .mobile-keyboard-theme .hg-row {
+  .touch-keyboard-theme .hg-row {
     margin-bottom: 1px !important;
   }
 }
 
-/* Mobile-first accessibility and interaction */
-.mobile-keyboard-theme .hg-button {
+/* Touch-first accessibility and interaction */
+.touch-keyboard-theme .hg-button {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
@@ -157,13 +157,13 @@
 }
 
 /* Active button feedback */
-.mobile-keyboard-theme .hg-button.hg-activeButton {
+.touch-keyboard-theme .hg-button.hg-activeButton {
   box-shadow: 0 0 6px rgba(118, 255, 3, 0.6) !important;
   transform: scale(0.95) !important;
 }
 
 /* Focus accessibility */
-.mobile-keyboard-theme .hg-button:focus {
+.touch-keyboard-theme .hg-button:focus {
   outline: 2px solid #76FF03 !important;
   outline-offset: 1px !important;
 }

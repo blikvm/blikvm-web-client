@@ -20,43 +20,48 @@
         multiple
         color="#76FF03"
         :density="isTouchDevice ? 'default' : 'compact'"
+        elevation="0"
         @update:model-value="handleToggleChange"
       >
         <v-btn
           v-for="item in availableMenuItems"
           :key="item.id"
           :value="item.id"
-          :prepend-icon="item.icon"
+          :prepend-icon="!isTouchDevice ? item.icon : undefined"
           :size="isTouchDevice ? 'default' : 'small'"
-          variant="outlined"
+          variant="plain"
+          elevation="0"
           :class="['text-none', { 'touch-optimized': isTouchDevice }]"
           :style="item.id === 'video' ? 'pointer-events: none;' : ''"
         >
-          <span v-if="activeToggle.includes(item.id)">{{ item.text }}</span>
+          <v-icon v-if="isTouchDevice" size="small">{{ item.icon }}</v-icon>
+          <span v-if="activeToggle.includes(item.id) && !isTouchDevice">{{ item.text }}</span>
+        </v-btn>
+
+
+        <!-- Microphone for touch devices -->
+        <v-btn
+          v-if="isTouchDevice" 
+          variant="plain"
+          elevation="0"
+          color="#76FF03"
+          :size="isTouchDevice ? 'default' : 'small'"
+          :class="['microphone-btn', { 'touch-optimized': isTouchDevice }]"
+          @click="toggleMicrophone"
+        > 
+        <v-icon v-if="isTouchDevice" size="small">{{ isMicrophoneOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
         </v-btn>
       </v-btn-toggle>
     </v-col>
 
     <v-spacer />
-
-
-    <v-col order="last" class="d-flex justify-end align-center pa-0 ma-0">
-      <!-- Lock state indicators component -->
-      <LockStateIndicators 
-        :device="device"
-        :lock-states="lockStates"
-        :is-touch-device="isTouchDevice"
-      />
-      &nbsp;
-    </v-col>
   </v-row>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from "vue-i18n";
 import { useDisplay } from 'vuetify';
-import LockStateIndicators from './LockStateIndicators.vue';
 
 // Props
 const props = defineProps({
@@ -94,16 +99,23 @@ const { smAndUp } = useDisplay();
 const menuItems = [
   { id: "keyboard", text: t("common.keyboard"), icon: "mdi-keyboard" },
   { id: "video", text: t("common.video"), icon: "mdi-monitor" },
-  { id: "mouse", text: t("common.virtualMouse"), icon: "mdi-mouse-outline" },
   { id: "console", text: t("appFooter.sshTerminal"), icon: "mdi-console-line" },
   { id: "serial", text: t("appFooter.serialTerminal"), icon: "mdi-serial-port" },
   { id: "notifications", text: t("notification.title"), icon: "mdi-bell-outline" }
 ];
 
 // Computed properties  
-const availableMenuItems = computed(() => 
-  menuItems.filter(item => item.id !== 'mouse' || props.isTouchDevice)
-);
+const availableMenuItems = computed(() => menuItems);
+
+// Microphone state for touch devices
+const isMicrophoneOn = ref(false);
+
+// Microphone toggle function
+const toggleMicrophone = () => {
+  isMicrophoneOn.value = !isMicrophoneOn.value;
+  console.log('Microphone toggled:', isMicrophoneOn.value ? 'ON' : 'OFF');
+  // TODO: Implement actual microphone functionality
+};
 </script>
 
 <style scoped>
@@ -129,6 +141,36 @@ const availableMenuItems = computed(() =>
 /* Larger touch targets for better accessibility */
 @media (max-width: 768px) {
   .touch-optimized {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Microphone button styling */
+.microphone-btn {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  margin-left: 8px !important;
+}
+
+/* Apply touch-optimized styling to microphone */
+.microphone-btn.touch-optimized {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  padding: 8px 12px !important;
+  margin: 0 4px !important;
+}
+
+/* Touch-optimized microphone button for mobile */
+@media (max-width: 768px) {
+  .microphone-btn {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    margin-left: 12px !important;
+  }
+  
+  .microphone-btn.touch-optimized {
     min-height: 48px !important;
     min-width: 48px !important;
     font-size: 14px !important;

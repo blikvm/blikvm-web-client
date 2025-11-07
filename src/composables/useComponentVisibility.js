@@ -7,7 +7,7 @@ import { ref, watch } from 'vue';
 export function useComponentVisibility(device, isTouchDevice) {
   // Component visibility state
   const showKeyboard = ref(false);
-  const showMobileKeyboard = ref(false);
+  const showTouchKeyboard = ref(false);
   const showVirtualMouse = ref(false);
   const showSerial = ref(false);
   const showNotifications = ref(false);
@@ -21,7 +21,7 @@ export function useComponentVisibility(device, isTouchDevice) {
     showTommy.value = false;
     showVirtualMouse.value = false;
     showKeyboard.value = false;
-    showMobileKeyboard.value = false;
+    showTouchKeyboard.value = false;
     device.value.showSSHTerminal = false;
     showSerial.value = false;
   };
@@ -36,7 +36,6 @@ export function useComponentVisibility(device, isTouchDevice) {
     const hasSerial = toggleSelection.includes("serial");
     const hasNotifications = toggleSelection.includes("notifications");
     const hasTommy = toggleSelection.includes("tommy");
-    const hasMouse = toggleSelection.includes("mouse");
     
     
     // Business rules:
@@ -55,18 +54,22 @@ export function useComponentVisibility(device, isTouchDevice) {
       
       // Show keyboard based on device type
       if (isTouchDevice.value) {
-        showMobileKeyboard.value = true;
+        showTouchKeyboard.value = true;
         showKeyboard.value = false;
+        // Auto-show virtual mouse with touch keyboard
+        showVirtualMouse.value = true;
       } else {
         showKeyboard.value = true;
-        showMobileKeyboard.value = false;
+        showTouchKeyboard.value = false;
+        // Desktop has real mouse, no virtual mouse needed
+        showVirtualMouse.value = false;
       }
     } else if (hasNotifications) {
       // Notifications mode - allow terminals to coexist, but hide keyboards, tommy, and mouse
       showNotifications.value = true;
       showTommy.value = false;
       showKeyboard.value = false;
-      showMobileKeyboard.value = false;
+      showTouchKeyboard.value = false;
       showVirtualMouse.value = false;
       device.value.showSSHTerminal = hasConsole;
       showSerial.value = hasSerial;
@@ -75,7 +78,7 @@ export function useComponentVisibility(device, isTouchDevice) {
       showTommy.value = true;
       showNotifications.value = false;
       showKeyboard.value = false;
-      showMobileKeyboard.value = false;
+      showTouchKeyboard.value = false;
       showVirtualMouse.value = false;
       device.value.showSSHTerminal = hasConsole;
       showSerial.value = hasSerial;
@@ -84,30 +87,35 @@ export function useComponentVisibility(device, isTouchDevice) {
       showNotifications.value = false;
       showTommy.value = false;
       showKeyboard.value = false;
-      showMobileKeyboard.value = false;
-      showVirtualMouse.value = hasMouse;
+      showTouchKeyboard.value = false;
+      showVirtualMouse.value = false;
       device.value.showSSHTerminal = hasConsole;
       showSerial.value = hasSerial;
     } else {
       // Normal mode - show components based on toggle selection
       showNotifications.value = false;
       showTommy.value = false;
-      showVirtualMouse.value = hasMouse;   
       device.value.showSSHTerminal = hasConsole;
       showSerial.value = hasSerial;
       
       // Show keyboard based on device type
       if (hasKeyboard) {
         if (isTouchDevice.value) {
-          showMobileKeyboard.value = true;
+          showTouchKeyboard.value = true;
           showKeyboard.value = false;
+          // Auto-show virtual mouse with touch keyboard
+          showVirtualMouse.value = true;
         } else {
           showKeyboard.value = true;
-          showMobileKeyboard.value = false;
+          showTouchKeyboard.value = false;
+          // Desktop has real mouse, no virtual mouse needed
+          showVirtualMouse.value = false;
         }
       } else {
         showKeyboard.value = false;
-        showMobileKeyboard.value = false;
+        showTouchKeyboard.value = false;
+        // Hide virtual mouse when no keyboard
+        showVirtualMouse.value = false;
       }
     }
   };
@@ -126,7 +134,7 @@ export function useComponentVisibility(device, isTouchDevice) {
   return {
     // State
     showKeyboard,
-    showMobileKeyboard,
+    showTouchKeyboard,
     showVirtualMouse,
     showSerial,
     showNotifications,

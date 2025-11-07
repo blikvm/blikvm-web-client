@@ -1,14 +1,14 @@
-/* Debug CSS for Mobile Keyboard - Device-Specific Testing */
+/* Debug CSS for Touch Keyboard - Device-Specific Testing */
 
 /* iPhone 12 Pro and similar devices */
-.mobile-keyboard-theme.iphone-12-pro,
-.mobile-keyboard-theme.mobile-optimized {
+.touch-keyboard-theme.iphone-12-pro,
+.touch-keyboard-theme.mobile-optimized {
   padding: 6px !important;
   border: 2px solid #76FF03 !important; /* Green border to show it's active */
 }
 
-.mobile-keyboard-theme.iphone-12-pro .hg-button,
-.mobile-keyboard-theme.mobile-optimized .hg-button {
+.touch-keyboard-theme.iphone-12-pro .hg-button,
+.touch-keyboard-theme.mobile-optimized .hg-button {
   font-size: 16px !important;
   margin: 1.5px !important;
   min-height: 42px !important;
@@ -18,31 +18,31 @@
   border: 2px solid rgba(118, 255, 3, 0.4) !important;
 }
 
-.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{space}"],
-.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{space}"] {
+.touch-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{space}"],
+.touch-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{space}"] {
   min-width: 180px !important;
   background: rgba(255, 193, 7, 0.2) !important; /* Yellow background for space bar */
 }
 
-.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{numbers}"],
-.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{abc}"],
-.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{numbers}"],
-.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{abc}"] {
+.touch-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{numbers}"],
+.touch-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{abc}"],
+.touch-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{numbers}"],
+.touch-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{abc}"] {
   min-width: 45px !important;
   font-size: 14px !important;
   background: rgba(156, 39, 176, 0.3) !important; /* Purple for layout switchers */
 }
 
-.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{backspace}"],
-.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{ent}"],
-.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{backspace}"],
-.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{ent}"] {
+.touch-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{backspace}"],
+.touch-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{ent}"],
+.touch-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{backspace}"],
+.touch-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{ent}"] {
   min-width: 50px !important;
   background: rgba(244, 67, 54, 0.2) !important; /* Red for action buttons */
 }
 
-.mobile-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{shift}"],
-.mobile-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{shift}"] {
+.touch-keyboard-theme.iphone-12-pro .hg-button[data-skbtn="{shift}"],
+.touch-keyboard-theme.mobile-optimized .hg-button[data-skbtn="{shift}"] {
   min-width: 48px !important;
   background: rgba(33, 150, 243, 0.2) !important; /* Blue for shift */
 }

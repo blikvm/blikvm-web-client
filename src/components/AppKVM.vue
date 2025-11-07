@@ -23,7 +23,7 @@
 
 <template>
   <!-- Vuetify uses ref, id is old, not necessary. To be refactored -->
-  <div id="appkvm">
+  <div id="appkvm" tabindex="0" @click="ensureFocus">
     <video
       v-if="isVideoActive && isH264"
       id="webrtc-output"
@@ -131,7 +131,7 @@
   import { startSession } from '@/composables/session.js';
   import { useDevice } from '@/composables/useDevice';
   import { usePointerLock } from '@/composables/usePointerLock';
-  import { useKeyboard } from '@/composables/useKeyboard-new';
+  import { useKeyboard } from '@/composables/useKeyboard';
   import { useVideo } from '@/composables/useVideo';
   import { useMouse } from '@/composables/useMouse';
   import { RateLimitedMouse } from '../utils/mouse.js';
@@ -394,12 +394,23 @@
     }
   );
 
+  // Ensure container gets focus for keyboard events on mobile
+  const ensureFocus = () => {
+    const container = document.getElementById('appkvm');
+    if (container && document.activeElement !== container) {
+      container.focus();
+    }
+  };
+
   onMounted(() => {
     console.log('AppKVM mounted');
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('pagehide', releaseAllKey);
     window.addEventListener('blur', releaseAllKey);
+    
+    // Ensure container is focused for keyboard events
+    ensureFocus();
     const savedVideoMode = localStorage.getItem('videoMode');
     if (savedVideoMode) {
       device.value.video.videoMode = savedVideoMode;
@@ -446,6 +457,10 @@
 </script>
 
 <style scoped>
+  #appkvm {
+    outline: none; /* Remove focus outline for better UX */
+  }
+
   .rotate-0 {
     transform: rotate(0deg) !important;
   }

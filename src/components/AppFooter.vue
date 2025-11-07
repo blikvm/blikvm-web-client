@@ -4,15 +4,15 @@
     v-if="shouldShowFooter"
     class="d-flex flex-column pa-0 bg-black"
   >
-    <!-- Content sections with proper ordering: Virtual Mouse → Mobile Keyboard → Desktop Keyboard → Terminals → Notifications -->
+    <!-- Content sections with proper ordering: Virtual Mouse → Touch Keyboard → Desktop Keyboard → Terminals → Notifications -->
     <div v-if="hasActiveComponents">
 
       <!-- Virtual Mouse Section (appears above keyboard) -->
       <AppFooterVirtualMouse :show-virtual-mouse="showVirtualMouse" />
 
-      <!-- Mobile Keyboard Section -->
-      <div v-if="showMobileKeyboard">
-        <AppMobileKeyboard />
+      <!-- Touch Keyboard Section -->
+      <div v-if="showTouchKeyboard">
+        <AppTouchKeyboard />
       </div>
 
       <!-- Desktop Keyboard Section -->
@@ -37,14 +37,27 @@
     </div>
 
     <!-- Navigation bar -->
-    <AppFooterNavigation
-      :footer="footer"
-      :active-toggle="activeToggle"
-      :device="device"
-      :lock-states="lockStates"
-      :is-touch-device="isTouchDevice"
-      :handle-toggle-change="handleToggleChange"
-    />
+    <div class="position-relative w-100" style="height: 40px;">
+      <!-- Navigation (centered) -->
+      <AppFooterNavigation
+        :footer="footer"
+        :active-toggle="activeToggle"
+        :device="device"
+        :lock-states="lockStates"
+        :is-touch-device="isTouchDevice"
+        :handle-toggle-change="handleToggleChange"
+      />
+      
+      <!-- Lock state indicators for desktop only (absolute positioned at end) -->
+      <div v-if="!isTouchDevice" class="position-absolute d-flex align-center" style="right: 16px; top: 50%; transform: translateY(-50%);">
+        <LockStateIndicators 
+          :device="device"
+          :lock-states="lockStates"
+          :is-touch-device="isTouchDevice"
+        />
+        &nbsp;
+      </div>
+    </div>
   </v-footer>
 </template>
 
@@ -53,7 +66,7 @@ import { computed, watch, onMounted, ref } from 'vue'
 import { useAppStore } from "@/stores/stores"
 import { storeToRefs } from "pinia"
 import { useDevice } from "@/composables/useDevice"
-import { useKeyboard } from "@/composables/useKeyboard-new"
+import { useKeyboard } from "@/composables/useKeyboard"
 import { useFooterToggle } from "@/composables/useFooterToggle"
 import { useComponentVisibility } from "@/composables/useComponentVisibility"
 import { useLockStates } from "@/composables/useLockStates"
@@ -61,10 +74,11 @@ import { useLockStates } from "@/composables/useLockStates"
 // Component imports
 import AppFooterNavigation from "@/components/footer/AppFooterNavigation.vue"
 import AppFooterDesktopKeyboard from "@/components/footer/AppFooterDesktopKeyboard.vue"
-import AppMobileKeyboard from "@/components/keyboard/AppMobileKeyboard.vue"
+import AppTouchKeyboard from "@/components/AppKeyboardTouch.vue"
 import AppFooterVirtualMouse from "@/components/footer/AppFooterVirtualMouse.vue"
 import AppFooterTerminals from "@/components/footer/AppFooterTerminals.vue"
 import AppFooterNotifications from "@/components/footer/AppFooterNotifications.vue"
+import LockStateIndicators from "@/components/footer/LockStateIndicators.vue"
 
 // Composables and stores
 const store = useAppStore()
@@ -81,10 +95,11 @@ const { lockStates } = useLockStates(device)
 // Store previous state to detect changes
 const previousToggleState = ref([...activeToggle.value])
 
+
 // Component visibility management with business rules
 const {
   showKeyboard,
-  showMobileKeyboard,
+  showTouchKeyboard,
   showVirtualMouse,
   showSerial,
   showNotifications,
@@ -96,7 +111,7 @@ const {
 const showSSHTerminal = computed(() => device.value.showSSHTerminal)
 
 const hasActiveComponents = computed(() => 
-  showKeyboard.value || showMobileKeyboard.value || showVirtualMouse.value || showSSHTerminal.value || showSerial.value || showNotifications.value
+  showKeyboard.value || showTouchKeyboard.value || showVirtualMouse.value || showSSHTerminal.value || showSerial.value || showNotifications.value
 )
 
 const shouldShowFooter = computed(() => 

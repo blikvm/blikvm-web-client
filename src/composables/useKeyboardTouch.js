@@ -3,23 +3,23 @@
 import { ref, nextTick } from 'vue';
 import Keyboard from 'simple-keyboard';
 import 'simple-keyboard/build/css/index.css';
-import { useKeyboard } from '@/composables/useKeyboard-new.js';
+import { useKeyboard } from '@/composables/useKeyboard.js';
 
 /**
- * Mobile keyboard composable using simple-keyboard
+ * Touch keyboard composable using simple-keyboard
  * Integrates with the main keyboard system for consistent event handling
  */
-export function useMobileKeyboard() {
+export function useKeyboardTouch() {
   // Use the main keyboard system for consistent event handling
   const { handleKeyPress, handleKeyReleased } = useKeyboard();
   
-  // Mobile keyboard state
+  // Touch keyboard state
   const keyboardInstance = ref(null);
   const currentInput = ref('');
   const isInitialized = ref(false);
   const currentLayoutName = ref('default');
   
-  // Mobile keyboard layouts
+  // Touch keyboard layouts
   const layouts = {
     default: [
       "q w e r t y u i o p",
@@ -142,10 +142,10 @@ export function useMobileKeyboard() {
     }
   };
 
-  // Initialize mobile keyboard
-  const initializeMobileKeyboard = async (container, options = {}) => {
+  // Initialize touch keyboard
+  const initializeTouchKeyboard = async (container, options = {}) => {
     if (!container) {
-      console.error('Mobile keyboard container not provided');
+      console.error('Touch keyboard container not provided');
       return false;
     }
 
@@ -159,7 +159,7 @@ export function useMobileKeyboard() {
         layoutName: currentLayoutName.value,
         layout: layouts,
         display: display,
-        theme: "hg-theme-default mobile-keyboard-theme",
+        theme: "hg-theme-default touch-keyboard-theme",
         ...options
       };
 
@@ -168,7 +168,7 @@ export function useMobileKeyboard() {
       
       return true;
     } catch (error) {
-      console.error('Failed to initialize mobile keyboard:', error);
+      console.error('Failed to initialize touch keyboard:', error);
       return false;
     }
   };
@@ -225,7 +225,7 @@ export function useMobileKeyboard() {
   };
 
   // Initialize keyboard (alias for compatibility)
-  const initializeKeyboard = initializeMobileKeyboard;
+  const initializeKeyboard = initializeTouchKeyboard;
 
   return {
     // State
@@ -249,7 +249,7 @@ export function useMobileKeyboard() {
     clearInput,
 
     // Keyboard lifecycle
-    initializeMobileKeyboard,
+    initializeTouchKeyboard,
     initializeKeyboard,
     destroyKeyboard,
     setTheme,

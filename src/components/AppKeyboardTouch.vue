@@ -1,14 +1,11 @@
 <template>
-  <div class="mobile-keyboard-container">
+  <div class="touch-keyboard-container">
     <!-- Keyboard Header -->
     <div v-if="showHeader" class="keyboard-header">
       <div class="keyboard-info">
-        <v-icon color="#76FF03" size="small" class="mr-2">
+        <v-icon color="#76FF03" size="small">
           mdi-keyboard
         </v-icon>
-        <span class="text-caption">
-          {{ currentLayoutName.toUpperCase() }} Layout
-        </span>
       </div>
       
       <div class="keyboard-actions">
@@ -22,14 +19,6 @@
           {{ isNumbersLayout ? 'ABC' : '123' }}
         </v-btn>
         
-        <v-btn
-          size="small"
-          variant="text"
-          color="#76FF03"
-          @click="clearInput"
-        >
-          <v-icon size="small">mdi-backspace-outline</v-icon>
-        </v-btn>
         
         <v-btn
           v-if="showCloseButton"
@@ -53,14 +42,40 @@
         variant="outlined"
         color="#76FF03"
         class="keyboard-input"
+        :clearable="!sendDirectly"
         @click="focusKeyboard"
+        @click:clear="clearInput"
       >
+        <template v-if="showSendDirectly" v-slot:prepend>
+          <v-checkbox
+            v-model="sendDirectly"
+            color="#76FF03"
+            density="compact"
+            hide-details
+            class="send-direct-checkbox"
+            v-tooltip:top="'Send text directly'"
+          />
+        </template>
         <template v-slot:append>
+          <v-btn
+            v-if="!sendDirectly && currentInput"
+            size="small"
+            variant="text"
+            color="#FFD600"
+            :loading="isSending"
+            :disabled="isSending"
+            @click="sendTextDirectly"
+            v-tooltip:top="'Send text to remote system'"
+          >
+            <v-icon size="small">mdi-send</v-icon>
+          </v-btn>
+          
           <v-btn
             size="small"
             variant="text"
             color="#76FF03"
             @click="copyToClipboard"
+            v-tooltip:top="'Copy to clipboard'"
           >
             <v-icon size="small">mdi-content-copy</v-icon>
           </v-btn>
@@ -76,32 +91,14 @@
     >
     </div>
 
-    <!-- Status Bar -->
-    <div v-if="showStatusBar" class="keyboard-status">
-      <div class="status-left">
-        <v-chip
-          size="x-small"
-          :color="isInitialized ? '#76FF03' : '#D32F2F'"
-          variant="flat"
-        >
-          {{ isInitialized ? 'Ready' : 'Loading...' }}
-        </v-chip>
-      </div>
-      
-      <div class="status-right">
-        <span class="text-caption text-medium-emphasis">
-          {{ inputLength }} chars
-        </span>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
-import { useMobileKeyboard } from '@/composables/keyboards/useMobileKeyboard.js';
+import { useKeyboardTouch } from '@/composables/useKeyboardTouch.js';
 import { useClipboard } from '@/composables/useClipboard.js';
-import './mobile-keyboard.css';
+import './keyboard/touch-keyboard.css';
 
 // Props
 const props = defineProps({
@@ -113,10 +110,6 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
-  showStatusBar: {
-    type: Boolean,
-    default: true
-  },
   showLanguageToggle: {
     type: Boolean,
     default: true
@@ -125,13 +118,17 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  showSendDirectly: {
+    type: Boolean,
+    default: true
+  },
   inputPlaceholder: {
     type: String,
     default: 'Type here...'
   },
   theme: {
     type: String,
-    default: 'mobile-keyboard-theme'
+    default: 'touch-keyboard-theme'
   },
   autoFocus: {
     type: Boolean,
@@ -144,18 +141,46 @@ const props = defineProps({
 const emit = defineEmits(['input-change', 'key-press', 'close', 'ready']);
 
 // Composables
-const mobileKeyboard = useMobileKeyboard();
+const touchKeyboard = useKeyboardTouch();
 const { copyClipboard } = useClipboard();
 
 // Template refs
 const keyboardContainer = ref(null);
 
+// Component state
+const sendDirectly = ref(false);
+const isSending = ref(false);
+
 // Computed properties
-const currentInput = computed(() => mobileKeyboard.currentInput.value);
-const currentLayoutName = computed(() => mobileKeyboard.currentLayoutName.value);
-const isInitialized = computed(() => mobileKeyboard.isInitialized.value);
-const isNumbersLayout = computed(() => mobileKeyboard.isNumbersLayout());
-const inputLength = computed(() => currentInput.value.length);
+const currentInput = computed(() => touchKeyboard.currentInput.value);
+const currentLayoutName = computed(() => touchKeyboard.currentLayoutName.value);
+const isInitialized = computed(() => touchKeyboard.isInitialized.value);
+const isNumbersLayout = computed(() => touchKeyboard.isNumbersLayout());
+
+// Custom key press handler that respects sendDirectly mode
+const handleKeyboardPress = (button) => {
+  // Always handle layout switching keys
+  if (button === "{shift}" || button === "{lock}" || button === "{numbers}" || button === "{abc}") {
+    touchKeyboard.onKeyPress(button);
+    emit('key-press', button);
+    return;
+  }
+  
+  if (sendDirectly.value) {
+    // When "Send directly" is CHECKED: Send keys immediately to server, clear text field
+    touchKeyboard.onKeyPress(button);
+    // Clear the accumulated text since we're sending keys directly
+    nextTick(() => {
+      touchKeyboard.clearInput();
+    });
+  } else {
+    // When "Send directly" is UNCHECKED: Let text accumulate, don't send to server
+    // Text will be visible in field and sent later via "Send" button
+    // Do nothing here - simple-keyboard will handle text accumulation via onChange
+  }
+  
+  emit('key-press', button);
+};
 
 // Methods
 const initializeKeyboard = async () => {
@@ -170,20 +195,17 @@ const initializeKeyboard = async () => {
     theme: `hg-theme-default ${props.theme}`,
     // Custom onChange to emit to parent
     onChange: (input) => {
-      mobileKeyboard.onInputChange(input);
+      touchKeyboard.onInputChange(input);
       emit('input-change', input);
     },
-    // Custom onKeyPress to emit to parent
-    onKeyPress: (button) => {
-      mobileKeyboard.onKeyPress(button);
-      emit('key-press', button);
-    }
+    // Custom onKeyPress that respects sendDirectly mode
+    onKeyPress: handleKeyboardPress
   };
 
-  const success = await mobileKeyboard.initializeKeyboard(keyboardContainer.value, options);
+  const success = await touchKeyboard.initializeKeyboard(keyboardContainer.value, options);
   
   if (success) {
-    console.log('Mobile keyboard component initialized');
+    console.log('Touch keyboard component initialized');
     emit('ready');
     
     if (props.autoFocus) {
@@ -194,19 +216,19 @@ const initializeKeyboard = async () => {
 
 const toggleLayoutMode = () => {
   if (isNumbersLayout.value) {
-    mobileKeyboard.handleNumbers(); // Switch to ABC
+    touchKeyboard.handleNumbers(); // Switch to ABC
   } else {
-    mobileKeyboard.handleNumbers(); // Switch to 123
+    touchKeyboard.handleNumbers(); // Switch to 123
   }
 };
 
 const clearInput = () => {
-  mobileKeyboard.clearInput();
+  touchKeyboard.clearInput();
   emit('input-change', '');
 };
 
 const focusKeyboard = () => {
-  // Focus the keyboard for better mobile experience
+  // Focus the keyboard for better touch experience
   if (keyboardContainer.value) {
     const keyboardElement = keyboardContainer.value.querySelector('.hg-theme-default');
     if (keyboardElement) {
@@ -226,10 +248,47 @@ const copyToClipboard = async () => {
   }
 };
 
+const sendTextDirectly = async () => {
+  if (!currentInput.value || isSending.value) return;
+  
+  isSending.value = true;
+  
+  try {
+    // Send each character with a small delay for reliable transmission
+    for (let i = 0; i < currentInput.value.length; i++) {
+      const char = currentInput.value[i];
+      touchKeyboard.onKeyPress(char);
+      
+      // Small delay between characters for reliable transmission
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    
+    console.log('Text sent directly:', currentInput.value);
+    
+    // Clear input after successful send
+    touchKeyboard.clearInput();
+    emit('input-change', '');
+    
+  } catch (error) {
+    console.error('Failed to send text directly:', error);
+  } finally {
+    isSending.value = false;
+  }
+};
+
 // Watch for theme changes
 watch(() => props.theme, (newTheme) => {
   if (isInitialized.value) {
-    mobileKeyboard.setTheme(newTheme);
+    touchKeyboard.setTheme(newTheme);
+  }
+});
+
+// Watch for sendDirectly mode changes
+watch(sendDirectly, (newValue) => {
+  if (newValue) {
+    // When switching to "Send directly" mode, clear any accumulated text
+    touchKeyboard.clearInput();
+    emit('input-change', '');
   }
 });
 
@@ -239,25 +298,24 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  mobileKeyboard.destroyKeyboard();
+  touchKeyboard.destroyKeyboard();
 });
 
 // Expose methods for parent component
 defineExpose({
-  setInput: mobileKeyboard.setInput,
-  getInput: mobileKeyboard.getInput,
+  setInput: touchKeyboard.setInput,
+  getInput: touchKeyboard.getInput,
   clearInput,
-  setLayout: mobileKeyboard.setLayout,
-  getCurrentLayout: mobileKeyboard.getCurrentLayout,
+  setLayout: touchKeyboard.setLayout,
+  getCurrentLayout: touchKeyboard.getCurrentLayout,
   focusKeyboard,
   isInitialized
 });
 </script>
 
 <style scoped>
-.mobile-keyboard-container {
+.touch-keyboard-container {
   background: #000000;
-  border: 1px solid rgba(118, 255, 3, 0.3);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -291,32 +349,28 @@ defineExpose({
   font-family: 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace;
 }
 
+.send-direct-checkbox {
+  margin: 0;
+  padding: 0;
+  flex: none;
+}
+
+.send-direct-checkbox :deep(.v-selection-control) {
+  min-height: auto;
+}
+
+.send-direct-checkbox :deep(.v-selection-control__wrapper) {
+  height: 20px;
+  width: 20px;
+}
+
 .keyboard-wrapper {
   padding: 8px;
-  min-height: 200px;
+  min-height: 240px;
 }
 
 .keyboard-wrapper.keyboard-minimal {
   padding: 4px;
-}
-
-.keyboard-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 12px;
-  background: rgba(118, 255, 3, 0.05);
-  border-top: 1px solid rgba(118, 255, 3, 0.1);
-}
-
-.status-left {
-  display: flex;
-  align-items: center;
-}
-
-.status-right {
-  display: flex;
-  align-items: center;
 }
 
 /* Simple Keyboard Theme Customization */
@@ -360,7 +414,7 @@ defineExpose({
 @media (max-width: 414px) and (min-width: 375px) {
   .keyboard-wrapper {
     padding: 6px;
-    min-height: 220px;
+    min-height: 260px;
   }
   
   .keyboard-header {
@@ -380,7 +434,7 @@ defineExpose({
 @media (max-width: 393px) and (min-width: 360px) {
   .keyboard-wrapper {
     padding: 4px;
-    min-height: 200px;
+    min-height: 240px;
   }
   
   .keyboard-header {
@@ -400,7 +454,7 @@ defineExpose({
 @media (max-width: 359px) {
   .keyboard-wrapper {
     padding: 3px;
-    min-height: 180px;
+    min-height: 220px;
   }
   
   .keyboard-header {
@@ -418,12 +472,12 @@ defineExpose({
 
 /* Landscape orientation for mobile */
 @media (orientation: landscape) and (max-height: 500px) {
-  .mobile-keyboard-container {
+  .touch-keyboard-container {
     border-radius: 4px;
   }
   
   .keyboard-wrapper {
-    min-height: 160px;
+    min-height: 180px;
     padding: 2px;
   }
   

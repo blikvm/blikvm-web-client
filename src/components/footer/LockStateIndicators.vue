@@ -27,10 +27,11 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
 import { useI18n } from "vue-i18n";
 
 // Props
-defineProps({
+const props = defineProps({
   device: {
     type: Object,
     required: true
@@ -47,6 +48,12 @@ defineProps({
 
 // Composables
 const { t } = useI18n();
+
+// Debug logging for mobile state
+onMounted(() => {
+  console.log('DEBUG LockStateIndicators - isTouchDevice:', props.isTouchDevice);
+  console.log('DEBUG LockStateIndicators - will show lock indicators:', !props.isTouchDevice);
+});
 </script>
 
 <style scoped>
