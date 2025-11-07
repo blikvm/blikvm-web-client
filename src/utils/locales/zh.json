@@ -225,7 +225,8 @@
       "deviceFile": "设备",
       "deviceFileField": "设备字段",
       "deviceFileHelp": "在类 Unix 操作系统中表示 USB 转串口适配器的设备。",
-      "deviceFilePlaceholder": "输入设备"
+      "deviceFilePlaceholder": "输入设备",
+      "port": "切换端口"
     },
     "network": {
       "title": "网络",
@@ -444,8 +445,8 @@
     "overlayOn": "开启叠加层",
     "overlayOff": "关闭叠加层",
     "takeSnapshot": "截图",
-    "startRecording": "开始录制",
-    "stopRecording": "停止录制",
+    "startRecording": "开始视频录制",
+    "stopRecording": "停止视频录制",
     "send": "发送",
     "fullscreenMode": "进入全屏模式",
     "keyboard": "键盘",
@@ -471,7 +472,8 @@
     "serialTerminal": "串行终端",
     "notifications": "通知",
     "toggleSettings": "切换设置",
-    "toggleFooter": "切换页脚"
+    "toggleFooter": "切换页脚",
+    "atxPower": "ATX 电源"
   },
   "label": {
     "connected": "已连接",

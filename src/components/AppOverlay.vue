@@ -2,116 +2,83 @@
   <v-overlay
     :model-value="showOverlay"
     :opacity="0"
-    contained
-    content-class="d-flex flex-column align-center justify-end w-100 h-100"
-    :style="{ zIndex: zIndex.overlay }"
+    content-class="overlay-passthrough"
+    :style="overlayStyle"
     :scrim="false"
     :persistent="true"
     no-click-animation
   >
-    <!--
-   <v-hover v-slot="{ isHovering, props }">  
--->
+
 
     <!-- top control bar-->
     <div
-      class="overlay-control-bar d-flex w-100 ga-3 pa-1 justify-end align-center"
-      style="margin-top: 45px; margin-right: 40px"
+      class="overlay-control-bar d-flex ga-3 pa-1 justify-end align-center"
+      :style="`position: absolute; top: ${topControlsPosition}; right: 20px;`"
     >
-      <KvmHandRaise v-if="isExperimental" />
-      <KvmClipboard v-if="isExperimental" />
+      <!-- Experimental Controls Group -->
+      <div v-if="isExperimental" class="control-group">
+        <KvmHandRaise />
+        <KvmClipboard />
+      </div>
 
-      <v-divider class="mx-3" inset vertical></v-divider>
+      <!-- Recording Controls Group -->
+      <div v-if="isVideoVisible" class="control-group">
+        <v-tooltip location="top" content-class="">
+          <template v-slot:activator="{ props: tooltipProps }">
+            <v-icon
+              v-bind="tooltipProps"
+              :size="size"
+              icon="mdi-camera-outline"
+              @click="takeSnapshot"
+            />
+          </template>
+          <span>Take snapshot</span>
+        </v-tooltip>
 
-      <v-tooltip location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
-          <v-icon
-            v-bind="tooltipProps"
-            :size="size"
-            icon="mdi-camera-outline"
-            @click="takeSnapshot"
-          />
-        </template>
-        <span>Take snapshot</span>
-      </v-tooltip>
-
-      <v-tooltip v-if="device.video.videoMode === 'h264'" location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            class="text-none"
-            :color="isRecording ? '#D32F2F' : '#76FF03'"
-            :prepend-icon="isRecording ? 'mdi-stop' : 'mdi-radiobox-marked'"
-            v-ripple
-            :text="isRecording ? formattedRecordingTime : undefined"
-            :variant="isRecording ? 'tonal' : 'plain'"
-            @click="videoRecord"
-          >
-          </v-btn>
-        </template>
-        <span>{{ isRecording ? 'Stop recording' : 'Start recording' }}</span>
-      </v-tooltip>
+        <v-tooltip v-if="device.video.videoMode === 'h264'" location="top" content-class="">
+          <template v-slot:activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              class="text-none"
+              :color="isRecording ? '#D32F2F' : '#76FF03'"
+              :prepend-icon="isRecording ? 'mdi-stop' : 'mdi-radiobox-marked'"
+              v-ripple
+              :text="isRecording ? formattedRecordingTime : undefined"
+              :variant="isRecording ? 'tonal' : 'plain'"
+              size="small"
+              @click="handleVideoRecord"
+            >
+            </v-btn>
+          </template>
+          <span>{{ isRecording ? t('common.stopRecording') : t('common.startRecording') }}</span>
+        </v-tooltip>
+      </div>
     </div>
 
-    <v-spacer />
-    <!-- Center control bar -->
-    <v-spacer />
 
     <div
-      class="overlay-control-bar d-flex w-100 ga-3 pa-1 justify-start align-center"
-      style="margin-bottom: 10px; margin-left: 40px"
+      class="overlay-control-bar d-flex ga-3 pa-1 justify-start align-center"
+      :style="`position: absolute; bottom: ${bottomControlsPosition}; left: 20px;`"
     >
       <!-- bottom control bar-->
       <div
         class="d-flex w-100 ga-3 pa-0 align-center"
-        style="margin-bottom: 10px; margin-left: 40px"
       >
-        <!-- <v-tooltip location="top" content-class="">
-          <template v-slot:activator="{ props: tooltipProps }">
-            <v-icon
-              v-bind="tooltipProps"
-              :icon="isPlaying ? 'mdi-pause' : 'mdi-play'"
-              :color="isHoveringPlaying ? '#76FF03' : undefined"
-              :size="size"
-              @click="isPlaying = !isPlaying"
-              @mouseenter="isHoveringPlaying = true"
-              @mouseleave="isHoveringPlaying = false"
-            />
-          </template>
-          <span>Pause</span>
-        </v-tooltip> -->
 
-        <div v-if="device.video.videoMode === 'h264'">
+        <!-- Audio Controls Group -->
+        <div v-if="device.video.videoMode === 'h264' && isVideoVisible" class="control-group">
+          <div
+            class="d-inline-flex align-center ga-2"
+            @mouseenter="isHoveringVolume = true"
+            @mouseleave="isHoveringVolume = false"
+          >
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
-              <v-icon
+              <v-btn
                 v-bind="tooltipProps"
-                :color="!canUseMic ? '#9E9E9E' : audio.isMicrophoneOn ? '#76FF03' : undefined"
-                :class="{ 'cursor-not-allowed': !canUseMic }"
-                :size="size"
-                :icon="audio.isMicrophoneOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-                @click="onMicClick"
-              />
-            </template>
-            <span>{{
-              canUseMic ? (audio.isMicrophoneOn ? 'Mute' : 'Unmute') : 'need to register mic first'
-            }}</span>
-          </v-tooltip>
-        </div>
-
-        <div
-          v-if="device.video.videoMode === 'h264'"
-          class="d-inline-flex align-center ga-2"
-          @mouseenter="isHoveringVolume = true"
-          @mouseleave="isHoveringVolume = false"
-        >
-          <v-tooltip location="top" content-class="">
-            <template v-slot:activator="{ props: tooltipProps }">
-              <v-icon
-                v-bind="tooltipProps"
-                :color="isHoveringVolume || device.video.audioVolume > 0 ? '#76FF03' : undefined"
-                :size="size"
-                :icon="
+                :color="isHoveringVolume || device.video.audioVolume > 0 ? '#76FF03' : '#FFFFFF'"
+                :variant="device.video.audioVolume > 0 ? 'tonal' : 'plain'"
+                :prepend-icon="
                   device.video.audioVolume === 0 || undefined
                     ? 'mdi-volume-mute'
                     : device.video.audioVolume < 30
@@ -120,107 +87,132 @@
                         ? 'mdi-volume-medium'
                         : 'mdi-volume-high'
                 "
+                :size="size"
+                v-ripple
                 @click="device.video.audioVolume = 0"
-              />
+              >
+              </v-btn>
             </template>
             <span>Mute</span>
           </v-tooltip>
 
-          <!-- Only show slider on hover -->
-          <v-slider
-            v-if="isHoveringVolume"
-            v-model="device.video.audioVolume"
-            direction="horizontal"
-            hide-details
-            color="#76FF03"
-            track-color="white"
-            track-size="10"
-            style="width: 150px"
-          />
+            <!-- Only show slider on hover -->
+            <v-slider
+              v-if="isHoveringVolume"
+              v-model="device.video.audioVolume"
+              direction="horizontal"
+              hide-details
+              color="#76FF03"
+              track-color="white"
+              track-size="10"
+              style="width: 150px"
+            />
+          </div>
+
+          <v-tooltip location="top" content-class="">
+            <template v-slot:activator="{ props: tooltipProps }">
+              <v-btn
+                v-bind="tooltipProps"
+                :color="!canUseMic ? '#9E9E9E' : audio.isMicrophoneOn ? '#76FF03' : '#FFFFFF'"
+                :variant="audio.isMicrophoneOn ? 'tonal' : 'plain'"
+                :class="{ 'cursor-not-allowed': !canUseMic }"
+                :prepend-icon="audio.isMicrophoneOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+                :size="size"
+                v-ripple
+                @click="onMicClick"
+              >
+              </v-btn>
+            </template>
+            <span>{{
+              canUseMic ? (audio.isMicrophoneOn ? 'Mute' : 'Unmute') : 'need to register mic first'
+            }}</span>
+          </v-tooltip>
         </div>
 
         <v-spacer />
+      </div>
+    </div>
 
-        <!-- switch -->
-        <template v-for="channel in filteredChannels" :key="channel.id">
-          <v-tooltip v-if="channel.override" location="bottom" content-class="">
-            <template #activator="{ props }">
-              <div v-bind="props">
-                <v-btn
-                  size="x-small"
-                  rounded
-                  :color="channel.name == activeChannel ? 'primary' : 'green'"
-                  @click="changeSwitchChannel(channel.name)"
-                >
-                  {{ channel.name }}
-                </v-btn>
-              </div>
-            </template>
-            <p>{{ displayName(channel) }}</p>
-          </v-tooltip>
-
-          <v-tooltip v-else location="bottom" content-class="">
-            <template #activator="{ props }">
-              <div v-bind="props">
-                <v-btn
-                  size="x-small"
-                  rounded
-                  :color="channel.name == activeChannel ? 'primary' : 'green'"
-                  @click="changeSwitchChannel(channel.name)"
-                >
-                  {{ channel.name }}
-                </v-btn>
-              </div>
-            </template>
-            <p>{{ displayName(channel) }}</p>
-          </v-tooltip>
-        </template>
-
-        <!-- ATX -->
-        <v-menu location="top" v-if="device.isATXActive" :style="{ zIndex: zIndex.overlay }">
-          <template v-slot:activator="{ props }">
-            <v-btn
-              v-bind="props"
+    <!-- Right-aligned controls -->
+    <div
+      class="overlay-control-bar d-flex ga-3 pa-1 justify-end align-center"
+      :style="`position: absolute; bottom: ${bottomControlsPosition}; right: 8px;`"
+    >
+      <!-- Combined Switch and ATX Controls Group -->
+        <div v-if="filteredChannels.length > 0 || device.isATXActive" class="control-group switch-controls">
+          <!-- Switch Controls -->
+          <template v-if="filteredChannels.length > 0">
+            <v-tooltip location="top" content-class="">
+              <template v-slot:activator="{ props: tooltipProps }">
+                <v-icon
+                  v-bind="tooltipProps"
+                  icon="mdi-monitor-multiple"
+                  :size="size"
+                />
+              </template>
+              <span>{{ t('settings.switch.port') }}</span>
+            </v-tooltip>
+            <v-btn-toggle
+              :model-value="activeChannel"
               color="#76FF03"
-              prepend-icon="mdi-power-settings"
-              size="large"
-              rounded
-              text="mytarget"
-              variant="plain"
+              density="compact"
+              @update:model-value="changeSwitchChannel"
             >
-            </v-btn>
+              <template v-for="channel in filteredChannels" :key="channel.id">
+                <v-tooltip location="top" content-class="">
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      :value="channel.name"
+                      size="small"
+                      variant="outlined"
+                      class="text-none"
+                    >
+                      {{ channel.name }}
+                    </v-btn>
+                  </template>
+                  <span>{{ displayName(channel) }}</span>
+                </v-tooltip>
+              </template>
+            </v-btn-toggle>
           </template>
+          
+          <!-- ATX Controls -->
+          <v-tooltip v-if="device.isATXActive" location="top" content-class="">
+            <template v-slot:activator="{ props: tooltipProps }">
+              <v-menu location="top" :style="{ zIndex: zIndex.overlay }">
+                <template v-slot:activator="{ props }">
+                  <v-icon
+                    v-bind="{ ...props, ...tooltipProps }"
+                    size="default"
+                    rounded
+                    variant="plain"
+                  >mdi-power-settings
+                  </v-icon>
+                </template>
 
-          <v-list select-strategy="leaf">
-            <v-list-item
-              v-for="(atxItem, atxIndex) in atxItems"
-              :key="atxIndex"
-              :value="atxIndex"
-              active-class="text-green"
-              @click="triggerPowerButton(atxItem.action)"
-            >
-              <v-icon :icon="atxItem.icon" color="#76FF03"></v-icon>
-              {{ atxItem.title }}
-            </v-list-item>
-          </v-list>
-        </v-menu>
+                <v-list select-strategy="leaf">
+                  <v-list-item
+                    v-for="(atxItem, atxIndex) in atxItems"
+                    :key="atxIndex"
+                    :value="atxIndex"
+                    active-class="text-green"
+                    @click="triggerPowerButton(atxItem.action)"
+                  >
+                    <v-icon :icon="atxItem.icon" color="#76FF03"></v-icon>
+                    {{ atxItem.title }}
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </template>
+            <span>{{ t('common.atxPower') }}</span>
+          </v-tooltip>
+        </div>
 
         <v-divider class="mx-3" inset vertical></v-divider>
 
-        <!-- <v-tooltip location="top" content-class="">
-          <template v-slot:activator="{ props: tooltipProps }">
-            <v-icon
-              v-bind="tooltipProps"
-              :color="isMicrophoneOn ? '#76FF03' : undefined"
-              :size="size"
-              icon="mdi-chat-processing-outline"
-              @click="toggleMicrophone"
-            />
-          </template>
-          <span>Chat</span>
-        </v-tooltip> -->
-
-        <div v-if="isExperimental">
+        <!-- Experimental Controls Group -->
+        <div v-if="isExperimental" class="control-group">
           <v-tooltip location="top" content-class="">
             <template v-slot:activator="{ props: tooltipProps }">
               <v-icon
@@ -266,29 +258,25 @@
 
           <v-divider class="mx-3" inset vertical></v-divider>
         </div>
-      </div>
     </div>
   </v-overlay>
 
-  <div v-if="isExperimental">
-    <cursorOverlay :z-index="zIndex.overlay" />
-    <cursorOverlayTom :z-index="zIndex.overlay" />
-    <cursorOverlayDick :z-index="zIndex.overlay" />
-    <cursorOverlayHarry :z-index="zIndex.overlay" />
-  </div>
 </template>
 
 <script setup>
+  import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
   import { useMicrophone } from '@/composables/useMicrophone';
   import { useCamera } from '@/composables/useCameraWithSwitch';
   import http from '@/utils/http.js';
-  import { zIndex } from '@/styles/zIndex'; // TODO should be constants!
+  import { zIndex } from '@/styles/zIndex';
   import { useHdmiSwitch } from '@/composables/useHdmiSwitch';
   import { useI18n } from 'vue-i18n';
   import { useDiagnostics } from '@/composables/useDiagnostics';
+  import { useRecording } from '@/composables/useRecording';
+  import { useATX } from '@/composables/useATX';
 
   const { startDiagnosticsConnecting } = useDiagnostics();
   const store = useAppStore();
@@ -314,7 +302,12 @@
     isCameraOn,
     audio,
     isRecording,
+    settings,
+    footer,
+    toolbar,
+    isTouchDevice,
   } = storeToRefs(store);
+
 
   defineProps({
     zIndex: {
@@ -325,89 +318,171 @@
 
   const isHoveringVolume = ref(false);
   const size = 25;
-  const activeChannel = computed(() => {
-    const selectedSwitch = kvmSwitchItems.value.find(
-      (item) => item.id === kvmSwitch.value.activeSwitchId
-    );
-    return selectedSwitch ? selectedSwitch.activeChannel : -1;
-  });
+  
+  // Reference to simulated video element
+  const simulatedVideoRef = ref(null);
+  
+  // Constants for video positioning
+  const POLLING_INTERVAL_MS = 33; // 30fps polling
+  const DEFAULT_VIDEO_WIDTH = 1920;
+  const DEFAULT_VIDEO_HEIGHT = 1080;
+  
+  // Constants for simulated video area when no actual video is present (use 1080p like default)
+  const SIMULATED_VIDEO_WIDTH = 1920;
+  const SIMULATED_VIDEO_HEIGHT = 1080;
+  
+  // Constants for positioning (based on perfect Case 1b standard)
+  const DEFAULT_TOP_MARGIN = 20; // Top margin (from Case 1b)
+  const DEFAULT_BOTTOM_MARGIN = 20; // Bottom margin (match top for symmetry)
 
-  const filteredChannels = computed(() => {
-    const selectedSwitch = kvmSwitchItems.value.find(
-      (item) => item.id === kvmSwitch.value.activeSwitchId
-    );
-    return selectedSwitch ? selectedSwitch.channels : [];
-  });
+  // Video element bounds tracking for overlay positioning
+  const videoBounds = ref({ top: 0, left: 0, width: 0, height: 0 });
+  const isVideoVisible = ref(false);
+  const pollingInterval = ref(null);
+  
+  // Cache for performance optimization
+  let lastBounds = { top: 0, left: 0, width: 0, height: 0 };
+  let lastElementType = null; // Track if we switched between video/container
+  let lastLoggedElementType = null; // Prevent repetitive console logs
+  let lastLoggedDimensions = null; // Prevent repetitive dimension logs
 
-  let mediaRecorder;
-  let recordedChunks = [];
-  let fileHandle;
-  let writableStream;
-  let recordingTimer = null; // 用于存储计时器
-  let recordingSeconds = ref(0); // 用于存储录制的秒数
-
-  // 格式化时间为 12h20m3s 格式
-  const formatTime = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h}h${m}m${s}s`;
-  };
-
-  // 计算格式化后的时间
-  const formattedRecordingTime = computed(() => formatTime(recordingSeconds.value));
-
-  const triggerPowerButton = async (button) => {
-    try {
-      startDiagnosticsConnecting();
-      const response = await http.post(`/atx/click?button=${button}`);
-      console.log(response.data);
-      // return response.data;
-    } catch (error) {
-      console.error('Error during atx button trigger:', error);
+  // Get the actual video element (WebRTC or MJPEG) or video container when no video
+  const getVideoElement = () => {
+    // First try to find actual video elements
+    const videoElement = document.getElementById('webrtc-output') || document.getElementById('mjpeg-output');
+    if (videoElement) {
+      // Validate video element has reasonable dimensions before using it
+      // This prevents overlay compression during HDMI activation transition
+      const rect = videoElement.getBoundingClientRect();
+      const currentDimensions = `${rect.width} x ${rect.height}`;
+      if (lastLoggedDimensions !== currentDimensions) {
+        console.log('Video element dimensions:', currentDimensions);
+        lastLoggedDimensions = currentDimensions;
+      }
+      
+      // Use stricter validation - video must be reasonably sized
+      if (rect.width >= 400 && rect.height >= 200) {
+        if (lastLoggedElementType !== 'video') {
+          console.log('Using video element for overlay tracking');
+          lastLoggedElementType = 'video';
+        }
+        return videoElement;
+      }
+      if (lastLoggedElementType !== 'small-video') {
+        console.log('Video element too small, using container instead');
+        lastLoggedElementType = 'small-video';
+      }
+      // Video element exists but dimensions too small - fall back to container
     }
+    
+    // No video element found or video not ready - use the video container instead
+    // This allows overlay to track the same container that naturally responds to footer changes
+    const container = document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
+    if (container && lastLoggedElementType !== 'container') {
+      console.log('Using container for overlay tracking');
+      lastLoggedElementType = 'container';
+    }
+    return container;
   };
+
+
+  // Update overlay position with optimization
+  const updateOverlayPosition = () => {
+    const element = getVideoElement();
+    if (!element) {
+      isVideoVisible.value = false;
+      return;
+    }
+
+    const rect = element.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      isVideoVisible.value = false;
+      return;
+    }
+
+    const currentElementType = element.tagName;
+    
+    // Early return if bounds haven't changed (performance optimization)
+    if (rect.top === lastBounds.top && rect.left === lastBounds.left && 
+        rect.width === lastBounds.width && rect.height === lastBounds.height &&
+        currentElementType === lastElementType) {
+      return;
+    }
+
+    // Use element bounds directly - works for both video and container
+    videoBounds.value = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height
+    };
+    
+    // Track whether we found a real video element
+    isVideoVisible.value = element.tagName === 'VIDEO';
+    lastBounds = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
+    lastElementType = currentElementType;
+  };
+
+
+  // Get effective video bounds (uses tracked bounds from updateOverlayPosition)
+  const getEffectiveVideoBounds = () => {
+    // Always use the tracked bounds - works for both real video and container
+    return videoBounds.value;
+  };
+
+  // Overlay style - positioned over video bounds (actual or simulated)
+  const overlayStyle = computed(() => {
+    // Get effective bounds (real video or simulated 1920x1080 area)
+    const bounds = getEffectiveVideoBounds();
+    
+    const style = {
+      position: 'fixed',
+      top: `${bounds.top}px`,
+      left: `${bounds.left}px`,
+      width: `${bounds.width}px`,
+      height: `${bounds.height}px`,
+      zIndex: zIndex.overlay, // Show overlay controls above diagnostics
+      pointerEvents: 'none'
+    };
+    
+    
+    return style;
+  });
+
+  // Dynamic positioning based on footer/toolbar visibility
+  const topControlsPosition = computed(() => {
+    // Always use consistent margin within video bounds
+    return `${DEFAULT_TOP_MARGIN}px`;
+  });
+
+  const bottomControlsPosition = computed(() => {
+    // Use consistent margin for both video and simulated video bounds
+    return `${DEFAULT_BOTTOM_MARGIN}px`;
+  });
+
+  // Switch functionality - combine duplicate logic
+  const selectedSwitch = computed(() => {
+    return kvmSwitchItems.value.find(item => item.id === kvmSwitch.value.activeSwitchId);
+  });
+
+  const activeChannel = computed(() => selectedSwitch.value?.activeChannel ?? -1);
+  const filteredChannels = computed(() => selectedSwitch.value?.channels ?? []);
+
+  // Recording functionality
+  const { formattedRecordingTime, videoRecord } = useRecording(isRecording);
+
+  // ATX functionality
+  const { triggerPowerButton, atxItems } = useATX(device);
+
 
   const displayName = (channel) => {
     return channel.override && channel.override.length > 0 ? channel.override : channel.name;
   };
 
-  const hasParticipants = (channel) => {
-    return false;
-  };
 
   const { turnOnMic, turnOffMic } = useMicrophone(device); // TODO error
   const { startCamera, stopCamera, enterPiP, exitPiP } = useCamera(device); //error
 
-  const atxItems = computed(() => {
-    if (!device.value) return [];
-    return [
-      {
-        icon: 'mdi-power',
-        color: device.value.health.isPowerLedActive ? 'primary' : 'error',
-        title: t('settings.atx.powerOn'),
-        action: 'power',
-      },
-      {
-        icon: 'mdi-power-sleep',
-        color: device.value.health.isPowerLedActive ? 'primary' : 'error',
-        title: t('settings.atx.powerOff'),
-        action: 'power',
-      },
-      {
-        icon: 'mdi-power-off',
-        color: device.value.health.isPowerLedActive ? 'primary' : 'error',
-        title: t('settings.atx.forceOff'),
-        action: 'forcepower',
-      },
-      {
-        icon: 'mdi-restart',
-        color: device.value.health.isPowerLedActive ? 'primary' : 'error',
-        title: t('settings.atx.reset'),
-        action: 'reboot',
-      },
-    ];
-  });
 
   const toggleMicrophone = () => {
     if (audio.value.isMicrophoneOn) {
@@ -436,104 +511,35 @@
   };
 
   const toggleCast = () => {
-    if (isCasting.value) {
-      isCasting.value = !isCasting.value;
-    } else {
-      isCasting.value = !isCasting.value;
-    }
+    isCasting.value = !isCasting.value;
   };
 
   const takeSnapshot = () => {
     device.value.video.isTakeScreenshot = true;
   };
 
-  function videoRecord() {
-    if (isRecording.value) {
-      stopRecording();
-    } else {
-      startRecording();
+  const handleVideoRecord = () => {
+    videoRecord(isRecording.value);
+  };
+
+  // Watch for drawer visibility changes (force immediate update)
+  watch(() => settings.value.isVisible, () => {
+    updateOverlayPosition();
+  });
+
+  // Lifecycle management - simplified
+  onMounted(() => {
+    nextTick(updateOverlayPosition);
+    
+    // 30fps polling - sufficient for smooth tracking
+    pollingInterval.value = setInterval(updateOverlayPosition, POLLING_INTERVAL_MS);
+  });
+
+  onBeforeUnmount(() => {
+    if (pollingInterval.value) {
+      clearInterval(pollingInterval.value);
     }
-  }
-
-  async function startRecording() {
-    try {
-      console.log('Start recording...');
-
-      recordedChunks = [];
-      const videoId = document.getElementById('webrtc-output');
-      if (!videoId) {
-        console.error('Video element not found');
-        return;
-      }
-      const stream = videoId.captureStream();
-      mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
-
-      mediaRecorder.onstart = function () {
-        isRecording.value = true;
-        console.log('MediaRecorder started');
-
-        // 开始计时器，每秒更新一次录制时间
-        recordingTimer = setInterval(() => {
-          recordingSeconds.value++;
-        }, 1000);
-      };
-
-      mediaRecorder.ondataavailable = async function (event) {
-        console.log('Data available event triggered');
-        if (event.data.size > 0) {
-          recordedChunks.push(event.data);
-          console.log('Writing data chunk, size:', event.data.size);
-          await writableStream.write(event.data);
-          console.log('Data chunk written.');
-        } else {
-          console.log('Data chunk empty');
-        }
-      };
-
-      mediaRecorder.onstop = async function () {
-        console.log('Stopping media recorder...');
-        await writableStream.close();
-        console.log('Writable stream closed.');
-        isRecording.value = false;
-        // 停止计时器
-        clearInterval(recordingTimer);
-        recordingTimer = null;
-      };
-
-      mediaRecorder.onerror = function (event) {
-        console.error('MediaRecorder error:', event.error);
-      };
-
-      // Request file access
-      console.log('Requesting file handle...');
-      fileHandle = await window.showSaveFilePicker({
-        suggestedName: 'recording.webm',
-        types: [
-          {
-            description: 'WebM Video',
-            accept: { 'video/webm': ['.webm'] },
-          },
-        ],
-      });
-
-      console.log('Creating writable stream...');
-      writableStream = await fileHandle.createWritable();
-      mediaRecorder.start(1000); // 每秒生成一个数据块
-      console.log('Media recorder started.');
-    } catch (error) {
-      console.error('Error starting recording:', error);
-    }
-  }
-
-  async function stopRecording() {
-    try {
-      console.log('Stop recording...');
-      mediaRecorder.stop();
-      console.log('Media recorder stopped.');
-    } catch (error) {
-      console.error('Error stopping recording:', error);
-    }
-  }
+  });
 </script>
 
 <style scoped>
@@ -558,14 +564,52 @@
     pointer-events: none !important;
   }
 
-  /* Interactive control areas - capture mouse events */
+  /* More specific targeting for our overlay */
+  :deep(.v-overlay__content.overlay-passthrough) {
+    pointer-events: none !important;
+    position: relative;
+    /* Ensure cursor inheritance from parent (KVM) */
+    cursor: inherit !important;
+    /* No background - overlay is now exactly over video */
+    background: transparent;
+    /* Make sure content fills the overlay exactly */
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Force the overlay itself to allow passthrough */
+  :deep(.v-overlay) {
+    pointer-events: none !important;
+    /* Allow cursor to pass through */
+    cursor: inherit !important;
+  }
+
+  /* Interactive control areas - only capture events on actual controls */
   .overlay-control-bar {
+    pointer-events: none !important;
+    background: none !important;
+  }
+
+  /* Only interactive elements within control bars capture events */
+  .overlay-control-bar .v-btn,
+  .overlay-control-bar .v-icon,
+  .overlay-control-bar .v-slider,
+  .overlay-control-bar [role="button"],
+  .overlay-control-bar .v-input {
+    pointer-events: auto !important;
+  }
+
+  /* Tooltip activators need events but tooltips themselves should not block */
+  .overlay-control-bar .v-tooltip > .v-overlay__activator {
     pointer-events: auto !important;
   }
 
   .overlay-interactive {
     pointer-events: auto !important;
-    cursor: pointer;
+  }
+
+  .overlay-interactive:hover {
+    cursor: pointer !important;
   }
 
   /* Menu and dropdown elements - ensure clickability */
@@ -583,11 +627,73 @@
 
   :deep(.v-list-item) {
     pointer-events: auto !important;
+  }
+
+  :deep(.v-list-item:hover) {
     cursor: pointer !important;
   }
 
-  /* Ensure all interactive elements within control bars work */
-  .overlay-control-bar * {
-    pointer-events: auto !important;
+  /* Interactive elements maintain proper cursor behavior */
+  .overlay-control-bar .v-btn:hover,
+  .overlay-control-bar .v-icon:hover {
+    cursor: pointer !important;
+  }
+
+
+  /* Add subtle background panel for each control group */
+  .control-group {
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px; /* Ensure consistent height for all control groups */
+  }
+
+  /* Recording controls keep their current better appearance (no explicit background - uses Vuetify defaults) */
+  
+  /* Mic/Volume and Switch controls get consistent background */
+  .overlay-control-bar .control-group:not(.recording-controls) {
+    background: rgba(0, 0, 0, 0.6) !important;
+  }
+
+  /* Remove right margins from all control groups in right-aligned container */
+  .overlay-control-bar[style*="right: 20px"] .control-group {
+    margin-right: 0;
+  }
+
+  /* Remove all margins from switch control group */
+  .control-group.switch-controls {
+    margin: 0;
+  }
+
+  /* Ensure consistent sizing for all interactive elements */
+  .overlay-control-bar .v-btn,
+  .overlay-control-bar .v-icon {
+    min-height: 32px;
+    height: 32px;
+  }
+
+  /* Allow ATX power button to be slightly larger */
+  .overlay-control-bar .v-btn[size="default"] {
+    min-height: 36px;
+    height: 36px;
+  }
+
+  /* Volume control container alignment */
+  .overlay-control-bar .d-inline-flex {
+    align-items: center;
+    min-height: 32px;
+  }
+
+  /* Switch label styling */
+  .switch-label {
+    color: #76FF03;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 8px;
+    white-space: nowrap;
   }
 </style>

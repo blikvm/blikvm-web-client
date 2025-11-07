@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-  import { ref, reactive, onMounted } from 'vue';
+  import { ref, reactive, onMounted, watch } from 'vue';
   import { useDevice } from '@/composables/useDevice';
   import Keyboard from 'simple-keyboard';
   import 'simple-keyboard/build/css/index.css';
@@ -35,11 +35,11 @@
   const keyboardNumpadEndRef = ref(null);
 
   // Keyboard instances
-  const keyboard = ref(null);
-  const keyboardControlPad = ref(null);
-  const keyboardArrows = ref(null);
-  const keyboardNumPad = ref(null);
-  const keyboardNumPadEnd = ref(null);
+  let keyboardMain = null;
+  let keyboardControlPad = null;
+  let keyboardArrows = null;
+  let keyboardNumPad = null;
+  let keyboardNumPadEnd = null;
 
   const keyStates = reactive({
     '{shift}': false,
@@ -52,6 +52,9 @@
     '{metaleft}': false,
     '{metaright}': false,
   });
+
+  // Track pressed keys for styling
+  const pressedKeys = reactive({});
 
   onMounted(() => {
     let commonKeyboardOptions = {
@@ -66,7 +69,7 @@
       //   debug: true,
     };
 
-    const keyboard = new Keyboard('.simple-keyboard-main', {
+    keyboardMain = new Keyboard('.simple-keyboard-main', {
       ...commonKeyboardOptions,
       /**
        * Layout by:
@@ -119,7 +122,7 @@
       },
     });
 
-    const keyboardControlPad = new Keyboard('.simple-keyboard-control', {
+    keyboardControlPad = new Keyboard('.simple-keyboard-control', {
       ...commonKeyboardOptions,
       layout: {
         default: [
@@ -130,14 +133,14 @@
       },
     });
 
-    const keyboardArrows = new Keyboard('.simple-keyboard-arrows', {
+    keyboardArrows = new Keyboard('.simple-keyboard-arrows', {
       ...commonKeyboardOptions,
       layout: {
         default: ['{arrowup}', '{arrowleft} {arrowdown} {arrowright}'],
       },
     });
 
-    const keyboardNumPad = new Keyboard('.simple-keyboard-numpad', {
+    keyboardNumPad = new Keyboard('.simple-keyboard-numpad', {
       ...commonKeyboardOptions,
       layout: {
         default: [
@@ -150,7 +153,7 @@
       },
     });
 
-    const keyboardNumPadEnd = new Keyboard('.simple-keyboard-numpadEnd', {
+    keyboardNumPadEnd = new Keyboard('.simple-keyboard-numpadEnd', {
       ...commonKeyboardOptions,
       layout: {
         default: ['{numpadsubtract}', '{numpadadd}', '{numpadenter}'],
@@ -272,9 +275,9 @@
     };
 
     const handleShift = () => {
-      let currentLayout = keyboard.options.layoutName;
+      let currentLayout = keyboardMain.options.layoutName;
       let shiftToggle = currentLayout === 'default' ? 'shift' : 'default';
-      keyboard.setOptions({
+      keyboardMain.setOptions({
         layoutName: shiftToggle,
       });
     };
@@ -282,8 +285,8 @@
     watch(
       () => props.input,
       (newInput) => {
-        if (keyboard.value) {
-          keyboard.value.setInput(newInput);
+        if (keyboardMain) {
+          keyboardMain.setInput(newInput);
         }
       }
     );
