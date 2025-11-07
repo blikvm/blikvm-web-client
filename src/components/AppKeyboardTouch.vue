@@ -366,7 +366,7 @@ defineExpose({
 
 .keyboard-wrapper {
   padding: 8px;
-  min-height: 240px;
+  /* Removed min-height to eliminate gap - let keyboard size naturally */
 }
 
 .keyboard-wrapper.keyboard-minimal {
@@ -414,7 +414,7 @@ defineExpose({
 @media (max-width: 414px) and (min-width: 375px) {
   .keyboard-wrapper {
     padding: 6px;
-    min-height: 260px;
+    /* Removed min-height to eliminate gap */
   }
   
   .keyboard-header {
@@ -434,7 +434,7 @@ defineExpose({
 @media (max-width: 393px) and (min-width: 360px) {
   .keyboard-wrapper {
     padding: 4px;
-    min-height: 240px;
+    /* Removed min-height to eliminate gap */
   }
   
   .keyboard-header {
@@ -454,7 +454,7 @@ defineExpose({
 @media (max-width: 359px) {
   .keyboard-wrapper {
     padding: 3px;
-    min-height: 220px;
+    /* Removed min-height to eliminate gap */
   }
   
   .keyboard-header {
@@ -477,7 +477,7 @@ defineExpose({
   }
   
   .keyboard-wrapper {
-    min-height: 180px;
+    /* Removed min-height to eliminate gap */
     padding: 2px;
   }
   

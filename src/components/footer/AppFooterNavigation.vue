@@ -6,7 +6,7 @@
     dense 
     align="center" 
     class="w-100" 
-    style="height: 40px"
+    style="height: 40px; margin: 0; padding: 0;"
   >
     <v-spacer />
 
@@ -39,17 +39,26 @@
         </v-btn>
 
 
-        <!-- Microphone for touch devices -->
+        <!-- Microphone for touch devices 
         <v-btn
           v-if="isTouchDevice" 
           variant="plain"
-          elevation="0"
-          color="#76FF03"
           :size="isTouchDevice ? 'default' : 'small'"
           :class="['microphone-btn', { 'touch-optimized': isTouchDevice }]"
           @click="toggleMicrophone"
         > 
         <v-icon v-if="isTouchDevice" size="small">{{ isMicrophoneOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
+        </v-btn>
+-->
+        <!-- Settings for touch devices -->
+        <v-btn
+          v-if="isTouchDevice" 
+          variant="plain"
+          :size="isTouchDevice ? 'default' : 'small'"
+          :class="['settings-btn', { 'touch-optimized': isTouchDevice }]"
+          @click="handleSettingsToggle"
+        > 
+        <v-icon v-if="isTouchDevice" size="small">mdi-cog-outline</v-icon>
         </v-btn>
       </v-btn-toggle>
     </v-col>
@@ -89,6 +98,10 @@ const props = defineProps({
     type: Function,
     required: true
   },
+  handleLayoutClick: {
+    type: Function,
+    required: true
+  },
 });
 
 // Composables
@@ -115,6 +128,11 @@ const toggleMicrophone = () => {
   isMicrophoneOn.value = !isMicrophoneOn.value;
   console.log('Microphone toggled:', isMicrophoneOn.value ? 'ON' : 'OFF');
   // TODO: Implement actual microphone functionality
+};
+
+// Settings toggle function 
+const handleSettingsToggle = () => {
+  props.handleLayoutClick('left');
 };
 </script>
 
@@ -171,6 +189,36 @@ const toggleMicrophone = () => {
   }
   
   .microphone-btn.touch-optimized {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Settings button styling */
+.settings-btn {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  margin-left: 8px !important;
+}
+
+/* Apply touch-optimized styling to settings */
+.settings-btn.touch-optimized {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  padding: 8px 12px !important;
+  margin: 0 4px !important;
+}
+
+/* Touch-optimized settings button for mobile */
+@media (max-width: 768px) {
+  .settings-btn {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    margin-left: 12px !important;
+  }
+  
+  .settings-btn.touch-optimized {
     min-height: 48px !important;
     min-width: 48px !important;
     font-size: 14px !important;

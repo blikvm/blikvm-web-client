@@ -16,8 +16,8 @@
     <div 
       :style="{ 
         height: `${terminalHeight}px`,
-        minHeight: '200px',
-        maxHeight: '600px'
+        minHeight: isTouchDevice ? '250px' : '200px',
+        maxHeight: isTouchDevice ? '700px' : '600px'
       }"
     >
       <!-- Single SSH Terminal -->
@@ -73,12 +73,28 @@ const props = defineProps({
   settings: {
     type: Object,
     required: true
+  },
+  isTouchDevice: {
+    type: Boolean,
+    required: true
   }
 });
 
-// Terminal resize functionality
+// Terminal resize functionality  
 const { terminalWidth: sshTerminalWidth, isResizing, startResize, handleResizeDoubleClick } = useTerminalResize(50);
-const { terminalHeight, isVerticalResizing, startVerticalResize } = useTerminalVerticalResize(300);
+
+// Dynamic initial height based on device type and terminal configuration
+const getInitialHeight = () => {
+  if (props.isTouchDevice) {
+    // Touch devices: single terminal gets more height (mutually exclusive)
+    return 400;
+  } else {
+    // Desktop: default height for potential dual terminal layout
+    return 300;
+  }
+};
+
+const { terminalHeight, isVerticalResizing, startVerticalResize } = useTerminalVerticalResize(getInitialHeight());
 
 // Computed properties
 const hasActiveTerminals = computed(() => 
@@ -127,8 +143,8 @@ const verticalHandleStyle = computed(() => {
 
 // Vertical resize double-click handler - reset to default height
 const handleVerticalResizeDoubleClick = () => {
-  // Reset terminal height to default (300px) - industry standard behavior
-  terminalHeight.value = 300;
+  // Reset terminal height to device-appropriate default
+  terminalHeight.value = getInitialHeight();
 };
 </script>
 

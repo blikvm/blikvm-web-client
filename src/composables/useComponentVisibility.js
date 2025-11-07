@@ -89,8 +89,22 @@ export function useComponentVisibility(device, isTouchDevice) {
       showKeyboard.value = false;
       showTouchKeyboard.value = false;
       showVirtualMouse.value = false;
-      device.value.showSSHTerminal = hasConsole;
-      showSerial.value = hasSerial;
+      
+      // Touch devices: terminals are mutually exclusive (either console OR serial)
+      if (isTouchDevice.value) {
+        if (hasConsole && hasSerial) {
+          // If both are requested, console wins (prioritize SSH terminal)
+          device.value.showSSHTerminal = true;
+          showSerial.value = false;
+        } else {
+          device.value.showSSHTerminal = hasConsole;
+          showSerial.value = hasSerial;
+        }
+      } else {
+        // Desktop: can show both terminals simultaneously
+        device.value.showSSHTerminal = hasConsole;
+        showSerial.value = hasSerial;
+      }
     } else {
       // Normal mode - show components based on toggle selection
       showNotifications.value = false;

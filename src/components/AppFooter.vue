@@ -4,16 +4,11 @@
     v-if="shouldShowFooter"
     class="d-flex flex-column pa-0 bg-black"
   >
-    <!-- Content sections with proper ordering: Virtual Mouse → Touch Keyboard → Desktop Keyboard → Terminals → Notifications -->
+    <!-- Content sections -->
     <div v-if="hasActiveComponents">
 
-      <!-- Virtual Mouse Section (appears above keyboard) -->
+      <!-- Virtual Mouse Section -->
       <AppFooterVirtualMouse :show-virtual-mouse="showVirtualMouse" />
-
-      <!-- Touch Keyboard Section -->
-      <div v-if="showTouchKeyboard">
-        <AppTouchKeyboard />
-      </div>
 
       <!-- Desktop Keyboard Section -->
       <AppFooterDesktopKeyboard
@@ -30,15 +25,20 @@
         :showSSHTerminal="showSSHTerminal"
         :showSerial="showSerial"
         :settings="settings"
+        :is-touch-device="isTouchDevice"
       />
 
       <!-- Notifications Section -->
       <AppFooterNotifications :show-notifications="showNotifications" />
     </div>
 
+    <!-- Touch Keyboard Section -->
+    <div v-if="showTouchKeyboard">
+      <AppTouchKeyboard :show-header="false" />
+    </div>
+
     <!-- Navigation bar -->
     <div class="position-relative w-100" style="height: 40px;">
-      <!-- Navigation (centered) -->
       <AppFooterNavigation
         :footer="footer"
         :active-toggle="activeToggle"
@@ -46,9 +46,9 @@
         :lock-states="lockStates"
         :is-touch-device="isTouchDevice"
         :handle-toggle-change="handleToggleChange"
+        :handle-layout-click="handleLayoutClick"
       />
       
-      <!-- Lock state indicators for desktop only (absolute positioned at end) -->
       <div v-if="!isTouchDevice" class="position-absolute d-flex align-center" style="right: 16px; top: 50%; transform: translateY(-50%);">
         <LockStateIndicators 
           :device="device"
@@ -70,6 +70,7 @@ import { useKeyboard } from "@/composables/useKeyboard"
 import { useFooterToggle } from "@/composables/useFooterToggle"
 import { useComponentVisibility } from "@/composables/useComponentVisibility"
 import { useLockStates } from "@/composables/useLockStates"
+import { useHeaderMenu } from "@/composables/useHeaderMenu"
 
 // Component imports
 import AppFooterNavigation from "@/components/footer/AppFooterNavigation.vue"
@@ -91,6 +92,7 @@ const { activeToggle, handleToggleChange: handleFooterToggleChange } = useFooter
 
 // Business logic composables  
 const { lockStates } = useLockStates(device)
+const { handleLayoutClick } = useHeaderMenu()
 
 // Store previous state to detect changes
 const previousToggleState = ref([...activeToggle.value])
@@ -163,6 +165,7 @@ function handleToggleChange(newToggles) {
   // 1. notifications vs (keyboard, console, serial) 
   // 2. keyboard vs (console, serial)
   // 3. video is display-only, cannot be toggled by user
+  // 4. Touch devices: console vs serial (mutually exclusive)
   // Rule: newest clicked component wins, hides all conflicting ones
   
   const interactiveComponents = ['keyboard', 'console', 'serial', 'notifications']
@@ -186,6 +189,17 @@ function handleToggleChange(newToggles) {
     } else if (newItem === 'console' || newItem === 'serial') {
       // Terminal clicked - remove notifications and keyboard
       newToggles = newToggles.filter(item => !['notifications', 'keyboard'].includes(item))
+      
+      // Touch devices: terminals are mutually exclusive
+      if (isTouchDevice.value) {
+        if (newItem === 'console') {
+          // Console clicked - remove serial
+          newToggles = newToggles.filter(item => item !== 'serial')
+        } else if (newItem === 'serial') {
+          // Serial clicked - remove console
+          newToggles = newToggles.filter(item => item !== 'console')
+        }
+      }
     }
   }
   
