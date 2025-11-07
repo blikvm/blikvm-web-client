@@ -4,21 +4,16 @@
     v-if="shouldShowFooter"
     class="d-flex flex-column pa-0 bg-black"
   >
-    <!-- Content sections with proper ordering: Virtual Mouse → Notifications → Terminals → Keyboard -->
+    <!-- Content sections with proper ordering: Virtual Mouse → Mobile Keyboard → Desktop Keyboard → Terminals → Notifications -->
     <div v-if="hasActiveComponents">
-      <!-- Virtual Mouse Section -->
+
+      <!-- Virtual Mouse Section (appears above keyboard) -->
       <AppFooterVirtualMouse :show-virtual-mouse="showVirtualMouse" />
 
-      <!-- Notifications Section -->
-      <AppFooterNotifications :show-notifications="showNotifications" />
-
-      <!-- Terminal Section -->
-      <AppFooterTerminals
-        :showSSHTerminal="showSSHTerminal"
-        :showSerial="showSerial"
-        :settings="settings"
-      />
-
+      <!-- Mobile Keyboard Section -->
+      <div v-if="showMobileKeyboard">
+        <AppMobileKeyboard />
+      </div>
 
       <!-- Desktop Keyboard Section -->
       <AppFooterDesktopKeyboard
@@ -30,11 +25,15 @@
         :handle-key-released="handleKeyReleased"
       />
 
-      <!-- Mobile Keyboard Section -->
-      <div v-if="showMobileKeyboard">
-        <AppMobileKeyboard />
-      </div>
+      <!-- Terminal Section -->
+      <AppFooterTerminals
+        :showSSHTerminal="showSSHTerminal"
+        :showSerial="showSerial"
+        :settings="settings"
+      />
 
+      <!-- Notifications Section -->
+      <AppFooterNotifications :show-notifications="showNotifications" />
     </div>
 
     <!-- Navigation bar -->

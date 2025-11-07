@@ -12,7 +12,6 @@
 
     <!-- Navigation toggle buttons -->
     <v-col
-      v-if="smAndUp"
       cols="auto"
       class="d-flex justify-center align-center footer-toggle-center"
     >
@@ -42,28 +41,12 @@
 
 
     <v-col order="last" class="d-flex justify-end align-center pa-0 ma-0">
-      <!-- Current key press indicator -->
-      <v-chip
-        v-if="device.hid.keyboard.keyPress"
-        grow
-        color="#76FF03"
-        :ripple="false"
-        v-tooltip:top="$t('common.keypress')"
-        class="align-center cursor-default"
-        @click.stop
-      >
-        {{ device.hid.keyboard.keyPress }}
-      </v-chip>
-
-      <!-- Lock state indicators -->
-      <v-chip
-        v-for="lock in lockStates"
-        :key="lock.name"
-        :disabled="!lock.active"
-        :color="lock.active ? '#76FF03' : ''"
-      >
-        {{ lock.name }}
-      </v-chip>
+      <!-- Lock state indicators component -->
+      <LockStateIndicators 
+        :device="device"
+        :lock-states="lockStates"
+        :is-touch-device="isTouchDevice"
+      />
       &nbsp;
     </v-col>
   </v-row>
@@ -73,6 +56,7 @@
 import { computed } from 'vue';
 import { useI18n } from "vue-i18n";
 import { useDisplay } from 'vuetify';
+import LockStateIndicators from './LockStateIndicators.vue';
 
 // Props
 const props = defineProps({
@@ -123,10 +107,6 @@ const availableMenuItems = computed(() =>
 </script>
 
 <style scoped>
-.cursor-default {
-  cursor: default;
-}
-
 .footer-toggle-center {
   position: absolute;
   left: 50%;

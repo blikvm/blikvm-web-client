@@ -3,16 +3,20 @@
 import { ref, nextTick } from 'vue';
 import Keyboard from 'simple-keyboard';
 import 'simple-keyboard/build/css/index.css';
-import { useKeyboardBase } from './useKeyboardBase.js';
+import { useKeyboard } from '@/composables/useKeyboard-new.js';
 
 /**
  * Mobile keyboard composable using simple-keyboard
- * Based on the provided JavaScript code
+ * Integrates with the main keyboard system for consistent event handling
  */
 export function useMobileKeyboard() {
-  const base = useKeyboardBase();
+  // Use the main keyboard system for consistent event handling
+  const { handleKeyPress, handleKeyReleased } = useKeyboard();
   
-  // Mobile-specific state
+  // Mobile keyboard state
+  const keyboardInstance = ref(null);
+  const currentInput = ref('');
+  const isInitialized = ref(false);
   const currentLayoutName = ref('default');
   
   // Mobile keyboard layouts
@@ -52,36 +56,90 @@ export function useMobileKeyboard() {
     "{altright}": "alt ⌥",
     "{metaleft}": "cmd ⌘",
     "{metaright}": "cmd ⌘",
-    "{abc}": "ABC"
+    "{abc}": "ABC",
+    "{space}": " "
   };
 
-  // Handle mobile-specific key presses
-  const handleKeyPress = (button) => {
-    console.log("Mobile keyboard button pressed:", button);
-    
+  // Map simple-keyboard buttons to standard key codes
+  const mapButtonToKeyCode = (button) => {
+    const keyMap = {
+      '{backspace}': 'Backspace',
+      '{enter}': 'Enter',
+      '{ent}': 'Enter',
+      '{space}': 'Space',
+      '{tab}': 'Tab',
+      '{escape}': 'Escape',
+      '{capslock}': 'CapsLock',
+      '{shift}': 'ShiftLeft',
+      '{controlleft}': 'ControlLeft',
+      '{controlright}': 'ControlRight',
+      '{altleft}': 'AltLeft',
+      '{altright}': 'AltRight',
+      '{metaleft}': 'MetaLeft',
+      '{metaright}': 'MetaRight'
+    };
+
+    // Return mapped key or the button itself for regular characters
+    return keyMap[button] || button;
+  };
+
+  // Handle key press from simple-keyboard
+  const onKeyPress = (button) => {
+
     // Handle layout switching
     if (button === "{shift}" || button === "{lock}") {
       handleShift();
-    } else if (button === "{numbers}" || button === "{abc}") {
-      handleNumbers();
+      return;
     }
+    if (button === "{numbers}") {
+      handleNumbers();
+      return;
+    }
+    if (button === "{abc}") {
+      handleLetters();
+      return;
+    }
+
+    // Map button to key code and send to main system
+    const keyCode = mapButtonToKeyCode(button);
     
-    // Call base onKeyPress for additional processing
-    base.onKeyPress(button);
+    // Send key press and release events to server via main system
+    // The main system expects just the button/key string, not an object
+    handleKeyPress(keyCode);
+    // Immediately release the key (like a tap)
+    setTimeout(() => {
+      handleKeyReleased(keyCode);
+    }, 50);
   };
 
-  // Handle shift key toggle
+  // Handle input changes (for text display)
+  const onInputChange = (input) => {
+    currentInput.value = input;
+  };
+
+  // Layout switching functions
   const handleShift = () => {
     const newLayout = currentLayoutName.value === "default" ? "shift" : "default";
-    currentLayoutName.value = newLayout;
-    base.setLayout(newLayout);
+    setLayout(newLayout);
   };
 
-  // Handle numbers/letters toggle
   const handleNumbers = () => {
     const newLayout = currentLayoutName.value !== "numbers" ? "numbers" : "default";
-    currentLayoutName.value = newLayout;
-    base.setLayout(newLayout);
+    setLayout(newLayout);
+  };
+
+  const handleLetters = () => {
+    setLayout("default");
+  };
+
+  // Set keyboard layout
+  const setLayout = (layoutName) => {
+    currentLayoutName.value = layoutName;
+    if (keyboardInstance.value) {
+      keyboardInstance.value.setOptions({
+        layoutName: layoutName
+      });
+    }
   };
 
   // Initialize mobile keyboard
@@ -95,8 +153,8 @@ export function useMobileKeyboard() {
 
     try {
       const keyboardOptions = {
-        onChange: base.onInputChange,
-        onKeyPress: handleKeyPress,
+        onChange: onInputChange,
+        onKeyPress: onKeyPress,
         mergeDisplay: true,
         layoutName: currentLayoutName.value,
         layout: layouts,
@@ -105,10 +163,9 @@ export function useMobileKeyboard() {
         ...options
       };
 
-      base.keyboardInstance.value = new Keyboard(container, keyboardOptions);
-      base.isInitialized.value = true;
+      keyboardInstance.value = new Keyboard(container, keyboardOptions);
+      isInitialized.value = true;
       
-      console.log('Mobile keyboard initialized:', base.keyboardInstance.value);
       return true;
     } catch (error) {
       console.error('Failed to initialize mobile keyboard:', error);
@@ -116,10 +173,32 @@ export function useMobileKeyboard() {
     }
   };
 
-  // Set mobile keyboard theme
+  // Destroy keyboard
+  const destroyKeyboard = () => {
+    if (keyboardInstance.value && keyboardInstance.value.destroy) {
+      keyboardInstance.value.destroy();
+    }
+    keyboardInstance.value = null;
+    isInitialized.value = false;
+  };
+
+  // Set input value
+  const setInput = (input) => {
+    currentInput.value = input;
+    if (keyboardInstance.value) {
+      keyboardInstance.value.setInput(input);
+    }
+  };
+
+  // Clear input
+  const clearInput = () => {
+    setInput('');
+  };
+
+  // Set keyboard theme
   const setTheme = (themeName) => {
-    if (base.keyboardInstance.value) {
-      base.keyboardInstance.value.setOptions({
+    if (keyboardInstance.value) {
+      keyboardInstance.value.setOptions({
         theme: `hg-theme-default ${themeName}`
       });
     }
@@ -135,31 +214,52 @@ export function useMobileKeyboard() {
     return currentLayoutName.value === 'numbers';
   };
 
-  // Check if current layout is shift
-  const isShiftLayout = () => {
-    return currentLayoutName.value === 'shift';
+  // Get current input
+  const getInput = () => {
+    return currentInput.value;
   };
 
+  // Get current layout
+  const getCurrentLayout = () => {
+    return currentLayoutName.value;
+  };
+
+  // Initialize keyboard (alias for compatibility)
+  const initializeKeyboard = initializeMobileKeyboard;
+
   return {
-    // Inherit from base
-    ...base,
-    
-    // Mobile-specific state
+    // State
+    keyboardInstance,
+    currentInput,
+    isInitialized,
     currentLayoutName,
-    layouts,
-    display,
-    
-    // Mobile-specific methods
-    initializeMobileKeyboard,
+
+    // Layout management
+    setLayout,
     handleShift,
     handleNumbers,
-    setTheme,
+    handleLetters,
     getAvailableLayouts,
+    getCurrentLayout,
     isNumbersLayout,
-    isShiftLayout,
-    
-    // Override base methods with mobile-specific implementations
-    initializeKeyboard: initializeMobileKeyboard,
-    onKeyPress: handleKeyPress,
+
+    // Input management
+    setInput,
+    getInput,
+    clearInput,
+
+    // Keyboard lifecycle
+    initializeMobileKeyboard,
+    initializeKeyboard,
+    destroyKeyboard,
+    setTheme,
+
+    // Event handlers
+    onKeyPress,
+    onInputChange,
+
+    // Configuration
+    layouts,
+    display
   };
 }

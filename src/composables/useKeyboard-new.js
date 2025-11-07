@@ -148,9 +148,7 @@ export function useKeyboard() {
   };
 
   const releaseAllKey = () => {
-    console.log('release all key len:', pressedKeys.value.length);
     while (pressedKeys.value.length > 0) {
-      console.log('pressedKeys up:', pressedKeys.value);
       pressedKeys.value.pop();
     }
   };

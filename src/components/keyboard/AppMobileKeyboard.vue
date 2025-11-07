@@ -74,14 +74,6 @@
       class="keyboard-wrapper"
       :class="{ 'keyboard-minimal': !showHeader && !showInputDisplay }"
     >
-      <!-- Debug Info Overlay -->
-      <div v-if="debugMode" class="keyboard-debug-info">
-        <div>Viewport: {{ viewportInfo.width }}×{{ viewportInfo.height }}</div>
-        <div>Screen: {{ viewportInfo.screenWidth }}×{{ viewportInfo.screenHeight }}</div>
-        <div>Device: {{ deviceType }} | DPR: {{ viewportInfo.devicePixelRatio }}</div>
-        <div>DevTools: {{ viewportInfo.isDevTools ? 'YES' : 'NO' }}</div>
-        <div>Theme: {{ themeClass }}</div>
-      </div>
     </div>
 
     <!-- Status Bar -->
@@ -110,7 +102,6 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useMobileKeyboard } from '@/composables/keyboards/useMobileKeyboard.js';
 import { useClipboard } from '@/composables/useClipboard.js';
 import './mobile-keyboard.css';
-import './mobile-debug.css';
 
 // Props
 const props = defineProps({
@@ -145,88 +136,9 @@ const props = defineProps({
   autoFocus: {
     type: Boolean,
     default: true
-  },
-  debugMode: {
-    type: Boolean,
-    default: true // Enable debug mode by default for testing
   }
 });
 
-// Debug state
-const viewportInfo = ref({
-  width: 0,
-  height: 0,
-  devicePixelRatio: 0,
-  userAgent: ''
-});
-
-// Detect viewport and device info
-const updateViewportInfo = () => {
-  const documentElement = document.documentElement;
-  const body = document.body;
-  
-  viewportInfo.value = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-    screenWidth: window.screen?.width || 0,
-    screenHeight: window.screen?.height || 0,
-    clientWidth: documentElement?.clientWidth || 0,
-    clientHeight: documentElement?.clientHeight || 0,
-    devicePixelRatio: window.devicePixelRatio || 1,
-    userAgent: navigator.userAgent.substring(0, 50) + '...',
-    isDevTools: window.navigator?.webdriver || window.outerHeight - window.innerHeight > 200
-  };
-};
-
-// More flexible device detection
-const deviceType = computed(() => {
-  const w = viewportInfo.value.width;
-  const h = viewportInfo.value.height;
-  
-  // iPhone 12 Pro detection (more flexible)
-  if ((w >= 375 && w <= 414) && (h >= 800 || (h >= 375 && h <= 414))) {
-    return 'iphone-12-pro';
-  }
-  
-  // Pixel 7 detection
-  if ((w >= 360 && w <= 393) && (h >= 800 || (h >= 360 && h <= 393))) {
-    return 'pixel-7';
-  }
-  
-  // Small phones
-  if (w <= 359) {
-    return 'small-phone';
-  }
-  
-  // Large phones/tablets
-  if (w >= 415) {
-    return 'large-device';
-  }
-  
-  return 'unknown';
-});
-
-// Better iPhone 12 Pro detection
-const isIPhone12Pro = computed(() => {
-  return deviceType.value === 'iphone-12-pro';
-});
-
-// More comprehensive theme class detection
-const themeClass = computed(() => {
-  let classes = [props.theme];
-  
-  if (props.debugMode) {
-    // Always add device-specific class for testing
-    classes.push(deviceType.value);
-    
-    // Force iPhone styles for widths that could be iPhone
-    if (viewportInfo.value.width <= 414) {
-      classes.push('mobile-optimized');
-    }
-  }
-  
-  return classes.join(' ');
-});
 
 // Emits
 const emit = defineEmits(['input-change', 'key-press', 'close', 'ready']);
@@ -255,7 +167,7 @@ const initializeKeyboard = async () => {
   await nextTick();
   
   const options = {
-    theme: `hg-theme-default ${themeClass.value}`,
+    theme: `hg-theme-default ${props.theme}`,
     // Custom onChange to emit to parent
     onChange: (input) => {
       mobileKeyboard.onInputChange(input);
@@ -323,13 +235,10 @@ watch(() => props.theme, (newTheme) => {
 
 // Lifecycle
 onMounted(async () => {
-  updateViewportInfo();
-  window.addEventListener('resize', updateViewportInfo);
   await initializeKeyboard();
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateViewportInfo);
   mobileKeyboard.destroyKeyboard();
 });
 

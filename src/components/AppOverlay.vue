@@ -379,7 +379,6 @@
     // This allows overlay to track the same container that naturally responds to footer changes
     const container = document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
     if (container && lastLoggedElementType !== 'container') {
-      console.log('Using container for overlay tracking');
       lastLoggedElementType = 'container';
     }
     return container;
