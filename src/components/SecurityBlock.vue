@@ -1,14 +1,15 @@
 <template>
-  <v-btn-group density="compact" rounded="lg" v-ripple variant="tonal">
+  <v-btn-group v-ripple density="compact" rounded="lg" variant="tonal">
     <v-btn
+      v-ripple
       class="flex-grow-1 text-none"
       prepend-icon="mdi-refresh"
       color="#76FF03"
-      v-ripple
       tile
       @click.stop="getACLState"
-      >{{ $t('common.refresh') }}</v-btn
     >
+      {{ $t('common.refresh') }}
+    </v-btn>
   </v-btn-group>
 
   <div style="max-height: 265px; min-width: 100%; overflow-y: auto; overflow-x: hidden">
@@ -28,28 +29,31 @@
         <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
       </template> -->
 
-      <template v-slot:item.ip="{ item }">
+      <!-- eslint-disable-next-line vue/valid-v-slot --><!-- Allow Vuetify's extended slot name syntax 'item.ip' -->
+      <template #item.ip="{ item }">
         {{ item.ip }}
       </template>
 
-      <template v-slot:item.remove="{ item }">
+      <!-- eslint-disable-next-line vue/valid-v-slot --><!-- Allow Vuetify's extended slot name syntax 'item.remove' -->
+      <template #item.remove="{ item }">
         <v-btn-group
+          v-ripple
           density="compact"
           rounded="lg"
-          v-ripple
           variant="tonal"
           group
           selected-class="selected-orientation"
         >
           <v-btn
+            v-ripple
             class="flex-grow-1 text-none"
             flat
             prepend-icon="mdi-close"
             color="#D32F2F"
-            v-ripple
             tile
             @click.stop="handleRemove(item.ip)"
-            >{{ $t('common.remove') }}
+          >
+            {{ $t('common.remove') }}
             <template #prepend>
               <v-icon color="#D32F2F" />
             </template>
@@ -63,12 +67,12 @@
     <v-col cols="12">
       <v-text-field
         v-model="deviceName"
+        v-ripple
         minlength="1"
         :rules="deviceNameRules"
         density="compact"
         tile
         rounded="lg"
-        v-ripple
         color="#76FF03"
         variant="outlined"
         placeholder="New IP address"
@@ -76,24 +80,24 @@
         single-line
         @keydown.stop
         @keyup.stop
-      >
-      </v-text-field>
+      />
     </v-col>
   </v-row>
 
   <v-row dense class="d-flex justify-end align-center">
     <v-col cols="auto">
       <v-btn
+        v-ripple
         class="flex-grow-1 text-none"
         prepend-icon="mdi-plus"
         color="#76FF03"
-        v-ripple
         tile
         rounded="lg"
         flat
         variant="tonal"
         @click.stop="handleAddClick()"
-        >{{ $t('common.add') }}
+      >
+        {{ $t('common.add') }}
         <template #prepend>
           <v-icon color="#76FF03" />
         </template>
@@ -104,14 +108,13 @@
 
 <script setup>
   import { ref, onMounted } from 'vue';
-  import { useAppStore } from '@/stores/stores';
   import { useACL } from '@/composables/useACL';
-
+  import { useAlert } from '@/composables/useAlert';
   import { useWOL } from '@/composables/useWOL';
 
   const { deviceNameRules } = useWOL();
   const deviceName = ref('');
-
+  const { sendAlert } = useAlert();
   const { ACLBlockList, getACLState, apiRemove, apiAdd } = useACL();
 
   const headers = ref([

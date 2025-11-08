@@ -1,11 +1,11 @@
 <template>
   <v-expansion-panel value="security">
     <v-expansion-panel-title>
-      <template v-slot:default="{ expanded }">
+      <template #default="{ expanded }">
         <v-card class="transparent-card" density="compact" tile width="100%">
           <v-row dense no-gutters>
             <v-col cols="1">
-              <v-icon color="#D32F2F">mdi-security</v-icon>
+              <v-icon color="#D32F2F"> mdi-security </v-icon>
             </v-col>
             <v-col class="d-flex justify-start align-center" cols="4">
               {{ $t('settings.security.title') }}
@@ -25,7 +25,7 @@
       <v-expansion-panels v-model="innerPanel" multiple>
         <v-expansion-panel value="security-authorization">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-check-circle-outline</v-icon>
@@ -43,7 +43,7 @@
 
         <v-expansion-panel value="security-authentication">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-key-variant</v-icon>
@@ -56,7 +56,8 @@
                   :style="{
                     color: '#76FF03',
                   }"
-                  ><v-chip>
+                >
+                  <v-chip>
                     {{ security.authType }}
                   </v-chip>
                 </v-col>
@@ -70,7 +71,7 @@
 
         <v-expansion-panel value="security-session">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-cogs</v-icon>
@@ -99,9 +100,9 @@
           </v-expansion-panel-text>
         </v-expansion-panel>
 
-        <v-expansion-panel value="security-iam" v-if="isExperimental">
+        <v-expansion-panel v-if="isExperimental" value="security-iam">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-identifier</v-icon>
@@ -123,8 +124,7 @@
                     rounded="lg"
                     tile
                     :label="$t('settings.security.iam.systemField')"
-                  >
-                  </v-select>
+                  />
                 </v-col>
               </v-row>
 
@@ -137,7 +137,7 @@
                     :label="item"
                     :value="item"
                     color="#76FF03"
-                  ></v-checkbox>
+                  />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -146,7 +146,7 @@
 
         <v-expansion-panel value="reset">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="{ expanded }">
               <v-card class="transparent-card" density="compact" tile width="100%">
                 <v-row no-gutters class="d-flex justify-start align-center">
                   <v-col cols="1">
@@ -157,14 +157,15 @@
                   </v-col>
                   <v-col class="d-flex justify-end align-center">
                     <v-btn
+                      v-ripple
                       flat
                       variant="tonal"
                       color="#D32F2F"
                       rounded="lg"
-                      v-ripple
                       tile
                       @click.stop="handleResetConfig"
-                      >{{ $t('settings.security.reset.resetConfig') }}
+                    >
+                      {{ $t('settings.security.reset.resetConfig') }}
                     </v-btn>
                   </v-col>
                   <v-col v-if="expanded" cols="auto">
@@ -182,9 +183,9 @@
                 <v-col cols="*">
                   <v-switch
                     v-model="retainCredentialsValue"
+                    v-ripple
                     inset
                     :label="$t('settings.security.reset.retainPasswordField')"
-                    v-ripple
                     color="#76FF03"
                   />
                 </v-col>

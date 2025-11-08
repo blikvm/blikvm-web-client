@@ -24,11 +24,11 @@
   <v-expansion-panels v-model="panel" multiple>
     <v-expansion-panel value="storage" @group:selected="handlePanelOpen">
       <v-expansion-panel-title>
-        <template v-slot:default="{ expanded }">
+        <template #default="{ expanded }">
           <v-card class="transparent-card" density="compact" tile width="100%">
             <v-row dense no-gutters>
               <v-col cols="1">
-                <v-icon color="#76FF03">mdi-sim-outline</v-icon>
+                <v-icon color="#76FF03"> mdi-sim-outline </v-icon>
               </v-col>
               <v-col class="d-flex justify-start align-center" cols="5">
                 {{ $t('settings.storage.title') }}
@@ -74,8 +74,7 @@
 </template>
 
 <script setup>
-  import { onMounted } from 'vue';
-  import { useAppStore } from '@/stores/stores';
+  import { onMounted, ref, computed } from 'vue';
   import { useDevice } from '@/composables/useDevice';
   import { useVirtualMedia } from '@/composables/useVirtualMedia';
   import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -130,15 +129,6 @@
             // Access the dataset and the value
             const dataset = tooltipItem.dataset;
             const value = dataset.data[tooltipItem.dataIndex];
-            const total = dataset.data.reduce((sum, val) => sum + val, 0);
-
-            // Calculate the percentage
-            const percentage = (value / total) * 100;
-
-            // Use toFixed(2) for non-integers
-            const formattedPercentage = Number.isInteger(percentage)
-              ? `${percentage}%`
-              : `${percentage.toFixed(2)}%`;
 
             // Access the label from the chart's data
             const label = tooltipItem.chart.data.labels[tooltipItem.dataIndex];

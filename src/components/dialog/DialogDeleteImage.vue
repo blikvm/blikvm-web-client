@@ -53,9 +53,11 @@
   import http from '@/utils/http.js';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
+  import { useAlert } from '@/composables/useAlert.js';
 
   const store = useAppStore();
   const { selectedItem, deleteImageDialog } = storeToRefs(store);
+  const { sendAlert } = useAlert();
   const emit = defineEmits(['refreshImageList']);
 
   const closeDialog = () => {

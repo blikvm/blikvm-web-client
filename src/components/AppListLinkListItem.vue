@@ -20,10 +20,10 @@
 
 <script setup>
   defineProps({
-    label: String,
-    title: String,
-    prependIcon: String,
-    appendIcon: String,
+    label: { type: String, default: '' },
+    title: { type: String, default: '' },
+    prependIcon: { type: String, default: '' },
+    appendIcon: { type: String, default: '' },
   });
 </script>
 

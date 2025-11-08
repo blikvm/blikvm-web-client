@@ -44,7 +44,7 @@
         }"
         @click="handleOcrClick($event)"
       >
-        <v-icon class="mr-2">mdi-select-arrow-up</v-icon>
+        <v-icon class="mr-2"> mdi-select-arrow-up </v-icon>
         {{ $t('settings.text.extract.selectArea') }}
       </v-btn>
     </v-col>
@@ -60,7 +60,7 @@
   const { ocr } = storeToRefs(store);
   const { ocrLanguageList } = useLanguage();
 
-  const handleOcrClick = (event) => {
+  const handleOcrClick = () => {
     ocr.value.ocrSelection = true;
     console.log('OCR selection mode activated:', ocr.value.ocrSelection);
   };

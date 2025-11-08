@@ -3,28 +3,28 @@ import { ref, computed, nextTick, onBeforeUnmount, readonly } from 'vue';
 // Drag interaction constants
 const DRAG_CONSTANTS = {
   // Distance thresholds (pixels)
-  SNAP_THRESHOLD: 50,           // Distance to snap to center
-  DRAG_THRESHOLD: 5,            // Movement to start drag
-  MIN_SAFE_MARGIN: 20,          // Minimum margin from viewport edge
-  MIN_MAX_OFFSET: 100,          // Minimum maximum offset
-  DEFAULT_MAX_OFFSET: 200,      // Fallback maximum offset
-  
+  SNAP_THRESHOLD: 50, // Distance to snap to center
+  DRAG_THRESHOLD: 5, // Movement to start drag
+  MIN_SAFE_MARGIN: 20, // Minimum margin from viewport edge
+  MIN_MAX_OFFSET: 100, // Minimum maximum offset
+  DEFAULT_MAX_OFFSET: 200, // Fallback maximum offset
+
   // Timing thresholds (milliseconds)
-  DOUBLE_CLICK_DELAY: 400,      // Max time between clicks for double-click
-  CLICK_TIMEOUT: 300,           // Max time for click vs drag detection
-  
+  DOUBLE_CLICK_DELAY: 400, // Max time between clicks for double-click
+  CLICK_TIMEOUT: 300, // Max time for click vs drag detection
+
   // Keyboard interaction
-  KEYBOARD_STEP: 20,            // Pixels to move with arrow keys
-  
+  KEYBOARD_STEP: 20, // Pixels to move with arrow keys
+
   // Animation timing
-  TRANSITION_DURATION: '0.2s',  // CSS transition duration
-  TRANSITION_EASING: 'ease-out' // CSS transition easing
+  TRANSITION_DURATION: '0.2s', // CSS transition duration
+  TRANSITION_EASING: 'ease-out', // CSS transition easing
 };
 
 /**
  * Composable for handling drag functionality with click/double-click detection
  * Provides reusable drag logic with constraints, snap-to-center, and memory leak prevention
- * 
+ *
  * @param {Object} options - Configuration options
  * @param {Ref} options.target - Reactive target object with offset property
  * @param {Function} options.onToggle - Callback for single click (pin toggle)
@@ -47,7 +47,7 @@ export function useDragHandle(options) {
     snapThreshold = DRAG_CONSTANTS.SNAP_THRESHOLD,
     dragThreshold = DRAG_CONSTANTS.DRAG_THRESHOLD,
     doubleClickDelay = DRAG_CONSTANTS.DOUBLE_CLICK_DELAY,
-    clickTimeout = DRAG_CONSTANTS.CLICK_TIMEOUT
+    clickTimeout = DRAG_CONSTANTS.CLICK_TIMEOUT,
   } = options;
 
   // Drag state
@@ -55,7 +55,7 @@ export function useDragHandle(options) {
   const dragState = ref({
     startX: 0,
     startOffset: 0,
-    maxOffset: 0
+    maxOffset: 0,
   });
 
   // Click detection state
@@ -67,18 +67,20 @@ export function useDragHandle(options) {
   const activeListeners = ref({
     mousemove: null,
     mouseup: null,
-    mouseleave: null
+    mouseleave: null,
   });
 
   // Computed styles
   const dragStyle = computed(() => ({
-    transition: isDragging.value ? 'none' : `transform ${DRAG_CONSTANTS.TRANSITION_DURATION} ${DRAG_CONSTANTS.TRANSITION_EASING}`
+    transition: isDragging.value
+      ? 'none'
+      : `transform ${DRAG_CONSTANTS.TRANSITION_DURATION} ${DRAG_CONSTANTS.TRANSITION_EASING}`,
   }));
 
   const handleStyle = computed(() => ({
     cursor: isDragging.value ? 'grabbing' : 'grab',
     userSelect: 'none',
-    transition: `transform ${DRAG_CONSTANTS.TRANSITION_DURATION} ease`
+    transition: `transform ${DRAG_CONSTANTS.TRANSITION_DURATION} ease`,
   }));
 
   // Utility functions
@@ -113,15 +115,15 @@ export function useDragHandle(options) {
   // Mouse event handlers
   const handleMouseDown = (event) => {
     if (event.button !== 0) return; // Only left mouse button
-    
+
     event.preventDefault();
     event.stopPropagation();
-    
+
     const startTime = Date.now();
     const startX = event.clientX;
     const startY = event.clientY;
     let hasDragged = false;
-    
+
     const cleanup = () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
@@ -132,21 +134,21 @@ export function useDragHandle(options) {
     const onMouseMove = (e) => {
       const deltaX = Math.abs(e.clientX - startX);
       const deltaY = Math.abs(e.clientY - startY);
-      
+
       if (deltaX > dragThreshold || deltaY > dragThreshold) {
         hasDragged = true;
         cleanup();
         startDrag(event);
       }
     };
-    
+
     const onMouseUp = () => {
       cleanup();
-      
+
       // If it was a quick click without drag
       if (!hasDragged && Date.now() - startTime < clickTimeout) {
         const timeSinceLastClick = startTime - lastClickTime.value;
-        
+
         // Double-click detection
         if (timeSinceLastClick < doubleClickDelay && clickCount.value === 1) {
           clearTimeout(clickTimeoutId);
@@ -159,29 +161,31 @@ export function useDragHandle(options) {
             clickCount.value = 0;
           }, doubleClickDelay);
         }
-        
+
         lastClickTime.value = startTime;
       }
     };
-    
+
     // Track listeners for cleanup
     activeListeners.value.mousemove = onMouseMove;
     activeListeners.value.mouseup = onMouseUp;
-    
+
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   };
 
   const startDrag = (event) => {
     if (event.button !== 0) return; // Only left mouse button
-    
+
     event.preventDefault();
     event.stopPropagation();
-    
+
     isDragging.value = true;
     dragState.value.startX = event.clientX;
     dragState.value.startOffset = target.value.offset;
-    dragState.value.maxOffset = calculateMaxOffset ? calculateMaxOffset() : DRAG_CONSTANTS.DEFAULT_MAX_OFFSET;
+    dragState.value.maxOffset = calculateMaxOffset
+      ? calculateMaxOffset()
+      : DRAG_CONSTANTS.DEFAULT_MAX_OFFSET;
 
     // Track listeners for cleanup
     const moveHandler = (e) => handleDragMove(e);
@@ -192,7 +196,7 @@ export function useDragHandle(options) {
     document.addEventListener('mousemove', moveHandler, { passive: false });
     document.addEventListener('mouseup', handleDragEnd, { once: true });
     document.addEventListener('mouseleave', handleDragEnd, { once: true });
-    
+
     // Prevent text selection during drag
     document.body.style.userSelect = 'none';
     document.body.style.webkitUserSelect = 'none';
@@ -200,7 +204,7 @@ export function useDragHandle(options) {
 
   const handleDragMove = (event) => {
     if (!isDragging.value) return;
-    
+
     event.preventDefault();
     const deltaX = event.clientX - dragState.value.startX;
     const newOffset = dragState.value.startOffset + deltaX;
@@ -209,16 +213,16 @@ export function useDragHandle(options) {
 
   const handleDragEnd = () => {
     isDragging.value = false;
-    
+
     // Restore text selection
     document.body.style.userSelect = '';
     document.body.style.webkitUserSelect = '';
-    
+
     // Snap to center if close enough
     if (Math.abs(target.value.offset) < snapThreshold) {
       target.value.offset = 0;
     }
-    
+
     // Clean up tracked listeners
     cleanupListeners();
   };
@@ -226,7 +230,7 @@ export function useDragHandle(options) {
   // Keyboard accessibility
   const handleKeyDown = (event) => {
     const step = DRAG_CONSTANTS.KEYBOARD_STEP;
-    
+
     switch (event.key) {
       case 'ArrowLeft':
         event.preventDefault();
@@ -268,19 +272,19 @@ export function useDragHandle(options) {
     isDragging: readonly(isDragging),
     dragStyle,
     handleStyle,
-    
+
     // Event handlers
     handleMouseDown,
     handleKeyDown,
     handleResize,
-    
+
     // Utility functions
     initialize,
     updateMaxOffset,
     constrainOffset,
     cleanupListeners,
-    
+
     // For manual control if needed
-    dragState: readonly(dragState)
+    dragState: readonly(dragState),
   };
 }

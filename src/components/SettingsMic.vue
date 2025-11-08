@@ -3,7 +3,7 @@
   <v-expansion-panels v-model="panelProxy" multiple>
     <v-expansion-panel value="mic" @group:selected="handlePanelOpen">
       <v-expansion-panel-title>
-        <template v-slot:default="{ expanded }">
+        <template #default="{ expanded }">
           <v-card class="transparent-card" density="compact" tile width="100%">
             <v-row dense no-gutters class="d-flex justify-end align-center">
               <v-col cols="1">
@@ -40,7 +40,7 @@
                 color="#76FF03"
                 inset
                 hide-details
-                @update:modelValue="setMicRegistration"
+                @update:model-value="setMicRegistration"
               />
             </v-col>
           </v-row>
@@ -57,7 +57,7 @@
 
           <div v-if="showMicMeter" class="mt-3">
             <div class="d-flex align-center mb-2">
-              <v-icon class="me-2" size="small">mdi-waveform</v-icon>
+              <v-icon class="me-2" size="small"> mdi-waveform </v-icon>
               <span class="text-caption">Input Level</span>
             </div>
             <v-progress-linear
@@ -145,13 +145,17 @@
     try {
       if (sourceNode) sourceNode.disconnect();
       if (analyser) analyser.disconnect();
-    } catch (e) {}
+    } catch (error) {
+      console.error('Error disconnecting audio nodes:', error.message);
+    }
     sourceNode = null;
     analyser = null;
     if (audioCtx) {
       try {
         audioCtx.close();
-      } catch (e) {}
+      } catch (e) {
+        console.error('Error closing audio context:', e.message);
+      }
       audioCtx = null;
     }
     micLevel.value = 0;
@@ -164,7 +168,9 @@
     audioCtx = new Ctx();
     try {
       await audioCtx.resume?.();
-    } catch (e) {}
+    } catch (e) {
+      console.error('Error resuming audio context:', e.message);
+    }
     sourceNode = audioCtx.createMediaStreamSource(stream);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 2048;
@@ -204,7 +210,7 @@
         }
       }
     } catch (e) {
-      // Ignore; keep current UI state
+      console.error('Error fetching mic registration status:', e.message);
     }
   };
 

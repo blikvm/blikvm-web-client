@@ -1,8 +1,8 @@
 <template>
   <v-speed-dial location="bottom end" open-on-hover transition="tab-transition">
-    <template v-slot:activator="{ props: activatorProps }">
+    <template #activator="{ props: activatorProps }">
       <v-tooltip content-class="" location="bottom">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-fab
             v-bind="mergeProps(activatorProps, tooltipProps)"
             size="small"
@@ -20,14 +20,10 @@
 </template>
 
 <script setup>
-  import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
   import { mergeProps } from 'vue';
 
-  const store = useAppStore();
   const { device } = useDevice();
-  const { video } = storeToRefs(store);
 
   const toggleAudio = () => {
     device.value.video.audioVolume = 0;

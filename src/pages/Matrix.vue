@@ -16,7 +16,7 @@
             :color="isProcessing ? '#76FF03' : '#D32F2F'"
             rounded
             height="1"
-          ></v-progress-linear>
+          />
 
           <AppToolbar :z-index="zIndex.toolbar" class="toolbar" />
 
@@ -42,6 +42,7 @@
 </template>
 
 <script setup>
+  import { ref, onMounted, watch } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
@@ -60,8 +61,7 @@
 
   const { t } = useI18n();
 
-  const { isProcessing, toolbar, showAboutPageDialog, hasValidStream, footer, misc } =
-    storeToRefs(store);
+  const { isProcessing, toolbar, showAboutPageDialog, hasValidStream, misc } = storeToRefs(store);
   const showInitScreen = ref(true);
   // TODO 2025-05-18 this needs to be move elsewhere
   const handleMouseMove = (event) => {

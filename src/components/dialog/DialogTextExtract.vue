@@ -86,6 +86,7 @@
 </template>
 
 <script setup>
+  import { onMounted } from 'vue';
   import { storeToRefs } from 'pinia';
   import { useAppStore } from '@/stores/stores';
   import { useExtractText } from '@/composables/useExtractText';

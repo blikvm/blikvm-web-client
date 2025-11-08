@@ -25,13 +25,13 @@
     <v-expansion-panels v-model="expandedPanels" multiple>
       <!-- Dynamically rendered items -->
       <template v-if="kvmSwitch.items.length > 0">
-        <template v-for="(item, index) in kvmSwitch.items" :key="item.id">
+        <template v-for="item in kvmSwitch.items" :key="item.id">
           <v-expansion-panel>
             <v-expansion-panel-title>
-              <template v-slot:default="{ expanded }">
+              <template #default="">
                 <v-row dense no-gutters>
                   <v-col cols="1">
-                    <v-icon color="#76FF03">mdi-cable-data</v-icon>
+                    <v-icon color="#76FF03"> mdi-cable-data </v-icon>
                   </v-col>
                   <v-col class="d-flex justify-start align-center" cols="8">
                     <template v-if="$vuetify.display.smAndUp">
@@ -40,7 +40,7 @@
                         length="24"
                         thickness="0"
                         vertical
-                      ></v-divider>
+                      />
                     </template>
                     {{ item.title }} <br />
                     {{ item.subtitle }}
@@ -68,7 +68,7 @@
                       inset
                       :label="$t('settings.switch.activeField')"
                       color="#76FF03"
-                      @update:modelValue="(val) => toggleSwitch(val, item.id)"
+                      @update:model-value="(val) => toggleSwitch(val, item.id)"
                     />
                   </v-col>
                 </v-row>
@@ -79,7 +79,6 @@
                       v-model="item.deviceFile"
                       :label="$t('settings.switch.deviceFile')"
                       density="compact"
-                      color="#76FF03"
                       :color="device.kvmSwitch.isActive ? '#76FF03' : ''"
                       clearable
                       @keydown.stop
@@ -101,8 +100,8 @@
                         >
                           <v-text-field
                             v-model="channel.override"
-                            :label="`Channel ${channel.name}`"
                             v-ripple
+                            :label="`Channel ${channel.name}`"
                             dense
                             tile
                             rounded="lg"
@@ -133,27 +132,26 @@
 
 <script setup>
   import { ref } from 'vue';
-  import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
   import { useHdmiSwitch } from '@/composables/useHdmiSwitch';
   import { useAlert } from '@/composables/useAlert.js';
 
   const { sendAlert } = useAlert(alert);
   // Define the props and use v-model binding
-  const props = defineProps({
-    label: String,
-    index: Number,
-    modelValue: Boolean, // Auto-bound for v-model:is-menu-visible
+  // Props are only consumed by the parent (e.g. v-model / attributes) and not used internally,
+  // so we call defineProps without assigning to a local variable to avoid no-unused-vars.
+  // Provide explicit default values to satisfy vue/require-default-prop if enabled.
+  defineProps({
+    label: { type: String, default: '' },
+    index: { type: Number, default: 0 },
+    modelValue: { type: Boolean, default: false }, // Auto-bound for v-model:is-menu-visible
   });
 
   const { device } = useDevice();
 
   const expandedPanels = ref([]);
 
-  const emit = defineEmits(['update:modelValue']);
-
-  const { kvmSwitch, updateHDMISwitch, activateHDMISwitch, loadHdmiSwitch } = useHdmiSwitch();
+  const { kvmSwitch, updateHDMISwitch, activateHDMISwitch } = useHdmiSwitch();
 
   const updateDeviceFile = async (id) => {
     try {
@@ -184,6 +182,4 @@
       sendAlert('error', title, message);
     }
   };
-
-  onMounted(async () => {});
 </script>

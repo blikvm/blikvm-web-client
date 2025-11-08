@@ -30,93 +30,94 @@
       <v-list select-strategy="leaf">
         <v-list-item>
           <v-list-item-title>
-            <v-btn-group density="compact" rounded="lg" v-ripple variant="tonal">
+            <v-btn-group v-ripple density="compact" rounded="lg" variant="tonal">
               <v-btn
                 v-tooltip="$t('settings.network.wol.refreshList')"
+                v-ripple
                 class="flex-grow-1 text-none"
                 prepend-icon="mdi-refresh"
                 color="#76FF03"
-                v-ripple
                 tile
                 @click.stop="handleMenuItemClick('refresh')"
-                >{{ $t('common.refresh') }}</v-btn
               >
+                {{ $t('common.refresh') }}
+              </v-btn>
             </v-btn-group>
           </v-list-item-title>
         </v-list-item>
 
-        <v-list-item v-for="(item, index) in wolList.items" :key="item.mac">
+        <v-list-item v-for="item in wolList.items" :key="item.mac">
           <v-list-item-title>
             <v-row dense class="d-flex justify-start align-center">
               <v-col cols="6">
                 <v-text-field
                   v-model="item.name"
+                  v-ripple
                   minlength="1"
                   :rules="deviceNameRules"
                   density="compact"
                   tile
                   rounded="lg"
-                  v-ripple
                   color="#76FF03"
                   variant="outlined"
                   placeholder="Device name"
                   hide-details
                   single-line
-                >
-                </v-text-field>
+                />
               </v-col>
 
               <v-col cols="6">
                 <v-text-field
                   v-model="item.mac"
+                  v-ripple
                   maxlength="17"
                   :rules="macAddressRules"
                   density="compact"
                   tile
                   rounded="lg"
-                  v-ripple
                   color="#76FF03"
                   variant="outlined"
                   placeholder="Mac address"
                   hide-details
                   single-line
-                >
-                </v-text-field>
+                />
               </v-col>
             </v-row>
             <v-row dense class="d-flex justify-end align-center">
               <v-col cols="auto" class="d-flex flex-row align-end justify-center" style="gap: 8px">
                 <v-btn-group
+                  v-ripple
                   density="compact"
                   rounded="lg"
-                  v-ripple
                   variant="tonal"
                   group
                   selected-class="selected-orientation"
                 >
                   <v-btn
+                    v-ripple
                     class="flex-grow-1 text-none"
                     flat
                     prepend-icon="mdi-close"
                     color="#D32F2F"
-                    v-ripple
                     tile
                     @click.stop="handleMenuItemClick('delete', item.mac)"
-                    >{{ $t('common.remove') }}
+                  >
+                    {{ $t('common.remove') }}
                     <template #prepend>
                       <v-icon color="#D32F2F" />
                     </template>
                   </v-btn>
 
                   <v-btn
+                    v-ripple
                     class="flex-grow-1 text-none"
                     prepend-icon="mdi-rocket-launch"
                     color="#76FF03"
-                    v-ripple
                     tile
                     @click.stop="handleMenuItemClick('wol', item.mac)"
-                    >{{ $t('settings.network.wol.wakeup') }}</v-btn
                   >
+                    {{ $t('settings.network.wol.wakeup') }}
+                  </v-btn>
                 </v-btn-group>
               </v-col>
             </v-row>
@@ -132,12 +133,12 @@
               <v-col cols="6">
                 <v-text-field
                   v-model="deviceName"
+                  v-ripple
                   minlength="1"
                   :rules="deviceNameRules"
                   density="compact"
                   tile
                   rounded="lg"
-                  v-ripple
                   color="#76FF03"
                   variant="outlined"
                   :placeholder="$t('settings.network.wol.newDeiviceName')"
@@ -145,19 +146,18 @@
                   single-line
                   @keydown.stop
                   @keyup.stop
-                >
-                </v-text-field>
+                />
               </v-col>
 
               <v-col cols="6">
                 <v-text-field
                   v-model="deviceMac"
+                  v-ripple
                   maxlength="17"
                   :rules="macAddressRules"
                   density="compact"
                   tile
                   rounded="lg"
-                  v-ripple
                   color="#76FF03"
                   variant="outlined"
                   :placeholder="$t('settings.network.wol.newDeviceMac')"
@@ -165,23 +165,23 @@
                   single-line
                   @keydown.stop
                   @keyup.stop
-                >
-                </v-text-field>
+                />
               </v-col>
             </v-row>
             <v-row dense class="d-flex justify-end align-center">
               <v-col cols="auto" class="d-flex flex-row align-end justify-center" style="gap: 8px">
                 <v-btn
+                  v-ripple
                   class="flex-grow-1 text-none"
                   prepend-icon="mdi-plus"
                   color="#76FF03"
-                  v-ripple
                   tile
                   flat
                   variant="tonal"
                   :disabled="!canAddDevice"
                   @click.stop="handleMenuItemClick('add')"
-                  >{{ $t('settings.network.wol.add') }}
+                >
+                  {{ $t('settings.network.wol.add') }}
                   <template #prepend>
                     <v-icon color="#76FF03" />
                   </template>
@@ -197,12 +197,6 @@
 
 <script setup>
   import { ref, computed } from 'vue';
-  import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
-
-  const route = useRoute();
-  const store = useAppStore();
-
   import { useWOL } from '@/composables/useWOL';
 
   const { deviceNameRules, macAddressRules, loadWol, wolList, addDevice, removeDevice, wakeOnLan } =
@@ -245,40 +239,6 @@
     } else if (button === 'wol') {
       wakeOnLan(value);
     }
-  };
-
-  const handleAddDevice = () => {
-    try {
-      addDevice(deviceName.value, deviceMac.value);
-    } catch (error) {
-      console.error(error.message);
-    }
-  };
-
-  const cancel = async () => {
-    try {
-      console.log('cancel');
-    } catch (error) {
-      console.error('Error during cancel operation:', error);
-    }
-  };
-
-  // !! TODO you have to think when you want to process the user's changes. Directly or centrally (with OK button)
-  // For me it should be centrally
-
-  const save = async () => {
-    try {
-      console.log('save');
-      handleAddDevice();
-    } catch (error) {
-      console.error('Error during save operation:', error);
-    }
-  };
-
-  const actionHandlers = {
-    //  resetDefaults: handleResetDefaults,
-    ok: save,
-    close: cancel,
   };
 </script>
 

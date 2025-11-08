@@ -1,7 +1,7 @@
 <template>
   <v-toolbar
-    ref="toolbarRef"
     v-if="toolbar.visible || toolbar.pinned"
+    ref="toolbarRef"
     height="30"
     elevation="10"
     app="false"
@@ -14,11 +14,11 @@
   >
     <template #prepend>
       <div class="toolbar-content">
-        <v-icon 
+        <v-icon
           ref="dragHandleRef"
-          color="#76FF03" 
+          color="#76FF03"
           :class="{ 'pin-active': toolbar.pinned }"
-          class="unified-handle" 
+          class="unified-handle"
           role="button"
           tabindex="0"
           :aria-label="toolbar.pinned ? 'Pinned' : 'Draggable'"
@@ -38,12 +38,12 @@
     </slot>
 
     <template v-if="$vuetify.display.smAndUp">
-      <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical></v-divider>
+      <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical />
     </template>
 
     <!-- Status Indicator (Connection + Health) -->
     <v-tooltip location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
+      <template #activator="{ props: tooltipProps }">
         <v-icon
           v-bind="tooltipProps"
           :color="device.isDisconnected ? '#D32F2F' : healthIconColor"
@@ -60,70 +60,86 @@
     <template v-if="toolbar.expanded">
       <!-- KVM Status Icons -->
       <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
             :color="device.hid.isActive && device.hid.keyboard.isActive ? '#76FF03' : '#D32F2F'"
             size="small"
-          >mdi-keyboard</v-icon>
+          >
+            mdi-keyboard
+          </v-icon>
         </template>
-        <span>{{ $t('common.keyboard') }} {{ device.hid.isActive && device.hid.keyboard.isActive ? $t('common.active') : $t('common.inactive') }}</span>
+        <span
+          >{{ $t('common.keyboard') }}
+          {{
+            device.hid.isActive && device.hid.keyboard.isActive
+              ? $t('common.active')
+              : $t('common.inactive')
+          }}</span
+        >
       </v-tooltip>
 
       <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
-          <v-icon
-            v-bind="tooltipProps"
-            :color="isVideoActive ? '#76FF03' : '#D32F2F'"
-            size="small"
-          >mdi-monitor</v-icon>
+        <template #activator="{ props: tooltipProps }">
+          <v-icon v-bind="tooltipProps" :color="isVideoActive ? '#76FF03' : '#D32F2F'" size="small">
+            mdi-monitor
+          </v-icon>
         </template>
-        <span>{{ $t('settings.device.video.title') }} {{ isVideoActive ? $t('common.active') : $t('common.inactive') }}</span>
+        <span
+          >{{ $t('settings.device.video.title') }}
+          {{ isVideoActive ? $t('common.active') : $t('common.inactive') }}</span
+        >
       </v-tooltip>
 
       <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
             :color="device.hid.isActive && device.hid.mouse.isActive ? '#76FF03' : '#D32F2F'"
             size="small"
-          >mdi-mouse</v-icon>
+          >
+            mdi-mouse
+          </v-icon>
         </template>
-        <span>{{ $t('common.mouse') }} {{ device.hid.isActive && device.hid.mouse.isActive ? $t('common.active') : $t('common.inactive') }}</span>
+        <span
+          >{{ $t('common.mouse') }}
+          {{
+            device.hid.isActive && device.hid.mouse.isActive
+              ? $t('common.active')
+              : $t('common.inactive')
+          }}</span
+        >
       </v-tooltip>
 
       <!-- Action Controls -->
       <v-tooltip location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
             :color="showOverlay ? '#76FF03' : '#42A5F5'"
-            @click="handleClick('overlay')"
             size="small"
-          >{{ showOverlay ? 'mdi-layers-outline' : 'mdi-layers-off-outline' }}</v-icon>
+            @click="handleClick('overlay')"
+          >
+            {{ showOverlay ? 'mdi-layers-outline' : 'mdi-layers-off-outline' }}
+          </v-icon>
         </template>
         <span>{{ showOverlay ? $t('common.overlayOff') : $t('common.overlayOn') }}</span>
       </v-tooltip>
 
       <v-tooltip location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
-          <v-icon 
-            v-bind="tooltipProps" 
-            color="#FFD600" 
-            @click="handleClick('lock')"
-            size="small"
-          >mdi-lock</v-icon>
+        <template #activator="{ props: tooltipProps }">
+          <v-icon v-bind="tooltipProps" color="#FFD600" size="small" @click="handleClick('lock')">
+            mdi-lock
+          </v-icon>
         </template>
         <span>{{ $t('common.send') }} Ctrl+Alt+Del</span>
       </v-tooltip>
 
       <v-tooltip v-if="!isFullscreen" location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
-          <v-icon 
-            v-bind="tooltipProps" 
-            @click="toggleFullscreen"
-            size="small"
-          >mdi-fullscreen</v-icon>
+        <template #activator="{ props: tooltipProps }">
+          <v-icon v-bind="tooltipProps" size="small" @click="toggleFullscreen">
+            mdi-fullscreen
+          </v-icon>
         </template>
         <span>{{ $t('common.fullscreenMode') }}</span>
       </v-tooltip>
@@ -135,49 +151,51 @@
     <template #append>
       <!-- Settings Toggle -->
       <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
             :color="settings.isVisible ? '#76FF03' : 'white'"
-            @click="handleLayoutClick('left')"
             size="small"
-          >mdi-dock-left</v-icon>
+            @click="handleLayoutClick('left')"
+          >
+            mdi-dock-left
+          </v-icon>
         </template>
         <span>{{ $t('common.toggleSettings') }}</span>
       </v-tooltip>
 
       <!-- Footer Toggle -->
       <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
             :color="footer.showFooter ? '#76FF03' : 'white'"
-            @click="handleLayoutClick('bottom')"
             size="small"
-          >mdi-dock-bottom</v-icon>
+            @click="handleLayoutClick('bottom')"
+          >
+            mdi-dock-bottom
+          </v-icon>
         </template>
         <span>{{ $t('common.toggleFooter') }}</span>
       </v-tooltip>
 
       <!-- User Menu -->
       <v-menu v-if="toolbar.expanded" offset-y>
-        <template v-slot:activator="{ props: menuProps }">
+        <template #activator="{ props: menuProps }">
           <v-tooltip location="top" content-class="">
-            <template v-slot:activator="{ props: tooltipProps }">
-              <v-icon
-                v-bind="{ ...menuProps, ...tooltipProps }"
-                color="white"
-                size="small"
-              >mdi-account-circle</v-icon>
+            <template #activator="{ props: tooltipProps }">
+              <v-icon v-bind="{ ...menuProps, ...tooltipProps }" color="white" size="small">
+                mdi-account-circle
+              </v-icon>
             </template>
             <span>{{ account.user }}</span>
           </v-tooltip>
         </template>
         <v-list density="compact">
           <template v-for="item in menuItems" :key="item.id">
-            <v-divider v-if="item.isDivider"></v-divider>
+            <v-divider v-if="item.isDivider" />
             <v-list-item v-else @click="handleUserClick(item.id)">
-              <template v-slot:prepend>
+              <template #prepend>
                 <v-icon>{{ item.icon }}</v-icon>
               </template>
               <v-list-item-title>{{ $t(item.titleKey) }}</v-list-item-title>
@@ -202,17 +220,16 @@
   import { useHeaderMenu } from '@/composables/useHeaderMenu';
   import { useDragHandle, DRAG_CONSTANTS } from '@/composables/useDragHandle';
   import { useFullscreen } from '@/composables/useFullscreen';
-  import { onMounted, onBeforeUnmount, ref, computed, nextTick } from 'vue';
+  import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
 
   const store = useAppStore();
 
-  const { settings, footer, toolbar, showOverlay, showCtrlAltDelDialog, systeminfo } =
-    storeToRefs(store);
+  const { settings, footer, toolbar, showOverlay, systeminfo } = storeToRefs(store);
 
   const { device } = useDevice();
   const { isVideoActive } = useAppKVMVideo(device);
   const { healthIconColor } = useHealthCheck();
-  
+
   // Header menu functionality
   const { account, menuItems, handleLayoutClick, handleUserClick } = useHeaderMenu();
 
@@ -228,7 +245,7 @@
       toolbar.value.pinned = true;
       toolbar.value.visible = true;
       footer.value.showFooter = true;
-    }
+    },
   });
 
   // Template refs
@@ -236,38 +253,42 @@
   const dragHandleRef = ref(null);
 
   // Drag functionality
-  const { 
-    isDragging, 
-    dragStyle, 
-    handleStyle, 
-    handleMouseDown: dragHandleMouseDown, 
-    handleKeyDown: dragHandleKeyDown, 
+  const {
+    dragStyle,
+    handleStyle,
+    handleMouseDown: dragHandleMouseDown,
+    handleKeyDown: dragHandleKeyDown,
     handleResize: dragHandleResize,
-    initialize: initializeDrag 
+    initialize: initializeDrag,
   } = useDragHandle({
     target: toolbar,
     onToggle: () => pinMenu(),
-    onDoubleClick: () => { toolbar.value.offset = 0; },
+    onDoubleClick: () => {
+      toolbar.value.offset = 0;
+    },
     calculateMaxOffset: () => {
       if (!toolbarRef.value?.$el) return DRAG_CONSTANTS.DEFAULT_MAX_OFFSET;
       const toolbarWidth = toolbarRef.value.$el.offsetWidth;
       const viewportWidth = window.innerWidth;
-      return Math.max(DRAG_CONSTANTS.MIN_MAX_OFFSET, (viewportWidth - toolbarWidth) / 2 - DRAG_CONSTANTS.MIN_SAFE_MARGIN);
-    }
+      return Math.max(
+        DRAG_CONSTANTS.MIN_MAX_OFFSET,
+        (viewportWidth - toolbarWidth) / 2 - DRAG_CONSTANTS.MIN_SAFE_MARGIN
+      );
+    },
   });
 
   // Computed styles
   const toolbarStyle = computed(() => ({
     left: '50%',
     transform: `translateX(calc(-50% + ${toolbar.value.offset}px))`,
-    ...dragStyle.value
+    ...dragStyle.value,
   }));
 
   const unifiedHandleStyle = computed(() => ({
     ...handleStyle.value,
     cursor: toolbar.value.pinned ? 'pointer' : handleStyle.value.cursor,
     marginRight: '4px',
-    transition: 'transform 0.2s ease'
+    transition: 'transform 0.2s ease',
   }));
 
   const pinMenu = () => {
@@ -283,7 +304,6 @@
     toolbar.value.expanded = !toolbar.value.expanded;
   };
 
-
   const handleClick = (value) => {
     switch (value) {
       case 'settings':
@@ -293,7 +313,6 @@
         showOverlay.value = !showOverlay.value;
         break;
       case 'lock':
-        store.showCtrlAltDelDialog = true;
         break;
 
       default:
@@ -354,11 +373,13 @@
   }
 
   .toolbar-auto-hide {
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
   }
 
   /* Smooth auto-hide animation */
-  .toolbar-auto-hide[style*="display: none"] {
+  .toolbar-auto-hide[style*='display: none'] {
     opacity: 0;
     transform: translateY(-10px);
   }

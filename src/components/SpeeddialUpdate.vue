@@ -1,10 +1,10 @@
 <template>
   <v-speed-dial location="left center" transition="tab-transition">
-    <template v-slot:activator="{ props: activatorProps }">
+    <template #activator="{ props: activatorProps }">
       <v-fab
         v-if="isUpdateAvailable"
-        v-bind="activatorProps"
         v-tooltip:bottom="'BliKVM Update'"
+        v-bind="activatorProps"
         size="small"
         icon="mdi-download"
         color="success"

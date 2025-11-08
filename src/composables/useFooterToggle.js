@@ -4,7 +4,7 @@ import { ref } from 'vue';
  * Composable for managing footer toggle state and mutual exclusivity
  * Handles complex logic for keyboard vs terminals vs notifications
  */
-export function useFooterToggle(initialSelection = ["video"]) {
+export function useFooterToggle(initialSelection = ['video']) {
   const activeToggle = ref([...initialSelection]);
 
   /**
@@ -13,23 +13,26 @@ export function useFooterToggle(initialSelection = ["video"]) {
    */
   const handleToggleChange = (selectedValues) => {
     let corrected = [...selectedValues];
-    
+
     // Simple mutual exclusivity rules
-    if (corrected.includes("notifications")) {
+    if (corrected.includes('notifications')) {
       // Notifications only with video
-      corrected = corrected.filter(val => val === "video" || val === "notifications");
-    } else if (corrected.includes("keyboard") && (corrected.includes("console") || corrected.includes("serial"))) {
+      corrected = corrected.filter((val) => val === 'video' || val === 'notifications');
+    } else if (
+      corrected.includes('keyboard') &&
+      (corrected.includes('console') || corrected.includes('serial'))
+    ) {
       // Keyboard vs terminals - remove the older one (keep the last clicked)
       const oldToggle = activeToggle.value;
-      const newItem = corrected.find(val => !oldToggle.includes(val));
-      
-      if (newItem === "keyboard") {
-        corrected = corrected.filter(val => val !== "console" && val !== "serial");
+      const newItem = corrected.find((val) => !oldToggle.includes(val));
+
+      if (newItem === 'keyboard') {
+        corrected = corrected.filter((val) => val !== 'console' && val !== 'serial');
       } else {
-        corrected = corrected.filter(val => val !== "keyboard");
+        corrected = corrected.filter((val) => val !== 'keyboard');
       }
     }
-    
+
     activeToggle.value = corrected;
   };
 
@@ -57,7 +60,7 @@ export function useFooterToggle(initialSelection = ["video"]) {
    * @param {string} itemId - The item ID to remove
    */
   const removeFromToggle = (itemId) => {
-    const filtered = activeToggle.value.filter(val => val !== itemId);
+    const filtered = activeToggle.value.filter((val) => val !== itemId);
     handleToggleChange(filtered);
   };
 
@@ -96,6 +99,6 @@ export function useFooterToggle(initialSelection = ["video"]) {
     removeFromToggle,
     toggleItem,
     resetToggle,
-    setToggle
+    setToggle,
   };
 }

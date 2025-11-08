@@ -1,6 +1,6 @@
 <template>
   <v-menu>
-    <template v-slot:activator="{ props }">
+    <template #activator="{ props }">
       <v-btn class="scale-button" v-bind="props">
         <div class="scale-container">
           <v-text-field
@@ -14,7 +14,7 @@
           >
             <template #append-inner>
               <span class="scale-suffix">%</span>
-              <v-icon class="scale-icon" size="18">mdi-chevron-down</v-icon>
+              <v-icon class="scale-icon" size="18"> mdi-chevron-down </v-icon>
             </template>
           </v-text-field>
         </div>
@@ -28,7 +28,7 @@
         @click="handleScaleChange(item.value)"
       >
         <div class="item-wrapper">
-          <div v-if="scale === item.value" class="border-indicator"></div>
+          <div v-if="scale === item.value" class="border-indicator" />
           <div :class="{ 'selected-item-inner': scale !== item.value }" class="item-content">
             <v-list-item-title>{{ item.title }}%</v-list-item-title>
           </div>

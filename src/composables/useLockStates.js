@@ -12,10 +12,10 @@ export function useLockStates(device) {
   const lockStates = computed(() => [
     { name: 'Caps lock', active: device.value.hid.keyboard.isCapsLock },
     { name: 'Num lock', active: device.value.hid.keyboard.isNumLock },
-    { name: 'Scroll lock', active: device.value.hid.keyboard.isScrollLock }
+    { name: 'Scroll lock', active: device.value.hid.keyboard.isScrollLock },
   ]);
 
   return {
-    lockStates
+    lockStates,
   };
 }

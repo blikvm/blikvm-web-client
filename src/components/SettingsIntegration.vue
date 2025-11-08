@@ -1,11 +1,11 @@
 <template>
   <v-expansion-panel value="integration">
     <v-expansion-panel-title>
-      <template v-slot:default="{ expanded }">
+      <template #default="{ expanded }">
         <v-card class="transparent-card" density="compact" tile width="100%">
           <v-row dense no-gutters>
             <v-col cols="1">
-              <v-icon color="#26A69A">mdi-api</v-icon>
+              <v-icon color="#26A69A"> mdi-api </v-icon>
             </v-col>
             <v-col class="d-flex 3rt align-center" cols="6">
               {{ $t('settings.integrations.title') }}
@@ -25,7 +25,7 @@
       <v-expansion-panels v-model="innerPanel" multiple>
         <v-expansion-panel value="integration-prometheus" @group:selected="apiPrometheusState">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-export</v-icon>
@@ -49,12 +49,12 @@
               <v-col cols="*">
                 <v-switch
                   v-model="prometheusActiveValue"
+                  v-ripple
                   inset
-                  @update:modelValue="apiPrometheusActive"
                   :label="$t('settings.integrations.prometheus.isActiveField')"
                   :disabled="!device.api.prometheus.endpoint"
-                  v-ripple
                   color="#76FF03"
+                  @update:model-value="apiPrometheusActive"
                 />
               </v-col>
             </v-row>
@@ -66,16 +66,16 @@
               <v-col cols="*">
                 <v-text-field
                   v-model="device.api.prometheus.endpoint"
+                  v-ripple
                   density="compact"
                   rounded="lg"
-                  v-ripple
                   color="#76FF03"
                   variant="outlined"
                   hide-details
                   single-line
+                  readonly
                   @keydown.stop
                   @keyup.stop
-                  readonly
                 >
                   <template #append>
                     <v-btn
@@ -110,9 +110,9 @@
           </v-expansion-panel-text>
         </v-expansion-panel>
 
-        <v-expansion-panel value="integration-snmp" v-if="isExperimental">
+        <v-expansion-panel v-if="isExperimental" value="integration-snmp">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-radar</v-icon>
@@ -149,16 +149,15 @@
                 <v-col cols="*">
                   <v-select
                     v-model="device.api.snmp.snmpVersion"
+                    v-ripple
                     :items="['2c', '3']"
                     variant="outlined"
                     rounded="lg"
                     density="compact"
                     tile
-                    v-ripple
                     color="#76FF03"
                     :hint="$t('settings.integrations.snmp.snmpVersionHelp')"
-                  >
-                  </v-select>
+                  />
                 </v-col>
               </v-row>
               <div class="text-caption">
@@ -168,15 +167,15 @@
                 <v-col cols="*">
                   <v-text-field
                     v-model="device.api.snmp.snmpCommunityString"
+                    v-ripple
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     variant="outlined"
                     hide-details
                     single-line
                     clearable
-                  ></v-text-field>
+                  />
                 </v-col>
               </v-row>
               <br />
@@ -187,15 +186,15 @@
                 <v-col cols="*">
                   <v-text-field
                     v-model="device.api.snmp.snmpHostname"
+                    v-ripple
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     variant="outlined"
                     hide-details
                     single-line
                     clearable
-                  ></v-text-field>
+                  />
                 </v-col>
               </v-row>
               <br />
@@ -206,24 +205,24 @@
                   </div>
                   <v-text-field
                     v-model="device.api.snmp.snmpid"
+                    v-ripple
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     variant="outlined"
                     hide-details
                     single-line
                     clearable
-                  ></v-text-field>
+                  />
                 </v-col>
               </v-row>
             </v-card-text>
           </v-expansion-panel-text>
         </v-expansion-panel>
 
-        <v-expansion-panel value="integration-webhook" v-if="isExperimental">
+        <v-expansion-panel v-if="isExperimental" value="integration-webhook">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-triangle-outline</v-icon>
@@ -255,6 +254,7 @@
                     <v-col cols="*">
                       <v-select
                         v-model="item.event"
+                        v-ripple
                         :items="webhookList.events"
                         item-title="description"
                         item-value="event"
@@ -262,11 +262,9 @@
                         rounded="lg"
                         density="compact"
                         tile
-                        v-ripple
                         color="#76FF03"
                         :hint="$t('settings.integrations.webhook.endpointEventHelp')"
-                      >
-                      </v-select>
+                      />
                     </v-col>
                   </v-row>
 
@@ -278,15 +276,15 @@
                     <v-col cols="*">
                       <v-text-field
                         v-model="item.name"
+                        v-ripple
                         density="compact"
                         rounded="lg"
-                        v-ripple
                         color="#76FF03"
                         variant="outlined"
                         hide-details
                         single-line
                         clearable
-                      ></v-text-field>
+                      />
                     </v-col>
                   </v-row>
                   <br v-if="index < webhookList.items.length" />
@@ -298,15 +296,15 @@
                       </div>
                       <v-text-field
                         v-model="item.url"
+                        v-ripple
                         density="compact"
                         rounded="lg"
-                        v-ripple
                         color="#76FF03"
                         variant="outlined"
                         hide-details
                         single-line
                         clearable
-                      ></v-text-field>
+                      />
                     </v-col>
                   </v-row>
                 </template>
@@ -320,7 +318,7 @@
 </template>
 
 <script setup>
-  import { onMounted } from 'vue';
+  import { onMounted, ref } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice.js';
