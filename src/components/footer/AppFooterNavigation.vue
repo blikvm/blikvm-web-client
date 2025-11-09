@@ -115,10 +115,12 @@
     { id: 'notifications', text: t('notification.title'), icon: 'mdi-bell-outline' },
   ];
 
-  // Computed properties
-  const availableMenuItems = computed(() =>
-    menuItems.filter((item) => item.id !== 'mouse' || props.isTouchDevice)
-  );
+  // Computed properties  
+  const availableMenuItems = computed(() => {
+    // Always show all menu items - don't hide mouse based on touch detection
+    // Touch detection will be handled in the visibility logic instead
+    return menuItems;
+  });
 </script>
 
 <style scoped>

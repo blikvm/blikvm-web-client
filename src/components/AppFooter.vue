@@ -126,6 +126,9 @@
       } else if (newItem === 'console' || newItem === 'serial') {
         // Terminal clicked - remove notifications and keyboard
         newToggles = newToggles.filter((item) => !['notifications', 'keyboard'].includes(item));
+      } else if (newItem === 'mouse') {
+        // Mouse clicked - mouse can coexist with terminals but not with keyboard or notifications
+        newToggles = newToggles.filter((item) => !['notifications', 'keyboard'].includes(item));
       }
     }
 
