@@ -113,31 +113,21 @@
       return;
     }
 
-    if (interactiveComponents.includes(newItem)) {
-      // User clicked an interactive component, apply exclusions
-      if (newItem === 'notifications') {
-        // Notifications clicked - remove keyboard, console, serial
-        newToggles = newToggles.filter((item) => !['keyboard', 'console', 'serial'].includes(item));
-      } else if (newItem === 'keyboard') {
-        // Keyboard clicked - remove notifications, console, serial
-        newToggles = newToggles.filter(
-          (item) => !['notifications', 'console', 'serial'].includes(item)
-        );
-      } else if (newItem === 'console' || newItem === 'serial') {
-        // Terminal clicked - remove notifications and keyboard
-        newToggles = newToggles.filter((item) => !['notifications', 'keyboard'].includes(item));
-      } else if (newItem === 'mouse') {
-        // Mouse clicked - mouse can coexist with terminals but not with keyboard or notifications
-        newToggles = newToggles.filter((item) => !['notifications', 'keyboard'].includes(item));
-      }
+  function handleToggleChange(newToggles) {
+    // If user clicked video, ignore it (video is controlled by video state, not user)
+    const newItem = newToggles.find(item => !previousToggleState.value.includes(item))
+    if (newItem === 'video') {
+      // Restore previous state - video toggle is display-only
+      activeToggle.value = previousToggleState.value
+      return
     }
-
+    
     // Update previous state for next time
-    previousToggleState.value = [...newToggles];
-
-    activeToggle.value = newToggles;
-    handleFooterToggleChange(newToggles);
-    updateVisibility(newToggles);
+    previousToggleState.value = [...newToggles]
+    
+    // Let useFooterToggle handle the mutual exclusion logic
+    handleFooterToggleChange(newToggles)
+    updateVisibility(newToggles)
   }
 
   // State synchronization with device store

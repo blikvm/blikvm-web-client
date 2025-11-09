@@ -13,24 +13,17 @@ export function useFooterToggle(initialSelection = ['video']) {
    */
   const handleToggleChange = (selectedValues) => {
     let corrected = [...selectedValues];
-
-    // Simple mutual exclusivity rules
-    if (corrected.includes('notifications')) {
-      // Notifications only with video
-      corrected = corrected.filter((val) => val === 'video' || val === 'notifications');
-    } else if (
-      corrected.includes('keyboard') &&
-      (corrected.includes('console') || corrected.includes('serial'))
-    ) {
-      // Keyboard vs terminals - remove the older one (keep the last clicked)
-      const oldToggle = activeToggle.value;
-      const newItem = corrected.find((val) => !oldToggle.includes(val));
-
-      if (newItem === 'keyboard') {
-        corrected = corrected.filter((val) => val !== 'console' && val !== 'serial');
-      } else {
-        corrected = corrected.filter((val) => val !== 'keyboard');
-      }
+    
+    // Mutual exclusivity rules
+    if (corrected.includes("notifications")) {
+      // Notifications only with video (excludes keyboard, terminals, mouse)
+      corrected = corrected.filter(val => val === "video" || val === "notifications");
+    } else if (corrected.includes("keyboard")) {
+      // Keyboard excludes terminals and notifications but allows mouse and video
+      corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
+    } else if (corrected.includes("console") || corrected.includes("serial")) {
+      // Terminals exclude keyboard and notifications but allow mouse and video
+      corrected = corrected.filter(val => !["keyboard", "notifications"].includes(val));
     }
 
     activeToggle.value = corrected;
