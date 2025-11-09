@@ -2,7 +2,7 @@
   <!-- Unified single footer with toggle navigation -->
   <v-footer v-if="shouldShowFooter" class="d-flex flex-column pa-0 bg-black">
     <!-- Content sections with proper ordering: Virtual Mouse → Notifications → Terminals → Keyboard -->
-    <div v-if="hasActiveComponents" class="footer-content w-100">
+    <div v-if="hasActiveComponents">
       <!-- Virtual Mouse Section -->
       <AppFooterVirtualMouse :show-virtual-mouse="showVirtualMouse" />
 
@@ -240,13 +240,4 @@ onMounted(() => {
 
 <style scoped>
 /* Minimal styles for main AppFooter component */
-.footer-content {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-.footer-content > * {
-  width: 100% !important;
-  max-width: 100% !important;
-}
 </style>
