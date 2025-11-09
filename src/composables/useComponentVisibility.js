@@ -31,13 +31,18 @@ export function useComponentVisibility(device, isTouchDevice) {
    * @param {Array} toggleSelection - Array of selected toggle IDs
    */
   const updateVisibility = (toggleSelection) => {
-    const hasKeyboard = toggleSelection.includes('keyboard');
-    const hasConsole = toggleSelection.includes('console');
-    const hasSerial = toggleSelection.includes('serial');
-    const hasNotifications = toggleSelection.includes('notifications');
-    const hasTommy = toggleSelection.includes('tommy');
-    const hasMouse = toggleSelection.includes('mouse');
-
+    console.log('🎛️ updateVisibility called with:', toggleSelection);
+    console.log('🎛️ isTouchDevice:', isTouchDevice.value);
+    
+    const hasKeyboard = toggleSelection.includes("keyboard");
+    const hasConsole = toggleSelection.includes("console");
+    const hasSerial = toggleSelection.includes("serial");
+    const hasNotifications = toggleSelection.includes("notifications");
+    const hasTommy = toggleSelection.includes("tommy");
+    const hasMouse = toggleSelection.includes("mouse");
+    
+    console.log('🎛️ Toggle states:', { hasKeyboard, hasConsole, hasSerial, hasNotifications, hasMouse });
+    
     // Business rules:
     // - Notifications and keyboard are mutually exclusive
     // - Terminals (console/serial) can coexist with each other and virtual mouse
@@ -94,20 +99,22 @@ export function useComponentVisibility(device, isTouchDevice) {
       showVirtualMouse.value = hasMouse;
       device.value.showSSHTerminal = hasConsole;
       showSerial.value = hasSerial;
-
-      // Show keyboard based on device type
+      
+      // Show keyboard - always use desktop keyboard for now (mobile keyboard for separate release)
       if (hasKeyboard) {
-        if (isTouchDevice.value) {
-          showMobileKeyboard.value = true;
-          showKeyboard.value = false;
-        } else {
-          showKeyboard.value = true;
-          showMobileKeyboard.value = false;
-        }
+        console.log('🎛️ KEYBOARD LOGIC: hasKeyboard=true, showing desktop keyboard');
+        showKeyboard.value = true;
+        showMobileKeyboard.value = false;
       } else {
+        console.log('🎛️ KEYBOARD LOGIC: hasKeyboard=false, hiding keyboard');
         showKeyboard.value = false;
         showMobileKeyboard.value = false;
       }
+      
+      console.log('🎛️ Final keyboard states:', {
+        showKeyboard: showKeyboard.value,
+        showMobileKeyboard: showMobileKeyboard.value
+      });
     }
   };
 
