@@ -41,23 +41,39 @@
       <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical />
     </template>
 
-    <!-- Status Indicator (Connection + Health) -->
+    <!-- LAN Connectivity Status (always visible) -->
     <v-tooltip location="top" content-class="">
       <template #activator="{ props: tooltipProps }">
         <v-icon
           v-bind="tooltipProps"
-          :color="device.isDisconnected ? '#D32F2F' : healthIconColor"
+          :color="device.isDisconnected ? '#D32F2F' : '#76FF03'"
           class="toolbar-icon"
           size="small"
         >
-          {{ device.isDisconnected ? 'mdi-lan-disconnect' : 'mdi-heart-pulse' }}
+          {{ device.isDisconnected ? 'mdi-lan-disconnect' : 'mdi-lan-connect' }}
         </v-icon>
       </template>
-      <span>{{ device.isDisconnected ? $t('common.disconnect') : device.health.status }}</span>
+      <span>{{ device.isDisconnected ? $t('common.disconnect') : $t('common.connect') }}</span>
+    </v-tooltip>
+
+    <!-- Health Status (always visible when connected) -->
+    <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+      <template v-slot:activator="{ props: tooltipProps }">
+        <v-icon
+          v-bind="tooltipProps"
+          :color="healthIconColor"
+          class="toolbar-icon"
+          size="small"
+        >
+          mdi-heart-pulse
+        </v-icon>
+      </template>
+      <span>{{ device.health.status }}</span>
     </v-tooltip>
 
     <!-- Expanded Controls Section -->
     <template v-if="toolbar.expanded">
+
       <!-- KVM Status Icons -->
       <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
         <template #activator="{ props: tooltipProps }">
@@ -189,7 +205,7 @@
                 mdi-account-circle
               </v-icon>
             </template>
-            <span>{{ account.user }}</span>
+            <span>{{ account.user || 'User' }}</span>
           </v-tooltip>
         </template>
         <v-list density="compact">

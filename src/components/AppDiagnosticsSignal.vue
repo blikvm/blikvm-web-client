@@ -32,7 +32,7 @@
       <v-icon size="32" color="orange" class="mb-2"> mdi-alert-circle </v-icon>
       <div>{{ $t('diagnostics.noSignal') }}</div>
       <div v-if="!device.video.isActive" class="text-caption mt-1">
-        {{ $t('diagnostics.videoStreamerServerClosed') }}
+        {{ $t('diagnostics.videoStreamClosed') }}
       </div>
     </div>
 

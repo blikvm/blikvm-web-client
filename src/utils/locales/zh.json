@@ -569,7 +569,7 @@
     "pageText": "{0}-{1} 共 {2}"
   },
   "diagnostics": {
-    "videoStreamerServerClosed": "视频流服务器已关闭",
+    "videoStreamClosed": "Video stream is closed",
     "reconnectMessage": "正在尝试重连... {countdownDisplay}s",
     "reconnectStopMessage": "已达到最大重新连接尝试次数。请检查设备",
     "reloadWindow": "重新加载窗口",

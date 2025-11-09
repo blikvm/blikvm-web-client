@@ -364,10 +364,7 @@
         height: bounds.height
       };
       
-      // Log only significant adjustments
-      if (bounds.top < TOOLBAR_SAFE_ZONE) {
-        console.warn(`Overlay: Adjusted positioning to avoid toolbar coverage (${bounds.top}px → ${safeTop}px)`);
-      }
+      // Positioning adjustment for toolbar coverage (logging removed)
       
       return safeBounds;
     }

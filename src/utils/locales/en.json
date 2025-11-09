@@ -571,7 +571,7 @@
     "pageText": "{0}-{1} of {2}"
   },
   "diagnostics": {
-    "videoStreamerServerClosed": "Video streamer server is closed",
+    "videoStreamClosed": "Video stream is closed",
     "reconnectMessage": "Attempting to reconnect... {countdownDisplay}s",
     "reconnectStopMessage": "The maximum number of reconnection attempts has been reached. Please check the device",
     "reloadWindow": "Reload Window",

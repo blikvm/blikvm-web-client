@@ -82,7 +82,7 @@
               <v-icon color="white"> mdi-account-circle </v-icon>
             </v-btn>
           </template>
-          <span>{{ account.user }} </span>
+          <span>{{ account.user || 'User' }} </span>
         </v-tooltip>
       </template>
       <v-list>

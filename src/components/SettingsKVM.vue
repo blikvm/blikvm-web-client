@@ -768,8 +768,7 @@
                     :style="{
                       color: '#76FF03',
                     }"
-                  >
-                    <v-chip>
+                    ><v-chip :color="device.video.isActive ? '#76FF03' : '#D32F2F'">
                       {{ device.video.isActive ? device.video.videoMode : 'deactivated' }}
                     </v-chip>
                   </v-col>

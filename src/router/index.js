@@ -28,6 +28,7 @@
 import { createRouter, createWebHistory } from 'vue-router/auto';
 import { setupLayouts } from 'virtual:generated-layouts';
 import { routes } from 'vue-router/auto-routes';
+import { useAppStore } from '@/stores/stores';
 
 // Modify the existing routes if needed
 for (const route of routes) {
@@ -57,6 +58,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   console.log('to.matched:', to.matched);
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  const store = useAppStore();
   const token = localStorage.getItem('token'); // TODO get from store
 
   console.log('token', token);
@@ -67,6 +69,16 @@ router.beforeEach((to, from, next) => {
   } else {
     if (token) {
       console.log('token valid');
+      
+      // Restore username from JWT token on page refresh
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.username && !store.account.user) {
+          store.account.user = payload.username;
+        }
+      } catch (error) {
+        console.warn('Failed to decode JWT token:', error);
+      }
     } else {
       console.log("don't need auth");
     }
