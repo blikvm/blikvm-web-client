@@ -1,6 +1,6 @@
 <template>
   <v-overlay
-    :model-value="showOverlay && shouldRenderOverlay"
+    :model-value="showOverlay"
     :opacity="0"
     content-class="overlay-passthrough"
     :style="overlayStyle"
@@ -294,17 +294,6 @@
 
   const isHoveringVolume = ref(false);
   const size = 25;
-
-  // Reference to simulated video element
-  const simulatedVideoRef = ref(null);
-  
-  // Constants for video positioning  
-  const DEFAULT_VIDEO_WIDTH = 1920;
-  const DEFAULT_VIDEO_HEIGHT = 1080;
-  // Constants for simulated video area when no actual video is present (use 1080p like default)
-  // const SIMULATED_VIDEO_WIDTH = 1920;
-  // const SIMULATED_VIDEO_HEIGHT = 1080;
-
   // Constants for positioning (based on perfect Case 1b standard)
   const DEFAULT_TOP_MARGIN = 20; // Top margin (from Case 1b)
   const DEFAULT_BOTTOM_MARGIN = 20; // Bottom margin (match top for symmetry)
@@ -476,17 +465,9 @@
     lastElementType = currentElementType;
   };
 
-  // Get effective video bounds (uses tracked bounds from updateOverlayPosition)
-  const getEffectiveVideoBounds = () => {
-    // Always use the tracked bounds - works for both real video and container
-    return videoBounds.value;
-  };
-
-  // Overlay style - positioned over video bounds (actual or simulated)
+  // Overlay style - positioned over video bounds
   const overlayStyle = computed(() => {
-    // Get effective bounds (real video or simulated 1920x1080 area)
-    const bounds = getEffectiveVideoBounds();
-
+    const bounds = videoBounds.value;
     const style = {
       position: 'fixed',
       top: `${bounds.top}px`,
@@ -505,6 +486,8 @@
       console.log('  - Toolbar z-index:', zIndex.toolbar);
       console.log('  - Video visible:', isVideoVisible.value);
       console.log('  - Connection state:', device.value.video.connectionState);
+      console.log('  - HDMI Active:', device.value.video.isHDMIActivate);
+      console.log('  - Overlay covering toolbar?', bounds.top < 80);
     }
     return style;
   });
@@ -525,13 +508,6 @@
     () => devicePersist.value.HDMISwitchActiveItem?.activeChannel ?? -1
   );
   const filteredChannels = computed(() => devicePersist.value.HDMISwitchActiveItem?.channels ?? []);
-  
-  // Control when overlay should render - always respect user toggle
-  const shouldRenderOverlay = computed(() => {
-    // Always respect the showOverlay toggle - user should control visibility
-    // The bounds validation will handle positioning safety
-    return true;
-  });
 
   // Recording functionality
   const { formattedRecordingTime, videoRecord } = useRecording(isRecording);
@@ -592,7 +568,8 @@
     }
 
     const observer = new ResizeObserver(entries => {
-      // Debounce rapid resize events
+      // Always update for ResizeObserver - these are layout changes that matter
+      // even when page is not visible (e.g., dev tools opening/closing)
       nextTick(updateOverlayPosition);
     });
 
@@ -627,6 +604,7 @@
   // Setup window event listeners with debouncing
   const setupWindowListeners = () => {
     const debouncedUpdate = () => {
+      // Always update - toolbar functionality is critical
       nextTick(updateOverlayPosition);
     };
 
@@ -639,13 +617,15 @@
     };
   };
 
+
   // Watch for state changes that affect overlay positioning
   watch([
     () => device.value.video.connectionState,
     () => settings.value.isVisible,
     () => device.value.video.videoMode
   ], () => {
-    nextTick(updateOverlayPosition);
+    // Trigger position update for state changes
+    updateOverlayPosition();
   });
 
   // Lifecycle management - event-driven approach
