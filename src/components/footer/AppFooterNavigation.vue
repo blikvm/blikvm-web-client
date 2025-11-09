@@ -121,9 +121,8 @@
 
   // Computed properties  
   const availableMenuItems = computed(() => {
-    // Always show all menu items - don't hide mouse based on touch detection
-    // Touch detection will be handled in the visibility logic instead
-    return menuItems;
+    // Hide mouse button when no touch device detected
+    return menuItems.filter(item => item.id !== 'mouse' || props.isTouchDevice);
   });
 </script>
 
