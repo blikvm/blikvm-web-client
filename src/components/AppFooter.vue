@@ -178,9 +178,9 @@ onMounted(() => {
       // Check media queries for touch capability
       const hasTouchMediaQuery = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       
+      // More precise touch detection - only consider actual touch capability
       const isTouch = hasOntouchstart || hasMaxTouchPoints || hasMsMaxTouchPoints || 
-                     (hasPointerEvents && (hasMaxTouchPoints || hasTouchMediaQuery)) ||
-                     hasTouchEvents;
+                     hasTouchMediaQuery;
       
       console.log('Touch Detection Results:', {
         ontouchstart: hasOntouchstart,
