@@ -12,21 +12,29 @@ export function useFooterToggle(initialSelection = ['video']) {
    * @param {Array} selectedValues - Array of selected toggle IDs
    */
   const handleToggleChange = (selectedValues) => {
+    console.log('⚡ useFooterToggle handleToggleChange called with:', selectedValues);
+    console.log('⚡ Current activeToggle before:', activeToggle.value);
+    
     let corrected = [...selectedValues];
     
     // Mutual exclusivity rules
     if (corrected.includes("notifications")) {
+      console.log('⚡ Notifications rule: excluding keyboard, terminals, mouse');
       // Notifications only with video (excludes keyboard, terminals, mouse)
       corrected = corrected.filter(val => val === "video" || val === "notifications");
     } else if (corrected.includes("keyboard")) {
+      console.log('⚡ Keyboard rule: excluding terminals and notifications');
       // Keyboard excludes terminals and notifications but allows mouse and video
       corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
     } else if (corrected.includes("console") || corrected.includes("serial")) {
+      console.log('⚡ Terminal rule: excluding keyboard and notifications');
       // Terminals exclude keyboard and notifications but allow mouse and video
       corrected = corrected.filter(val => !["keyboard", "notifications"].includes(val));
     }
-
+    
+    console.log('⚡ Corrected values:', corrected);
     activeToggle.value = corrected;
+    console.log('⚡ activeToggle after update:', activeToggle.value);
   };
 
   /**
