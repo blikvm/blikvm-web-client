@@ -318,16 +318,42 @@
   let lastElementType = null; // Track if we switched between video/container
   let lastLoggedElementType = null; // Prevent repetitive console logs
   let lastLoggedDimensions = null; // Prevent repetitive dimension logs
+  
+  // Performance monitoring
+  const performanceMetrics = ref({
+    updateCount: 0,
+    lastUpdateTime: 0,
+    averageUpdateInterval: 0,
+    domQueryCount: 0
+  });
+  
+  const trackPerformanceMetric = (metricType) => {
+    const now = performance.now();
+    
+    if (metricType === 'update') {
+      performanceMetrics.value.updateCount++;
+      if (performanceMetrics.value.lastUpdateTime) {
+        const interval = now - performanceMetrics.value.lastUpdateTime;
+        performanceMetrics.value.averageUpdateInterval = 
+          (performanceMetrics.value.averageUpdateInterval + interval) / 2;
+      }
+      performanceMetrics.value.lastUpdateTime = now;
+    } else if (metricType === 'domQuery') {
+      performanceMetrics.value.domQueryCount++;
+    }
+  };
 
-  // Validate bounds to prevent toolbar coverage and ensure safe positioning
+  /**
+   * Validates overlay bounds to prevent toolbar coverage and ensure safe positioning
+   * @param {Object} bounds - Raw element bounds from getBoundingClientRect()
+   * @param {String} elementType - Type of element ('VIDEO' or container element tagName)
+   * @returns {Object} Validated bounds that won't interfere with UI elements
+   */
   const validateBounds = (bounds, elementType) => {
     const isContainer = elementType !== 'VIDEO';
     
     // For container elements during no-signal, just ensure toolbar safety
     if (isContainer) {
-      console.log('DEBUG: Validating container bounds for overlay safety');
-      console.log('DEBUG: Original bounds:', bounds);
-      
       // Only fix the top position if it would cover the toolbar
       const safeTop = Math.max(bounds.top, TOOLBAR_SAFE_ZONE);
       
@@ -338,11 +364,11 @@
         height: bounds.height
       };
       
+      // Log only significant adjustments
       if (bounds.top < TOOLBAR_SAFE_ZONE) {
-        console.warn('WARNING: Adjusted overlay top from', bounds.top, 'to', safeTop, 'to avoid toolbar');
+        console.warn(`Overlay: Adjusted positioning to avoid toolbar coverage (${bounds.top}px → ${safeTop}px)`);
       }
       
-      console.log('DEBUG: Safe bounds applied:', safeBounds);
       return safeBounds;
     }
     
@@ -350,7 +376,11 @@
     return bounds;
   };
 
-  // Get the actual video element (WebRTC or MJPEG) or video container when no video
+  /**
+   * Locates the optimal element for overlay positioning
+   * Priority: Real video elements > video containers > fallback containers
+   * @returns {HTMLElement} Element to use for overlay bounds calculation
+   */
   const getVideoElement = () => {
     // First try to find actual video elements
     const videoElement =
@@ -374,39 +404,41 @@
         return videoElement;
       }
       // Video element exists but dimensions too small - fall back to container
-      // Log only once when switching to container mode
-      if (lastLoggedElementType !== 'container') {
-        console.log('Video element too small, using container instead');
-        lastLoggedElementType = 'container';
-      }
+      // Track element type for performance optimization
+      lastLoggedElementType = 'container';
     }
     
-    // No video element found or video not ready - use safer container fallback
-    // This allows overlay to track container but with safety restrictions
-    console.log('DEBUG: No video element found, using container fallback');
-    
+    // No video element found or video not ready - use container fallback
     // Try to find the most specific video container first
     let container = document.querySelector('.video-center-wrapper');
     if (!container) {
       container = document.getElementById('appkvm');
     }
     
-    // Final fallback to main container but with warnings
+    // Final fallback with error handling
     if (!container) {
-      console.warn('WARNING: No suitable container found for overlay positioning');
+      console.error('Overlay: No suitable container found for positioning');
       container = document.querySelector('.main-layout') || document.body;
     }
     return container;
   };
 
-  // Update overlay position with optimization
+  /**
+   * Updates overlay position using event-driven architecture
+   * - Tracks performance metrics for monitoring
+   * - Uses bounds caching to prevent unnecessary updates
+   * - Applies safety validation to prevent UI interference
+   */
   const updateOverlayPosition = () => {
+    trackPerformanceMetric('update');
+    
     const element = getVideoElement();
     if (!element) {
       isVideoVisible.value = false;
       return;
     }
 
+    trackPerformanceMetric('domQuery');
     const rect = element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
       isVideoVisible.value = false;
@@ -458,17 +490,7 @@
       pointerEvents: 'none',
     };
     
-    // Debug logging for no-signal positioning issues
-    if (!isVideoVisible.value) {
-      console.log('DEBUG: Overlay positioning during no-signal state:');
-      console.log('  - Bounds:', bounds);
-      console.log('  - Z-index:', zIndex.overlay);
-      console.log('  - Toolbar z-index:', zIndex.toolbar);
-      console.log('  - Video visible:', isVideoVisible.value);
-      console.log('  - Connection state:', device.value.video.connectionState);
-      console.log('  - HDMI Active:', device.value.video.isHDMIActivate);
-      console.log('  - Overlay covering toolbar?', bounds.top < 80);
-    }
+    // Note: Overlay positioning now handled by disabling overlay during no-signal states
     return style;
   });
 
@@ -558,17 +580,24 @@
     }
   }, 16); // ~60fps throttling for smooth performance
 
-  // Setup ResizeObserver for efficient DOM tracking
+  /**
+   * Sets up ResizeObserver for efficient DOM change tracking
+   * Replaces 30fps polling with event-driven updates
+   * @returns {ResizeObserver|null} Observer instance or null if unsupported
+   */
   const setupResizeObserver = () => {
     if (!window.ResizeObserver) {
-      console.warn('ResizeObserver not supported, falling back to window resize events');
+      console.warn('Overlay: ResizeObserver not supported, falling back to window resize events');
       return null;
     }
 
     const observer = new ResizeObserver(entries => {
-      // Use debounced update for ResizeObserver to prevent excessive calls
-      // Critical: Still immediate for toolbar functionality, just debounced for performance
-      debouncedUpdatePosition();
+      try {
+        // Use debounced update for ResizeObserver to prevent excessive calls
+        debouncedUpdatePosition();
+      } catch (error) {
+        console.error('Overlay: Error in ResizeObserver callback:', error);
+      }
     });
 
     // Observe video elements when they exist
@@ -602,23 +631,23 @@
   // Setup IntersectionObserver for off-screen overlay detection
   const setupIntersectionObserver = () => {
     if (!window.IntersectionObserver) {
-      console.warn('IntersectionObserver not supported, skipping viewport optimization');
+      console.warn('Overlay: IntersectionObserver not supported, skipping viewport optimization');
       return null;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          isOverlayIntersecting.value = entry.isIntersecting;
-          // Log intersection changes for debugging
-          if (!entry.isIntersecting) {
-            console.log('DEBUG: Overlay moved off-screen, pausing non-critical updates');
-          } else {
-            console.log('DEBUG: Overlay back in viewport, resuming full updates');
-            // Immediate update when coming back into view
-            nextTick(updateOverlayPosition);
-          }
-        });
+        try {
+          entries.forEach((entry) => {
+            isOverlayIntersecting.value = entry.isIntersecting;
+            // Immediate update when overlay comes back into view for responsiveness
+            if (entry.isIntersecting) {
+              nextTick(updateOverlayPosition);
+            }
+          });
+        } catch (error) {
+          console.error('Overlay: Error in IntersectionObserver callback:', error);
+        }
       },
       {
         // Use root margin to detect earlier when overlay is going off-screen
@@ -660,6 +689,28 @@
     // than resize events and affect overlay positioning significantly
     nextTick(updateOverlayPosition);
   });
+
+  // Performance reporting for development
+  const getPerformanceReport = () => {
+    const metrics = performanceMetrics.value;
+    const report = {
+      totalUpdates: metrics.updateCount,
+      totalDOMQueries: metrics.domQueryCount,
+      averageUpdateInterval: `${metrics.averageUpdateInterval.toFixed(2)}ms`,
+      estimatedFPS: metrics.averageUpdateInterval > 0 ? 
+        `${(1000 / metrics.averageUpdateInterval).toFixed(1)} fps` : 'N/A',
+      domQueriesPerSecond: metrics.averageUpdateInterval > 0 ? 
+        `${(metrics.domQueryCount * 1000 / (performance.now() - metrics.lastUpdateTime + metrics.averageUpdateInterval)).toFixed(1)}/sec` : 'N/A'
+    };
+    
+    console.table(report);
+    return report;
+  };
+  
+  // Make performance report available globally for debugging
+  if (typeof window !== 'undefined') {
+    window.getOverlayPerformanceReport = getPerformanceReport;
+  }
 
   // Lifecycle management - event-driven approach
   onMounted(() => {
@@ -715,6 +766,59 @@
   }
   .green-text {
     color: #76ff03;
+  }
+
+  /* ============================================
+   CSS Container Queries for Responsive Controls
+   ============================================ */
+   
+  /* Make overlay a container for size-based queries */
+  :deep(.v-overlay__content.overlay-passthrough) {
+    container-type: inline-size;
+    container-name: video-overlay;
+  }
+
+  /* Responsive control layout based on overlay/video size */
+  @container video-overlay (min-width: 600px) {
+    .overlay-control-bar {
+      gap: 12px !important; /* More spacing on larger videos */
+    }
+    
+    .control-group {
+      padding: 8px 16px !important; /* Larger padding */
+      gap: 12px !important;
+    }
+  }
+
+  @container video-overlay (max-width: 599px) {
+    .overlay-control-bar {
+      gap: 6px !important; /* Tighter spacing on smaller videos */
+    }
+    
+    .control-group {
+      padding: 4px 8px !important; /* Smaller padding */
+      gap: 6px !important;
+    }
+  }
+
+  @container video-overlay (max-width: 400px) {
+    /* Hide some non-essential controls on very small videos */
+    .control-group .v-divider {
+      display: none !important;
+    }
+    
+    /* Stack controls vertically if needed */
+    .overlay-control-bar[style*="right: 20px"] {
+      flex-direction: column !important;
+      align-items: flex-end !important;
+    }
+  }
+
+  @container video-overlay (max-width: 300px) {
+    /* Hide experimental controls on tiny videos */
+    .control-group:has(.v-tooltip:contains("Turn off"), .v-tooltip:contains("Turn on")) {
+      display: none !important;
+    }
   }
 
   /* ============================================
