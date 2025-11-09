@@ -471,7 +471,6 @@
     "free": "Free",
     "allowed": "allowed",
     "blocked": "blocked",
-    "unregister": "unregister",
     "hide": "Hide",
     "video": "Video",
     "sshTerminal": "SSH Terminal",
@@ -479,7 +478,11 @@
     "notifications": "Notifications",
     "toggleSettings": "Toggle settings",
     "toggleFooter": "Toggle footer",
-    "atxPower": "ATX Power"
+    "atxPower": "ATX Power",
+    "unregistered": "unregistered",
+    "micMute": "Mute",
+    "micUnmute": "Unmute",
+    "micRegisterFirst": "Register mic first"
   },
   "label": {
     "connected": "Connected",

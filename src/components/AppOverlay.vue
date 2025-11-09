@@ -115,7 +115,7 @@
               />
             </template>
             <span>{{
-              canUseMic ? (audio.isMicrophoneOn ? 'Mute' : 'Unmute') : 'need to register mic first'
+              canUseMic ? (audio.isMicrophoneOn ? t('common.micMute') : t('common.micUnmute')) : t('common.micRegisterFirst')
             }}</span>
           </v-tooltip>
         </div>

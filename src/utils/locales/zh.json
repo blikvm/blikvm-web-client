@@ -462,7 +462,6 @@
     "server": "后端",
     "used": "已用",
     "free": "剩余",
-    "unregister": "未注册",
     "allowed": "已允许",
     "blocked": "已阻止",
     "retry": "立刻重试",
@@ -473,7 +472,11 @@
     "notifications": "通知",
     "toggleSettings": "切换设置",
     "toggleFooter": "切换页脚",
-    "atxPower": "ATX 电源"
+    "atxPower": "ATX 电源",
+    "unregistered": "unregistered",
+    "micMute": "静音",
+    "micUnmute": "取消静音",
+    "micRegisterFirst": "请先注册麦克风"
   },
   "label": {
     "connected": "已连接",
