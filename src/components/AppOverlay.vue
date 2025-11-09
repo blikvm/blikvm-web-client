@@ -209,6 +209,30 @@
           </v-tooltip>
         </div>
 
+        <!-- Buzzer Controls Group -->
+        <div v-if="isBuzzerAvailable" class="control-group">
+          <v-tooltip location="top" content-class="">
+            <template v-slot:activator="{ props: tooltipProps }">
+              <v-icon
+                v-bind="tooltipProps"
+                size="default"
+                icon="mdi-bell-ring-outline"
+                :class="{ 'cursor-not-allowed': !isBuzzerEnabled }"
+                rounded
+                variant="plain"
+                @click="isBuzzerEnabled && handleBuzzerClick()"
+                @mousedown="isBuzzerEnabled && handleBuzzerMouseDown()"
+                @mouseup="handleBuzzerMouseUp()"
+                @mouseleave="handleBuzzerMouseUp()"
+                @touchstart="isBuzzerEnabled && handleBuzzerMouseDown()"
+                @touchend="handleBuzzerMouseUp()"
+                @touchcancel="handleBuzzerMouseUp()"
+              />
+            </template>
+            <span>{{ buzzerTooltip }}</span>
+          </v-tooltip>
+        </div>
+
         <v-divider class="mx-3" inset vertical></v-divider>
 
         <!-- Experimental Controls Group -->
@@ -256,6 +280,7 @@
             <span>{{ isCasting ? 'Stop Casting' : 'Start Casting' }}</span>
           </v-tooltip>
 
+
           <v-divider class="mx-3" inset vertical></v-divider>
         </div>
     </div>
@@ -277,6 +302,7 @@
   import { useDiagnostics } from '@/composables/useDiagnostics';
   import { useRecording } from '@/composables/useRecording';
   import { useATX } from '@/composables/useATX';
+  import { useBuzzer } from '@/composables/useBuzzer';
 
   const { startDiagnosticsConnecting } = useDiagnostics();
   const store = useAppStore();
@@ -286,6 +312,12 @@
   // Computed property to access hdmiSwitch items
   const kvmSwitchItems = computed(() => kvmSwitch.value.items || []);
   const canUseMic = computed(() => device.value?.mic?.isRegistered === true);
+  
+  // Check if device is v4 Allwinner (for buzzer support)
+  const isV4Allwinner = computed(() => {
+    return device.value?.hardware?.platform === 'v4' && 
+           device.value?.hardware?.soc?.includes?.('Allwinner');
+  });
 
   const onMicClick = () => {
     if (!canUseMic.value) return;
@@ -473,6 +505,21 @@
 
   // ATX functionality
   const { triggerPowerButton, atxItems } = useATX(device);
+
+  // Buzzer functionality (v4 Allwinner only)
+  const { 
+    buzz, 
+    isBuzzerAvailable, 
+    isBuzzerEnabled, 
+    buzzerTooltip,
+    quickBuzz, 
+    beep, 
+    alert, 
+    handleBuzzerClick,
+    handleBuzzerMouseDown,
+    handleBuzzerMouseUp,
+    stopBuzzer
+  } = useBuzzer();
 
 
   const displayName = (channel) => {
