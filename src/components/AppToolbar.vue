@@ -116,14 +116,15 @@
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
-            :color="showOverlay ? '#76FF03' : '#42A5F5'"
+            :color="!isVideoActive ? '#9E9E9E' : showOverlay ? '#76FF03' : '#42A5F5'"
+            :class="{ 'cursor-not-allowed': !isVideoActive }"
             size="small"
             @click="handleClick('overlay')"
           >
             {{ showOverlay ? 'mdi-layers-outline' : 'mdi-layers-off-outline' }}
           </v-icon>
         </template>
-        <span>{{ showOverlay ? $t('common.overlayOff') : $t('common.overlayOn') }}</span>
+        <span>{{ !isVideoActive ? $t('common.noVideoFeed') : showOverlay ? $t('common.overlayOff') : $t('common.overlayOn') }}</span>
       </v-tooltip>
 
       <v-tooltip location="top" content-class="">
@@ -220,7 +221,7 @@
   import { useHeaderMenu } from '@/composables/useHeaderMenu';
   import { useDragHandle, DRAG_CONSTANTS } from '@/composables/useDragHandle';
   import { useFullscreen } from '@/composables/useFullscreen';
-  import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
+  import { onMounted, onBeforeUnmount, ref, computed, nextTick, watch } from 'vue';
 
   const store = useAppStore();
 
@@ -310,7 +311,10 @@
         settings.value.isVisible = !settings.value.isVisible;
         break;
       case 'overlay':
-        showOverlay.value = !showOverlay.value;
+        // Don't allow overlay toggle when there's no video feed
+        if (isVideoActive.value) {
+          showOverlay.value = !showOverlay.value;
+        }
         break;
       case 'lock':
         break;
@@ -338,6 +342,15 @@
 
   // Reset position on window resize - delegate to drag composable
   const handleResize = dragHandleResize;
+
+  // Auto-manage overlay state based on video feed
+  watch(isVideoActive, (newValue) => {
+    if (!newValue && showOverlay.value) {
+      // Hide overlay when video feed stops
+      showOverlay.value = false;
+    }
+    // Note: Don't auto-show overlay when video returns - let user manually enable
+  });
 
   onMounted(async () => {
     window.addEventListener('resize', handleResize);

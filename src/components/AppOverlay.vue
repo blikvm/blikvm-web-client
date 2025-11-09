@@ -308,7 +308,11 @@
   
   // Observer and cleanup references
   const resizeObserver = ref(null);
+  const intersectionObserver = ref(null);
   const windowCleanup = ref(null);
+  
+  // Track if overlay is visible in viewport for performance optimization
+  const isOverlayIntersecting = ref(true); // Default to true for immediate functionality
   // Cache for performance optimization
   let lastBounds = { top: 0, left: 0, width: 0, height: 0 };
   let lastElementType = null; // Track if we switched between video/container
@@ -319,50 +323,26 @@
   const validateBounds = (bounds, elementType) => {
     const isContainer = elementType !== 'VIDEO';
     
-    // For container elements during no-signal, apply safety restrictions
+    // For container elements during no-signal, just ensure toolbar safety
     if (isContainer) {
       console.log('DEBUG: Validating container bounds for overlay safety');
-      console.log('DEBUG: HDMI Active:', device.value.video.isHDMIActivate);
-      console.log('DEBUG: Connection State:', device.value.video.connectionState);
+      console.log('DEBUG: Original bounds:', bounds);
       
-      // CRITICAL FIX: If HDMI is manually deactivated, use minimal safe area
-      if (!device.value.video.isHDMIActivate) {
-        console.warn('CRITICAL: HDMI manually deactivated - using minimal overlay area to prevent toolbar blocking');
-        
-        const minimalBounds = {
-          top: window.innerHeight - 200, // Position near bottom
-          left: 50,
-          width: Math.min(800, window.innerWidth - 100), // Reasonable width
-          height: 150 // Minimal height
-        };
-        
-        console.log('DEBUG: Minimal bounds applied:', minimalBounds);
-        return minimalBounds;
-      }
-      
-      // Check if bounds would cover toolbar area - if so, apply safety measures
-      const wouldCoverToolbar = bounds.top < TOOLBAR_SAFE_ZONE;
-      if (wouldCoverToolbar) {
-        console.warn('WARNING: Container bounds would cover toolbar area, applying safety corrections');
-      }
-      
-      // Ensure overlay doesn't cover toolbar area (top safe zone)
+      // Only fix the top position if it would cover the toolbar
       const safeTop = Math.max(bounds.top, TOOLBAR_SAFE_ZONE);
-      
-      // Ensure reasonable bounds that don't extend beyond safe video area
-      const maxWidth = Math.min(bounds.width, window.innerWidth - 40); // 20px margins
-      const maxHeight = Math.min(bounds.height, window.innerHeight - TOOLBAR_SAFE_ZONE - 40);
       
       const safeBounds = {
         top: safeTop,
-        left: Math.max(bounds.left, 20), // Minimum left margin
-        width: maxWidth,
-        height: maxHeight
+        left: bounds.left,
+        width: bounds.width,
+        height: bounds.height
       };
       
-      console.log('DEBUG: Original bounds:', bounds);
-      console.log('DEBUG: Safe bounds:', safeBounds);
+      if (bounds.top < TOOLBAR_SAFE_ZONE) {
+        console.warn('WARNING: Adjusted overlay top from', bounds.top, 'to', safeTop, 'to avoid toolbar');
+      }
       
+      console.log('DEBUG: Safe bounds applied:', safeBounds);
       return safeBounds;
     }
     
@@ -560,6 +540,24 @@
     videoRecord(isRecording.value);
   };
 
+  // Debounce utility for high-frequency events
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(null, args), delay);
+    };
+  };
+
+  // Optimized update function with debouncing and intersection awareness
+  const debouncedUpdatePosition = debounce(() => {
+    // Only update if overlay is visible in viewport for performance optimization
+    // Always update for critical functionality (toolbar access) regardless of intersection
+    if (isOverlayIntersecting.value || !device.value.video.isHDMIActivate) {
+      nextTick(updateOverlayPosition);
+    }
+  }, 16); // ~60fps throttling for smooth performance
+
   // Setup ResizeObserver for efficient DOM tracking
   const setupResizeObserver = () => {
     if (!window.ResizeObserver) {
@@ -568,9 +566,9 @@
     }
 
     const observer = new ResizeObserver(entries => {
-      // Always update for ResizeObserver - these are layout changes that matter
-      // even when page is not visible (e.g., dev tools opening/closing)
-      nextTick(updateOverlayPosition);
+      // Use debounced update for ResizeObserver to prevent excessive calls
+      // Critical: Still immediate for toolbar functionality, just debounced for performance
+      debouncedUpdatePosition();
     });
 
     // Observe video elements when they exist
@@ -601,31 +599,66 @@
     return observer;
   };
 
-  // Setup window event listeners with debouncing
+  // Setup IntersectionObserver for off-screen overlay detection
+  const setupIntersectionObserver = () => {
+    if (!window.IntersectionObserver) {
+      console.warn('IntersectionObserver not supported, skipping viewport optimization');
+      return null;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isOverlayIntersecting.value = entry.isIntersecting;
+          // Log intersection changes for debugging
+          if (!entry.isIntersecting) {
+            console.log('DEBUG: Overlay moved off-screen, pausing non-critical updates');
+          } else {
+            console.log('DEBUG: Overlay back in viewport, resuming full updates');
+            // Immediate update when coming back into view
+            nextTick(updateOverlayPosition);
+          }
+        });
+      },
+      {
+        // Use root margin to detect earlier when overlay is going off-screen
+        rootMargin: '50px',
+        // Only trigger when completely in/out of view
+        threshold: [0, 1]
+      }
+    );
+
+    return observer;
+  };
+
+  // Setup window event listeners with optimized debouncing
   const setupWindowListeners = () => {
-    const debouncedUpdate = () => {
-      // Always update - toolbar functionality is critical
+    // Immediate update for orientation changes (less frequent, more critical)
+    const immediateUpdate = () => {
       nextTick(updateOverlayPosition);
     };
 
-    window.addEventListener('resize', debouncedUpdate);
-    window.addEventListener('orientationchange', debouncedUpdate);
+    // Use debounced version for resize events (can be very frequent)
+    window.addEventListener('resize', debouncedUpdatePosition);
+    // Orientation changes are less frequent and more critical - use immediate update
+    window.addEventListener('orientationchange', immediateUpdate);
 
     return () => {
-      window.removeEventListener('resize', debouncedUpdate);
-      window.removeEventListener('orientationchange', debouncedUpdate);
+      window.removeEventListener('resize', debouncedUpdatePosition);
+      window.removeEventListener('orientationchange', immediateUpdate);
     };
   };
 
 
-  // Watch for state changes that affect overlay positioning
+  // Watch for state changes that affect overlay positioning with smart batching
   watch([
     () => device.value.video.connectionState,
     () => settings.value.isVisible,
     () => device.value.video.videoMode
   ], () => {
-    // Trigger position update for state changes
-    updateOverlayPosition();
+    // For state changes, use immediate update as these are less frequent but more critical
+    // than resize events and affect overlay positioning significantly
+    nextTick(updateOverlayPosition);
   });
 
   // Lifecycle management - event-driven approach
@@ -636,6 +669,20 @@
     // Setup ResizeObserver for DOM changes
     resizeObserver.value = setupResizeObserver();
     
+    // Setup IntersectionObserver for viewport optimization
+    intersectionObserver.value = setupIntersectionObserver();
+    
+    // Start observing the overlay element for intersection
+    if (intersectionObserver.value) {
+      // Wait for next tick to ensure overlay element exists
+      nextTick(() => {
+        const overlayElement = document.querySelector('.v-overlay__content.overlay-passthrough');
+        if (overlayElement) {
+          intersectionObserver.value.observe(overlayElement);
+        }
+      });
+    }
+    
     // Setup window event listeners
     windowCleanup.value = setupWindowListeners();
   });
@@ -645,6 +692,12 @@
     if (resizeObserver.value) {
       resizeObserver.value.disconnect();
       resizeObserver.value = null;
+    }
+    
+    // Clean up IntersectionObserver
+    if (intersectionObserver.value) {
+      intersectionObserver.value.disconnect();
+      intersectionObserver.value = null;
     }
     
     // Clean up window event listeners
