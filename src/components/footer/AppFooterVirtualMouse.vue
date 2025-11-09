@@ -1,7 +1,7 @@
 <template>
   <!-- Virtual Mouse Section (when needed) -->
-  <v-row v-if="showVirtualMouse" dense no-gutters align="center" class="w-100">
-    <v-col cols="12" class="d-flex justify-center">
+  <v-row v-if="showVirtualMouse" dense no-gutters align="center" class="w-100" style="margin: 0; width: 100%;">
+    <v-col cols="12" class="d-flex justify-center pa-0" style="max-width: none;">
       <VirtualMouse />
     </v-col>
   </v-row>
