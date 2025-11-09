@@ -29,14 +29,14 @@ export function useFooterToggle(initialSelection = ['video']) {
       console.log('⚡ Notifications clicked: exclude everything else');
       corrected = corrected.filter(val => val === "video" || val === "notifications");
     } else if (newItem === "keyboard") {
-      console.log('⚡ Keyboard clicked: exclude terminals and notifications');
+      console.log('⚡ Keyboard clicked: exclude terminals and notifications (mouse can coexist)');
       corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
     } else if (newItem === "console" || newItem === "serial") {
       console.log('⚡ Terminal clicked: exclude keyboard, notifications, and mouse');
       corrected = corrected.filter(val => !["keyboard", "notifications", "mouse"].includes(val));
     } else if (newItem === "mouse") {
-      console.log('⚡ Mouse clicked: exclude keyboard, notifications, and terminals');
-      corrected = corrected.filter(val => !["keyboard", "notifications", "console", "serial"].includes(val));
+      console.log('⚡ Mouse clicked: exclude terminals and notifications (keyboard can coexist)');
+      corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
     } else {
       // No new exclusive item clicked - just maintain current state
       console.log('⚡ No exclusive item clicked or toggling off');
