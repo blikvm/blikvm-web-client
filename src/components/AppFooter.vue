@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-  import { computed, watch, onMounted, ref } from 'vue';
+  import { computed, watch, onMounted, onBeforeUnmount, ref } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
@@ -168,13 +168,83 @@
   // Setup component visibility watcher
   watchToggleChanges(activeToggle);
 
-  // Component lifecycle
-  onMounted(() => {
+// Component lifecycle
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    // Enhanced touch detection for USB touch screens
+    const detectTouchDevice = () => {
+      // Standard touch detection
+      const hasOntouchstart = 'ontouchstart' in window;
+      const hasMaxTouchPoints = navigator.maxTouchPoints > 0;
+      const hasMsMaxTouchPoints = navigator.msMaxTouchPoints > 0;
+      
+      // Additional detection for USB touch screens
+      const hasPointerEvents = 'onpointerdown' in window;
+      const hasTouchEvents = 'TouchEvent' in window;
+      
+      // Check media queries for touch capability
+      const hasTouchMediaQuery = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      
+      const isTouch = hasOntouchstart || hasMaxTouchPoints || hasMsMaxTouchPoints || 
+                     (hasPointerEvents && (hasMaxTouchPoints || hasTouchMediaQuery)) ||
+                     hasTouchEvents;
+      
+      console.log('Touch Detection Results:', {
+        ontouchstart: hasOntouchstart,
+        maxTouchPoints: navigator.maxTouchPoints,
+        msMaxTouchPoints: navigator.msMaxTouchPoints,
+        pointerEvents: hasPointerEvents,
+        touchEvents: hasTouchEvents,
+        touchMediaQuery: hasTouchMediaQuery,
+        finalDecision: isTouch
+      });
+      
+      return isTouch;
+    };
+    
+    isTouchDevice.value = detectTouchDevice();
+    
+    // Global debug function for manual override
     if (typeof window !== 'undefined') {
-      isTouchDevice.value =
-        'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+      window.setTouchDevice = (value) => {
+        console.log(`Manual touch device override: ${isTouchDevice.value} → ${value}`);
+        isTouchDevice.value = value;
+      };
+      window.getTouchDeviceStatus = () => {
+        console.log('Touch Device Status:', {
+          current: isTouchDevice.value,
+          detected: detectTouchDevice()
+        });
+        return { current: isTouchDevice.value, detected: detectTouchDevice() };
+      };
     }
-  });
+    
+    // Re-check when USB devices are connected/disconnected
+    const recheckTouchDevice = () => {
+      const newValue = detectTouchDevice();
+      if (newValue !== isTouchDevice.value) {
+        console.log('Touch device status changed:', isTouchDevice.value, '→', newValue);
+        isTouchDevice.value = newValue;
+      }
+    };
+    
+    // Listen for device changes (when USB devices are plugged/unplugged)
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices.addEventListener('devicechange', recheckTouchDevice);
+    }
+    
+    // Also check periodically in case initial detection missed USB touch screen
+    const recheckInterval = setInterval(recheckTouchDevice, 2000);
+    
+    // Cleanup
+    onBeforeUnmount(() => {
+      clearInterval(recheckInterval);
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices.removeEventListener('devicechange', recheckTouchDevice);
+      }
+    });
+  }
+});
 </script>
 
 <style scoped>
