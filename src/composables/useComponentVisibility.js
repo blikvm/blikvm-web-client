@@ -84,14 +84,14 @@ export function useComponentVisibility(device, isTouchDevice) {
       showTommy.value = false;
       showKeyboard.value = false;
       showMobileKeyboard.value = false;
-      showVirtualMouse.value = isTouchDevice.value || hasMouse;
+      showVirtualMouse.value = hasMouse;
       device.value.showSSHTerminal = hasConsole;
       showSerial.value = hasSerial;
     } else {
       // Normal mode - show components based on toggle selection
       showNotifications.value = false;
       showTommy.value = false;
-      showVirtualMouse.value = isTouchDevice.value || hasMouse;
+      showVirtualMouse.value = hasMouse;
       device.value.showSSHTerminal = hasConsole;
       showSerial.value = hasSerial;
 
