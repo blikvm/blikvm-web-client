@@ -1,6 +1,6 @@
 <template>
   <v-overlay
-    :model-value="showOverlay"
+    :model-value="showOverlay && shouldRenderOverlay"
     :opacity="0"
     content-class="overlay-passthrough"
     :style="overlayStyle"
@@ -130,15 +130,16 @@
       :style="`position: absolute; bottom: ${bottomControlsPosition}; right: 8px;`"
     >
       <!-- Combined Switch and ATX Controls Group -->
-      <div
-        v-if="devicePersist.isHDMISwitchActive || devicePersist.isATXActive"
-        class="control-group switch-controls"
-      >
+      <div v-if="filteredChannels.length > 0 || devicePersist.isATXActive" class="control-group switch-controls">
         <!-- Switch Controls -->
-        <template v-if="devicePersist.isHDMISwitchActive">
+        <template v-if="filteredChannels.length > 0">
           <v-tooltip location="top" content-class="">
             <template #activator="{ props: tooltipProps }">
-              <v-icon v-bind="tooltipProps" icon="mdi-monitor-multiple" :size="size" />
+              <v-icon
+                v-bind="tooltipProps"
+                icon="mdi-monitor-multiple"
+                :size="size"
+              />
             </template>
             <span>{{ t('settings.switch.port') }}</span>
           </v-tooltip>
@@ -166,7 +167,7 @@
             </template>
           </v-btn-toggle>
         </template>
-
+        
         <!-- ATX Controls -->
         <v-tooltip v-if="devicePersist.isATXActive" location="top" content-class="">
           <template #activator="{ props: tooltipProps }">
@@ -295,14 +296,11 @@
   const size = 25;
 
   // Reference to simulated video element
-  // Reference to simulated video element (unused for now)
-  // const simulatedVideoRef = ref(null);
-
-  // Constants for video positioning
-  const POLLING_INTERVAL_MS = 33; // 30fps polling
-  // const DEFAULT_VIDEO_WIDTH = 1920;
-  // const DEFAULT_VIDEO_HEIGHT = 1080;
-
+  const simulatedVideoRef = ref(null);
+  
+  // Constants for video positioning  
+  const DEFAULT_VIDEO_WIDTH = 1920;
+  const DEFAULT_VIDEO_HEIGHT = 1080;
   // Constants for simulated video area when no actual video is present (use 1080p like default)
   // const SIMULATED_VIDEO_WIDTH = 1920;
   // const SIMULATED_VIDEO_HEIGHT = 1080;
@@ -310,17 +308,78 @@
   // Constants for positioning (based on perfect Case 1b standard)
   const DEFAULT_TOP_MARGIN = 20; // Top margin (from Case 1b)
   const DEFAULT_BOTTOM_MARGIN = 20; // Bottom margin (match top for symmetry)
+  
+  // Safety constants to prevent toolbar coverage
+  const TOOLBAR_HEIGHT = 60; // Approximate toolbar height
+  const TOOLBAR_SAFE_ZONE = 80; // Extra margin to ensure no toolbar overlap
 
   // Video element bounds tracking for overlay positioning
   const videoBounds = ref({ top: 0, left: 0, width: 0, height: 0 });
   const isVideoVisible = ref(false);
-  const pollingInterval = ref(null);
-
+  
+  // Observer and cleanup references
+  const resizeObserver = ref(null);
+  const windowCleanup = ref(null);
   // Cache for performance optimization
   let lastBounds = { top: 0, left: 0, width: 0, height: 0 };
   let lastElementType = null; // Track if we switched between video/container
   let lastLoggedElementType = null; // Prevent repetitive console logs
   let lastLoggedDimensions = null; // Prevent repetitive dimension logs
+
+  // Validate bounds to prevent toolbar coverage and ensure safe positioning
+  const validateBounds = (bounds, elementType) => {
+    const isContainer = elementType !== 'VIDEO';
+    
+    // For container elements during no-signal, apply safety restrictions
+    if (isContainer) {
+      console.log('DEBUG: Validating container bounds for overlay safety');
+      console.log('DEBUG: HDMI Active:', device.value.video.isHDMIActivate);
+      console.log('DEBUG: Connection State:', device.value.video.connectionState);
+      
+      // CRITICAL FIX: If HDMI is manually deactivated, use minimal safe area
+      if (!device.value.video.isHDMIActivate) {
+        console.warn('CRITICAL: HDMI manually deactivated - using minimal overlay area to prevent toolbar blocking');
+        
+        const minimalBounds = {
+          top: window.innerHeight - 200, // Position near bottom
+          left: 50,
+          width: Math.min(800, window.innerWidth - 100), // Reasonable width
+          height: 150 // Minimal height
+        };
+        
+        console.log('DEBUG: Minimal bounds applied:', minimalBounds);
+        return minimalBounds;
+      }
+      
+      // Check if bounds would cover toolbar area - if so, apply safety measures
+      const wouldCoverToolbar = bounds.top < TOOLBAR_SAFE_ZONE;
+      if (wouldCoverToolbar) {
+        console.warn('WARNING: Container bounds would cover toolbar area, applying safety corrections');
+      }
+      
+      // Ensure overlay doesn't cover toolbar area (top safe zone)
+      const safeTop = Math.max(bounds.top, TOOLBAR_SAFE_ZONE);
+      
+      // Ensure reasonable bounds that don't extend beyond safe video area
+      const maxWidth = Math.min(bounds.width, window.innerWidth - 40); // 20px margins
+      const maxHeight = Math.min(bounds.height, window.innerHeight - TOOLBAR_SAFE_ZONE - 40);
+      
+      const safeBounds = {
+        top: safeTop,
+        left: Math.max(bounds.left, 20), // Minimum left margin
+        width: maxWidth,
+        height: maxHeight
+      };
+      
+      console.log('DEBUG: Original bounds:', bounds);
+      console.log('DEBUG: Safe bounds:', safeBounds);
+      
+      return safeBounds;
+    }
+    
+    // For real video elements, use original bounds
+    return bounds;
+  };
 
   // Get the actual video element (WebRTC or MJPEG) or video container when no video
   const getVideoElement = () => {
@@ -352,10 +411,22 @@
         lastLoggedElementType = 'container';
       }
     }
-
-    // No video element found or video not ready - use the video container instead
-    // This allows overlay to track the same container that naturally responds to footer changes
-    const container = document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
+    
+    // No video element found or video not ready - use safer container fallback
+    // This allows overlay to track container but with safety restrictions
+    console.log('DEBUG: No video element found, using container fallback');
+    
+    // Try to find the most specific video container first
+    let container = document.querySelector('.video-center-wrapper');
+    if (!container) {
+      container = document.getElementById('appkvm');
+    }
+    
+    // Final fallback to main container but with warnings
+    if (!container) {
+      console.warn('WARNING: No suitable container found for overlay positioning');
+      container = document.querySelector('.main-layout') || document.body;
+    }
     return container;
   };
 
@@ -386,17 +457,22 @@
       return;
     }
 
-    // Use element bounds directly - works for both video and container
-    videoBounds.value = {
+    // Create initial bounds object
+    const rawBounds = {
       top: rect.top,
       left: rect.left,
       width: rect.width,
       height: rect.height,
     };
-
+    
+    // Validate bounds to prevent toolbar coverage and ensure safety
+    const safeBounds = validateBounds(rawBounds, currentElementType);
+    
+    // Apply safe bounds
+    videoBounds.value = safeBounds;
     // Track whether we found a real video element
     isVideoVisible.value = element.tagName === 'VIDEO';
-    lastBounds = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
+    lastBounds = safeBounds;
     lastElementType = currentElementType;
   };
 
@@ -420,7 +496,16 @@
       zIndex: zIndex.overlay, // Show overlay controls above diagnostics
       pointerEvents: 'none',
     };
-
+    
+    // Debug logging for no-signal positioning issues
+    if (!isVideoVisible.value) {
+      console.log('DEBUG: Overlay positioning during no-signal state:');
+      console.log('  - Bounds:', bounds);
+      console.log('  - Z-index:', zIndex.overlay);
+      console.log('  - Toolbar z-index:', zIndex.toolbar);
+      console.log('  - Video visible:', isVideoVisible.value);
+      console.log('  - Connection state:', device.value.video.connectionState);
+    }
     return style;
   });
 
@@ -440,6 +525,13 @@
     () => devicePersist.value.HDMISwitchActiveItem?.activeChannel ?? -1
   );
   const filteredChannels = computed(() => devicePersist.value.HDMISwitchActiveItem?.channels ?? []);
+  
+  // Control when overlay should render - always respect user toggle
+  const shouldRenderOverlay = computed(() => {
+    // Always respect the showOverlay toggle - user should control visibility
+    // The bounds validation will handle positioning safety
+    return true;
+  });
 
   // Recording functionality
   const { formattedRecordingTime, videoRecord } = useRecording(isRecording);
@@ -492,25 +584,93 @@
     videoRecord(isRecording.value);
   };
 
-  // Watch for drawer visibility changes (force immediate update)
-  watch(
-    () => settings.value.isVisible,
-    () => {
-      updateOverlayPosition();
+  // Setup ResizeObserver for efficient DOM tracking
+  const setupResizeObserver = () => {
+    if (!window.ResizeObserver) {
+      console.warn('ResizeObserver not supported, falling back to window resize events');
+      return null;
     }
-  );
 
-  // Lifecycle management - simplified
-  onMounted(() => {
+    const observer = new ResizeObserver(entries => {
+      // Debounce rapid resize events
+      nextTick(updateOverlayPosition);
+    });
+
+    // Observe video elements when they exist
+    const observeVideoElements = () => {
+      const videoElement = document.getElementById('webrtc-output') || 
+                          document.getElementById('mjpeg-output');
+      if (videoElement) {
+        observer.observe(videoElement);
+      }
+
+      // Also observe the video container for layout changes
+      const container = document.getElementById('appkvm') || 
+                       document.querySelector('.video-center-wrapper');
+      if (container) {
+        observer.observe(container);
+      }
+    };
+
+    // Initial observation setup
+    nextTick(observeVideoElements);
+    
+    // Re-observe when video elements change (e.g., mode switch)
+    watch(() => device.value.video.videoMode, () => {
+      observer.disconnect();
+      nextTick(observeVideoElements);
+    });
+
+    return observer;
+  };
+
+  // Setup window event listeners with debouncing
+  const setupWindowListeners = () => {
+    const debouncedUpdate = () => {
+      nextTick(updateOverlayPosition);
+    };
+
+    window.addEventListener('resize', debouncedUpdate);
+    window.addEventListener('orientationchange', debouncedUpdate);
+
+    return () => {
+      window.removeEventListener('resize', debouncedUpdate);
+      window.removeEventListener('orientationchange', debouncedUpdate);
+    };
+  };
+
+  // Watch for state changes that affect overlay positioning
+  watch([
+    () => device.value.video.connectionState,
+    () => settings.value.isVisible,
+    () => device.value.video.videoMode
+  ], () => {
     nextTick(updateOverlayPosition);
+  });
 
-    // 30fps polling - sufficient for smooth tracking
-    pollingInterval.value = setInterval(updateOverlayPosition, POLLING_INTERVAL_MS);
+  // Lifecycle management - event-driven approach
+  onMounted(() => {
+    // Initial position update
+    nextTick(updateOverlayPosition);
+    
+    // Setup ResizeObserver for DOM changes
+    resizeObserver.value = setupResizeObserver();
+    
+    // Setup window event listeners
+    windowCleanup.value = setupWindowListeners();
   });
 
   onBeforeUnmount(() => {
-    if (pollingInterval.value) {
-      clearInterval(pollingInterval.value);
+    // Clean up ResizeObserver
+    if (resizeObserver.value) {
+      resizeObserver.value.disconnect();
+      resizeObserver.value = null;
+    }
+    
+    // Clean up window event listeners
+    if (windowCleanup.value) {
+      windowCleanup.value();
+      windowCleanup.value = null;
     }
   });
 </script>
