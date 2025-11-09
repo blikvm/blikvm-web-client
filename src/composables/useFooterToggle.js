@@ -32,8 +32,11 @@ export function useFooterToggle(initialSelection = ['video']) {
       console.log('⚡ Keyboard clicked: exclude terminals and notifications');
       corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
     } else if (newItem === "console" || newItem === "serial") {
-      console.log('⚡ Terminal clicked: exclude keyboard and notifications');
-      corrected = corrected.filter(val => !["keyboard", "notifications"].includes(val));
+      console.log('⚡ Terminal clicked: exclude keyboard, notifications, and mouse');
+      corrected = corrected.filter(val => !["keyboard", "notifications", "mouse"].includes(val));
+    } else if (newItem === "mouse") {
+      console.log('⚡ Mouse clicked: exclude keyboard, notifications, and terminals');
+      corrected = corrected.filter(val => !["keyboard", "notifications", "console", "serial"].includes(val));
     } else {
       // No new exclusive item clicked - just maintain current state
       console.log('⚡ No exclusive item clicked or toggling off');
