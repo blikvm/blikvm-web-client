@@ -226,12 +226,10 @@ onMounted(() => {
       navigator.mediaDevices.addEventListener('devicechange', recheckTouchDevice);
     }
     
-    // Also check periodically in case initial detection missed USB touch screen
-    const recheckInterval = setInterval(recheckTouchDevice, 2000);
+    // Remove the periodic checking - only check on device change events
     
     // Cleanup
     onBeforeUnmount(() => {
-      clearInterval(recheckInterval);
       if (navigator.mediaDevices) {
         navigator.mediaDevices.removeEventListener('devicechange', recheckTouchDevice);
       }
