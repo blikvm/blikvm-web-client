@@ -17,23 +17,26 @@ export function useFooterToggle(initialSelection = ['video']) {
     
     let corrected = [...selectedValues];
     
-    // Mutual exclusivity rules:
-    // 1. notifications excludes everything else
-    // 2. keyboard excludes terminals (but mouse can coexist with keyboard on touch devices)
-    // 3. terminals exclude keyboard and notifications (but mouse can coexist with terminals)
+    // Mutual exclusivity rules - MOST RECENT ITEM WINS:
+    // Determine what the user just clicked (newest item)
+    const oldToggle = activeToggle.value;
+    const newItem = corrected.find(val => !oldToggle.includes(val));
     
-    if (corrected.includes("notifications")) {
-      console.log('⚡ Notifications rule: only notifications + video allowed');
-      // Notifications exclude everything else
+    console.log('⚡ User clicked:', newItem);
+    console.log('⚡ Previous active items:', oldToggle);
+    
+    if (newItem === "notifications") {
+      console.log('⚡ Notifications clicked: exclude everything else');
       corrected = corrected.filter(val => val === "video" || val === "notifications");
-    } else if (corrected.includes("keyboard")) {
-      console.log('⚡ Keyboard rule: exclude terminals and notifications');
-      // Keyboard excludes terminals and notifications (mouse and video OK)
+    } else if (newItem === "keyboard") {
+      console.log('⚡ Keyboard clicked: exclude terminals and notifications');
       corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
-    } else if (corrected.includes("console") || corrected.includes("serial")) {
-      console.log('⚡ Terminal rule: exclude keyboard and notifications');
-      // Terminals exclude keyboard and notifications (mouse and video OK)
+    } else if (newItem === "console" || newItem === "serial") {
+      console.log('⚡ Terminal clicked: exclude keyboard and notifications');
       corrected = corrected.filter(val => !["keyboard", "notifications"].includes(val));
+    } else {
+      // No new exclusive item clicked - just maintain current state
+      console.log('⚡ No exclusive item clicked or toggling off');
     }
     // Note: Mouse has no exclusions - it can coexist with keyboard, terminals, or be standalone
     
