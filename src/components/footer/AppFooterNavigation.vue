@@ -52,7 +52,7 @@
         class="align-center cursor-default"
         @click.stop
       >
-        {{ device.hid.keyboard.keyPress }}
+        <template v-for="(part, index) in getFormattedKeyParts(device.hid.keyboard.keyPress)" :key="index"><v-icon v-if="part.isIcon" size="small">{{ part.icon }}</v-icon><span v-else>{{ part.text }}</span><span v-if="index < getFormattedKeyParts(device.hid.keyboard.keyPress).length - 1">+</span></template>
       </v-chip>
 
       <!-- Lock state indicators -->
@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watch, ref } from 'vue';
 import { useI18n } from "vue-i18n";
 import { useDisplay } from 'vuetify';
 
@@ -120,6 +120,50 @@ const menuItems = [
 const availableMenuItems = computed(() => 
   menuItems.filter(item => item.id !== 'mouse' || props.isTouchDevice)
 );
+
+// Format key press with icons for specific keys
+const getFormattedKeyParts = (keyPress) => {
+  if (!keyPress) return [];
+  
+  // Handle array format like ["AltLeft", "MetaLeft", "Escape"]
+  if (Array.isArray(keyPress)) {
+    return keyPress.map(key => {
+      // Show icon for Meta keys
+      if (key === 'MetaLeft' || key === 'MetaRight') {
+        return { isIcon: true, icon: 'mdi-apple-keyboard-command' };
+      }
+      // Show icon for Cmd keys
+      if (key === 'CmdLeft' || key === 'CmdRight') {
+        return { isIcon: true, icon: 'mdi-apple-keyboard-command' };
+      }
+      
+      // For all other keys, show as text
+      return { isIcon: false, text: key };
+    });
+  }
+  
+  // Handle string format - show as text
+  return [{ isIcon: false, text: String(keyPress) }];
+};
+
+// Auto-clear keyPress after specified duration
+const KEYPRESS_DISPLAY_DURATION = 3000; // 3 seconds
+const keyPressTimeout = ref(null);
+
+watch(() => props.device.hid.keyboard.keyPress, (newValue) => {
+  if (newValue) {
+    // Clear any existing timeout
+    if (keyPressTimeout.value) {
+      clearTimeout(keyPressTimeout.value);
+    }
+    
+    // Set timeout to clear the chip
+    keyPressTimeout.value = setTimeout(() => {
+      props.device.hid.keyboard.keyPress = '';
+    }, KEYPRESS_DISPLAY_DURATION);
+  }
+});
+
 </script>
 
 <style scoped>
@@ -132,4 +176,5 @@ const availableMenuItems = computed(() =>
   left: 50%;
   transform: translateX(-50%);
 }
+
 </style>

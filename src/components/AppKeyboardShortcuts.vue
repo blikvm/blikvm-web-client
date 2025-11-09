@@ -145,6 +145,7 @@
   const { t } = useI18n();
   const store = useAppStore();
   const { isProcessing, keyboard, settings } = storeToRefs(store);
+  const { device } = useDevice();
 
   // Target OS constants
   const TargetOS = {
@@ -171,6 +172,7 @@
   ]);
 
   import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
+  import { useDevice } from '@/composables/useDevice';
 
   const {
     shortcutList,
@@ -391,7 +393,11 @@
 
     isProcessing.value = true;
     console.log(`["${value}"]`);
+    
+    // Update both store keyboard and device keyboard for visual feedback
     keyboard.value.keyPress = value;
+    device.value.hid.keyboard.keyPress = value;
+    
     sendShortcut(value);
     isProcessing.value = false;
   };
