@@ -17,20 +17,25 @@ export function useFooterToggle(initialSelection = ['video']) {
     
     let corrected = [...selectedValues];
     
-    // Mutual exclusivity rules
+    // Mutual exclusivity rules:
+    // 1. notifications excludes everything else
+    // 2. keyboard excludes terminals (but mouse can coexist with keyboard on touch devices)
+    // 3. terminals exclude keyboard and notifications (but mouse can coexist with terminals)
+    
     if (corrected.includes("notifications")) {
-      console.log('⚡ Notifications rule: excluding keyboard, terminals, mouse');
-      // Notifications only with video (excludes keyboard, terminals, mouse)
+      console.log('⚡ Notifications rule: only notifications + video allowed');
+      // Notifications exclude everything else
       corrected = corrected.filter(val => val === "video" || val === "notifications");
     } else if (corrected.includes("keyboard")) {
-      console.log('⚡ Keyboard rule: excluding terminals and notifications');
-      // Keyboard excludes terminals and notifications but allows mouse and video
+      console.log('⚡ Keyboard rule: exclude terminals and notifications');
+      // Keyboard excludes terminals and notifications (mouse and video OK)
       corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
     } else if (corrected.includes("console") || corrected.includes("serial")) {
-      console.log('⚡ Terminal rule: excluding keyboard and notifications');
-      // Terminals exclude keyboard and notifications but allow mouse and video
+      console.log('⚡ Terminal rule: exclude keyboard and notifications');
+      // Terminals exclude keyboard and notifications (mouse and video OK)
       corrected = corrected.filter(val => !["keyboard", "notifications"].includes(val));
     }
+    // Note: Mouse has no exclusions - it can coexist with keyboard, terminals, or be standalone
     
     console.log('⚡ Corrected values:', corrected);
     activeToggle.value = corrected;
