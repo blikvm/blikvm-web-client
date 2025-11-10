@@ -17,27 +17,33 @@
         hide-default-footer
         @update:options="loadItems"
       >
-        <template v-slot:header.ts="{ column }">
+        <template #[`header.ts`]="{ column }">
           {{ column.title.toUpperCase() }}
         </template>
-        <template v-slot:header.messageType="{ column }">
+        <template #[`header.messageType`]="{ column }">
           {{ column.title.toUpperCase() }}
         </template>
-        <template v-slot:header.module="{ column }">
+        <template #[`header.module`]="{ column }">
           {{ column.title.toUpperCase() }}
         </template>
-        <template v-slot:header.message="{ column }">
+        <template #[`header.message`]="{ column }">
           {{ column.title.toUpperCase() }}
         </template>
 
-        <template v-slot:item="{ item }">
+        <template #item="{ item }">
           <tr class="text-no-wrap">
             <td>{{ item.ts }}</td>
             <td class="text-center">
-              <v-chip :color="typeColor(item.messageType)">{{ item.messageType }}</v-chip>
+              <v-chip :color="typeColor(item.messageType)">
+                {{ item.messageType }}
+              </v-chip>
             </td>
-            <td class="text-start">{{ item.module }}</td>
-            <td class="text-start">{{ item.message }}</td>
+            <td class="text-start">
+              {{ item.module }}
+            </td>
+            <td class="text-start">
+              {{ item.message }}
+            </td>
           </tr>
         </template>
 
@@ -52,7 +58,7 @@
 </template>
 
 <script setup>
-  import { ref, reactive, computed } from 'vue';
+  import { ref, computed } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
 
@@ -144,22 +150,22 @@
 </script>
 
 <style scoped>
-.v-sheet {
-  margin: 0;
-  width: 100%;
-  max-width: none;
-}
+  .v-sheet {
+    margin: 0;
+    width: 100%;
+    max-width: none;
+  }
 
-:deep(.v-data-table) {
-  width: 100% !important;
-}
+  :deep(.v-data-table) {
+    width: 100% !important;
+  }
 
-:deep(.v-data-table .v-table__wrapper) {
-  width: 100% !important;
-}
+  :deep(.v-data-table .v-table__wrapper) {
+    width: 100% !important;
+  }
 
-:deep(.v-data-table table) {
-  width: 100% !important;
-  table-layout: fixed;
-}
+  :deep(.v-data-table table) {
+    width: 100% !important;
+    table-layout: fixed;
+  }
 </style>

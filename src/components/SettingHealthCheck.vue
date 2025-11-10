@@ -3,7 +3,7 @@
   <v-expansion-panels v-model="panelProxy" multiple>
     <v-expansion-panel value="health" @group:selected="handlePanelOpen">
       <v-expansion-panel-title>
-        <template v-slot:default="{ expanded }">
+        <template #default="">
           <v-row dense no-gutters class="d-flex justify-end align-center">
             <v-col cols="1">
               <v-icon>mdi-hospital</v-icon>
@@ -29,15 +29,15 @@
             <v-col cols="*">
               <v-slider
                 v-model="device.health.ramThreshold"
+                v-ripple
                 :max="1"
                 :min="0.1"
                 :step="0.1"
-                v-ripple
                 :color="ramThresholdColor"
                 :track-fill-color="ramThresholdColor"
                 @end="onSetHealthThreshold"
               >
-                <template v-slot:append>
+                <template #append>
                   <div
                     :style="{
                       color: ramThresholdColor,
@@ -64,15 +64,15 @@
             <v-col cols="*">
               <v-slider
                 v-model="device.health.storageThreshold"
+                v-ripple
                 :max="1"
                 :min="0.1"
                 :step="0.1"
-                v-ripple
                 :color="storageColor"
                 :track-fill-color="storageColor"
                 @end="onSetHealthThreshold"
               >
-                <template v-slot:append>
+                <template #append>
                   <div
                     :style="{
                       color: storageColor,
@@ -97,16 +97,16 @@
             <v-col cols="*">
               <v-slider
                 v-model="device.health.networkLatencyThreshold"
+                v-ripple
                 :max="200"
                 :min="1"
                 :step="1"
                 tick-size="4"
-                v-ripple
                 :color="netWorkColor"
                 :track-fill-color="netWorkColor"
                 @end="onSetHealthThreshold"
               >
-                <template v-slot:append>
+                <template #append>
                   <div
                     :style="{
                       color: netWorkColor,
@@ -132,16 +132,16 @@
               <v-slider
                 :key="misc.temperatureUnit"
                 v-model="tempThresholdDisplay"
+                v-ripple
                 :max="tempMax"
                 :min="tempMin"
                 :step="1"
                 tick-size="4"
-                v-ripple
                 :color="temperatureColor"
                 :track-fill-color="temperatureColor"
                 @end="onSetHealthThreshold"
               >
-                <template v-slot:append>
+                <template #append>
                   <div
                     :style="{
                       color: temperatureColor,

@@ -7,21 +7,21 @@
         </label>
         <v-btn-toggle
           v-model="security.authType"
+          v-ripple
           density="compact"
           rounded="lg"
-          v-ripple
           color="#76FF03"
           variant="outlined"
           group
           mandatory
         >
-          <v-btn value="disabled" @click.stop="apiAuthEnabled('disabled')"
-            >{{ $t('common.disabled') }}
+          <v-btn value="disabled" @click.stop="apiAuthEnabled('disabled')">
+            {{ $t('common.disabled') }}
           </v-btn>
-          <v-btn value="basic" @click.stop="apiAuthEnabled('basic')">{{
-            $t('common.basic')
-          }}</v-btn>
-          <v-btn value="2FA">2FA</v-btn>
+          <v-btn value="basic" @click.stop="apiAuthEnabled('basic')">
+            {{ $t('common.basic') }}
+          </v-btn>
+          <v-btn value="2FA"> 2FA </v-btn>
         </v-btn-toggle>
       </v-col>
     </v-row>
@@ -30,13 +30,19 @@
       <v-col cols="12" class="d-flex justify-start align-center">
         <v-card>
           <br />
-          <h3 class="text-h6">{{ $t('settings.security.authentication.2faTitle') }}</h3>
+          <h3 class="text-h6">
+            {{ $t('settings.security.authentication.2faTitle') }}
+          </h3>
           <br />
-          <v-stepper v-model="stepper" alt-labels minWidth="200">
-            <template v-slot:default="{ prev, next }">
+          <v-stepper v-model="stepper" alt-labels min-width="200">
+            <template #default="{ prev, next }">
               <v-stepper-header>
-                <v-stepper-item color="#76FF03" icon="mdi-qrcode-scan" :title="items[0]" :value="1">
-                </v-stepper-item>
+                <v-stepper-item
+                  color="#76FF03"
+                  icon="mdi-qrcode-scan"
+                  :title="items[0]"
+                  :value="1"
+                />
                 <v-divider />
 
                 <v-stepper-item
@@ -44,7 +50,7 @@
                   icon="mdi-check-decagram-outline"
                   :title="items[1]"
                   :value="2"
-                ></v-stepper-item>
+                />
                 <v-divider />
 
                 <v-stepper-item
@@ -52,7 +58,7 @@
                   icon="mdi-shield-check-outline"
                   :title="items[2]"
                   :value="3"
-                ></v-stepper-item>
+                />
                 <v-divider />
 
                 <v-stepper-item
@@ -60,7 +66,7 @@
                   icon="mdi-close-circle-outline"
                   :title="items[3]"
                   :value="4"
-                ></v-stepper-item>
+                />
                 <v-divider />
               </v-stepper-header>
 
@@ -74,10 +80,10 @@
                     <div class="mb-3">
                       <v-img :src="twoFaAuthQrCode" alt="QR Code">
                         <!-- placeholder while loading -->
-                        <template v-slot:placeholder>
+                        <template #placeholder>
                           <div class="d-flex align-center justify-center fill-height">
                             <v-progress-circular color="grey-lighten-4" indeterminate>
-                              <template v-slot:default>
+                              <template #default>
                                 {{ $t('settings.security.authentication.2faLoading') }}
                               </template>
                             </v-progress-circular>
@@ -85,7 +91,7 @@
                         </template>
 
                         <!-- if an error occurs while loading image. -->
-                        <template v-slot:error> </template>
+                        <template #error />
                       </v-img>
                     </div>
 
@@ -96,8 +102,8 @@
                       <v-icon
                         size="small"
                         color="#76FF03"
-                        @click="copyClipboard(twoFaSecret)"
                         class="ml-1"
+                        @click="copyClipboard(twoFaSecret)"
                       >
                         mdi-content-copy
                       </v-icon>
@@ -123,8 +129,6 @@
                     </h3>
 
                     <v-otp-input
-                      @keydown.stop
-                      @keyup.stop
                       v-model="twoFaCode"
                       :disabled="validating"
                       density="compact"
@@ -134,9 +138,10 @@
                       clearable
                       focus-all
                       focused
+                      @keydown.stop
+                      @keyup.stop
                       @finish="validateInput"
-                    >
-                    </v-otp-input>
+                    />
                   </v-card>
                 </v-stepper-window-item>
 
@@ -159,8 +164,6 @@
                     </h3>
 
                     <v-otp-input
-                      @keydown.stop
-                      @keyup.stop
                       v-model="twoFaCode"
                       :disabled="validating"
                       density="compact"
@@ -170,9 +173,10 @@
                       clearable
                       focus-all
                       focused
+                      @keydown.stop
+                      @keyup.stop
                       @finish="validateInput"
-                    >
-                    </v-otp-input>
+                    />
                   </v-card>
                 </v-stepper-window-item>
               </v-stepper-window>
@@ -182,14 +186,14 @@
                 color="#76FF03"
                 @click:next="next"
                 @click:prev="prev"
-              ></v-stepper-actions>
+              />
             </template>
           </v-stepper>
         </v-card>
       </v-col>
     </v-row>
 
-    <v-row dense no-gutter v-if="isExperimental">
+    <v-row v-if="isExperimental" dense no-gutter>
       <v-col cols="12">
         <v-field
           variant="plain"
@@ -198,12 +202,12 @@
           class="align-center"
         >
           <v-textarea
+            v-ripple
             :model-value="sshPublicKey"
             rows="3"
             variant="outlined"
-            v-ripple
             color="#76FF03"
-          ></v-textarea>
+          />
         </v-field>
       </v-col>
     </v-row>
@@ -211,7 +215,7 @@
 </template>
 
 <script setup>
-  import { onMounted } from 'vue';
+  import { onMounted, ref, computed, watch } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useClipboard } from '@/composables/useClipboard.js';

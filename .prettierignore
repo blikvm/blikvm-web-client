@@ -4,3 +4,8 @@ coverage
 build
 *.min.js
 *.bundle.js
+src/utils/janus.js
+src/utils/adapter.js
+public/encoderWorker.min.js
+src/components/shared/*
+src/components/experimental/**

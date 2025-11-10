@@ -6,10 +6,10 @@
           <v-col cols="12">
             <!-- upload -->
             <v-btn-toggle
+              v-ripple
               :disabled="!canUnmount"
               density="compact"
               rounded="0"
-              v-ripple
               variant="plain"
               mandatory
             >
@@ -19,8 +19,9 @@
                 location="bottom center"
                 content-class=""
               >
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <v-btn
+                    v-ripple
                     v-bind="props"
                     width="auto"
                     class="flex-grow-1 text-none upload-drop-target"
@@ -28,7 +29,6 @@
                     prepend-icon="mdi-upload"
                     append-icon="mdi-selection"
                     color="#76FF03"
-                    v-ripple
                     title
                     @click="openUploader"
                     @dragenter.prevent="onDragEnter"
@@ -39,7 +39,7 @@
                     <template #prepend>
                       <v-icon color="#76FF03" />
                     </template>
-                    <v-overlay contained :model-value="isDragging"></v-overlay>
+                    <v-overlay contained :model-value="isDragging" />
                     <input
                       ref="fileInput"
                       type="file"
@@ -55,23 +55,23 @@
             </v-btn-toggle>
             <!-- refresh -->
             <v-btn-toggle
+              v-ripple
               :disabled="!canUnmount"
               density="compact"
               rounded="0"
-              v-ripple
               variant="plain"
               mandatory
             >
               <v-tooltip text="Tooltip" location="bottom center" content-class="">
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <v-btn
+                    v-ripple
                     v-bind="props"
                     width="auto"
                     class="flex-grow-1 text-none"
                     flat
                     prepend-icon="mdi-refresh"
                     color="#76FF03"
-                    v-ripple
                     title
                     @click="refreshVirtualMedia"
                   >
@@ -87,25 +87,25 @@
             <!-- Virtual Media Actions -->
             <v-btn-toggle
               v-model="virtualMediaAction"
+              v-ripple
               density="compact"
               rounded="0"
-              v-ripple
               variant="plain"
               mandatory
             >
               <v-tooltip text="Tooltip" location="bottom center" content-class="">
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <v-btn
+                    v-ripple
                     v-bind="props"
                     width="auto"
-                    @click="createVirtualMedia"
                     :disabled="!canCreate"
                     class="flex-grow-1 text-none"
                     flat
                     prepend-icon="mdi-server-plus-outline"
                     color="#76FF03"
-                    v-ripple
                     title
+                    @click="createVirtualMedia"
                   >
                     <template #prepend>
                       <v-icon color="#76FF03" />
@@ -116,21 +116,23 @@
               </v-tooltip>
 
               <v-tooltip text="Tooltip" location="bottom center" content-class="">
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <v-btn
+                    v-ripple
                     v-bind="props"
                     width="auto"
-                    @click="deleteVirtualMedia"
                     :disabled="!canDelete || !canConnect"
                     class="flex-grow-1 text-none"
                     flat
                     prepend-icon="mdi-server-minus-outline"
                     color="#76FF03"
-                    v-ripple
                     title
+                    @click="deleteVirtualMedia"
                   >
-                    <template #prepend> <v-icon color="#D32F2F" /> </template
-                  ></v-btn>
+                    <template #prepend>
+                      <v-icon color="#D32F2F" />
+                    </template>
+                  </v-btn>
                 </template>
                 {{ $t('settings.msd.virtualMediaDelete') }}
               </v-tooltip>
@@ -139,48 +141,52 @@
             <!-- Connection Actions -->
             <v-btn-toggle
               v-model="connectionAction"
+              v-ripple
               density="compact"
               rounded="0"
-              v-ripple
               variant="plain"
               mandatory
               group
             >
               <v-tooltip text="Tooltip" location="bottom center" content-class="">
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <v-btn
+                    v-ripple
                     v-bind="props"
                     width="auto"
-                    @click="connectVirtualMedia"
                     :disabled="!canConnect"
                     class="flex-grow-1 text-none"
                     flat
                     prepend-icon="mdi-link"
                     color="#76FF03"
-                    v-ripple
                     title
+                    @click="connectVirtualMedia"
                   >
-                    <template #prepend> <v-icon color="#76FF03" /> </template
-                  ></v-btn> </template
+                    <template #prepend>
+                      <v-icon color="#76FF03" />
+                    </template>
+                  </v-btn> </template
                 >{{ $t('settings.msd.connectVirtualMedia') }}
               </v-tooltip>
 
               <v-tooltip text="Tooltip" location="bottom center" content-class="">
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <v-btn
+                    v-ripple
                     v-bind="props"
                     width="auto"
-                    @click="disconnectVirtualMedia"
                     :disabled="!canDisconnect"
                     class="flex-grow-1 text-none"
                     flat
                     prepend-icon="mdi-link-off"
                     color="#76FF03"
-                    v-ripple
                     title
+                    @click="disconnectVirtualMedia"
                   >
-                    <template #prepend> <v-icon color="#D32F2F" /> </template
-                  ></v-btn>
+                    <template #prepend>
+                      <v-icon color="#D32F2F" />
+                    </template>
+                  </v-btn>
                 </template>
                 {{ $t('settings.msd.disconnectVirtualMedia') }}
               </v-tooltip>
@@ -189,50 +195,54 @@
           <!-- File management -->
           <v-btn-toggle
             v-model="mountImageAction"
+            v-ripple
             density="compact"
             rounded="0"
-            v-ripple
             variant="plain"
             mandatory
             group
           >
             <v-tooltip text="Tooltip" location="bottom center" content-class="">
-              <template v-slot:activator="{ props }">
+              <template #activator="{ props }">
                 <v-btn
+                  v-ripple
                   v-bind="props"
                   width="auto"
-                  @click="onMountClick"
                   :disabled="!canMount || isMounting"
                   :loading="isMounting"
                   class="flex-grow-1 text-none"
                   flat
                   prepend-icon="mdi-file-download-outline"
                   color="#76FF03"
-                  v-ripple
                   title
+                  @click="onMountClick"
                 >
-                  <template #prepend> <v-icon color="#76FF03" /> </template
-                ></v-btn> </template
+                  <template #prepend>
+                    <v-icon color="#76FF03" />
+                  </template>
+                </v-btn> </template
               >{{ $t('settings.msd.mountImage') }}
             </v-tooltip>
 
             <v-tooltip text="Tooltip" location="bottom center" content-class="">
-              <template v-slot:activator="{ props }">
+              <template #activator="{ props }">
                 <v-btn
+                  v-ripple
                   v-bind="props"
                   width="auto"
-                  @click="onUnmountClick"
                   :disabled="!canUnmount || isUnmounting"
                   :loading="isUnmounting"
                   class="flex-grow-1 text-none"
                   flat
                   prepend-icon="mdi-file-document-remove-outline"
                   color="#76FF03"
-                  v-ripple
                   title
+                  @click="onUnmountClick"
                 >
-                  <template #prepend> <v-icon color="#D32F2F" /> </template
-                ></v-btn>
+                  <template #prepend>
+                    <v-icon color="#D32F2F" />
+                  </template>
+                </v-btn>
               </template>
               {{ $t('settings.msd.unmountImage') }}
             </v-tooltip>
@@ -262,17 +272,19 @@
           </v-col>
         </v-row>
         <div class="d-flex ga-4 align-center flex-row">
-          <v-label class="text-subtitlte-1">{{ $t('settings.msd.setMsdSize') }}</v-label>
+          <v-label class="text-subtitlte-1">
+            {{ $t('settings.msd.setMsdSize') }}
+          </v-label>
           <v-slider
-            class="flex-grow-1 mx-3"
             v-model="device.msd.imageSize"
+            class="flex-grow-1 mx-3"
             min="1"
             :max="maxMSDImageSize"
             step="1"
             hide-details
             color="#76FF03"
           >
-            <template v-slot:append>
+            <template #append>
               <div
                 :style="{
                   color: '#76FF03',
@@ -294,10 +306,10 @@
           height="6"
           color="#76FF03"
           rounded
-        ></v-progress-linear>
+        />
       </div>
 
-      <div id="status-bar"></div>
+      <div id="status-bar" />
 
       <div v-if="canUnmount" style="max-height: 230px; overflow-y: auto">
         <div class="mt-2 text-caption">
@@ -309,57 +321,54 @@
         <v-list v-model:selected="selectedx" select-strategy="leaf">
           <v-list-item v-for="item in mountImageFiles.files" :key="item.name" :value="item.name">
             <v-tooltip :text="`${item.path}`" location="bottom center" content-class="">
-              <template v-slot:activator="{ props }">
-                <v-list-item-subtitle v-bind="props" :style="{ color: '#76FF03' }">{{
-                  item.name
-                }}</v-list-item-subtitle>
+              <template #activator="{ props }">
+                <v-list-item-subtitle v-bind="props" :style="{ color: '#76FF03' }">
+                  {{ item.name }}
+                </v-list-item-subtitle>
               </template>
             </v-tooltip>
 
             <v-list-item-subtitle class="text-high-emphasis">
               {{ convertBytesToMiB(item.imageSize) }} MiB
             </v-list-item-subtitle>
-            <v-list-item-subtitle class="text-high-emphasis">{{
-              localDate(item.date)
-            }}</v-list-item-subtitle>
+            <v-list-item-subtitle class="text-high-emphasis">
+              {{ localDate(item.date) }}
+            </v-list-item-subtitle>
 
-            <template v-slot:prepend="{ isSelected, select }">
+            <template #prepend>
               <v-list-item-action start>
-                <v-checkbox-btn
-                  v-model="selectedItems"
-                  :value="item.name"
-                  color="#76FF03"
-                ></v-checkbox-btn>
+                <v-checkbox-btn v-model="selectedItems" :value="item.name" color="#76FF03" />
               </v-list-item-action>
             </template>
 
-            <template v-slot:append="{ isSelected }">
+            <template #append>
               <v-list-item-action class="align-end">
                 <v-tooltip text="Tooltip" location="bottom center" content-class="">
-                  <template v-slot:activator="{ props }">
+                  <template #activator="{ props }">
                     <v-icon
+                      v-ripple
                       v-bind="props"
                       size="x-small"
                       flat
                       color="#76FF03"
-                      v-ripple
                       tile
                       variant="tonal"
                       @click="copyClipboard(item.path)"
-                      >mdi-content-copy
+                    >
+                      mdi-content-copy
                     </v-icon>
                   </template>
                   {{ $t('common.copy') }}
                 </v-tooltip>
 
                 <v-tooltip text="Tooltip" location="bottom center">
-                  <template v-slot:activator="{ props }">
+                  <template #activator="{ props }">
                     <v-icon
+                      v-ripple
                       v-bind="props"
                       flat
                       size="x-small"
                       color="#76FF03"
-                      v-ripple
                       tile
                       style="cursor: pointer"
                       @click="downloadFile(item.name)"
@@ -371,14 +380,15 @@
                 </v-tooltip>
 
                 <v-tooltip text="Tooltip" location="bottom center" content-class="">
-                  <template v-slot:activator="{ props }">
+                  <template #activator="{ props }">
                     <v-icon
+                      v-ripple
                       v-bind="props"
                       size="x-small"
                       color="#76FF03"
-                      v-ripple
                       @click="openDeleteMsdImageDialog(item)"
-                      >mdi-trash-can-outline
+                    >
+                      mdi-trash-can-outline
                     </v-icon>
                   </template>
                   {{ $t('common.delete') }}
@@ -391,11 +401,11 @@
     </v-sheet>
   </v-card>
 
-  <DialogDeleteImage @refreshImageList="refreshVirtualMedia" />
+  <DialogDeleteImage @refresh-image-list="refreshVirtualMedia" />
 </template>
 
 <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue';
+  import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
@@ -412,9 +422,9 @@
   const store = useAppStore();
 
   const { device } = useDevice();
-  const { isProcessing, msd, selectedItem, deleteImageDialog } = storeToRefs(store);
+  const { isProcessing, selectedItem, deleteImageDialog } = storeToRefs(store);
 
-  const { formatDate, convertBytesToMiB, convertBytesToGB, convertBytesToGiB } = useConversion();
+  const { convertBytesToMiB } = useConversion();
   const { sendAlert } = useAlert();
   const {
     virtualMediaCreated,
@@ -465,7 +475,6 @@
   const virtualMediaAction = ref(null); // 'create' or 'delete'
   const connectionAction = ref(null); // 'connect' or 'disconnect'
   const mountImageAction = ref(null); // 'mount' or 'unmount'
-  const loading = ref(false);
   const isMounting = ref(false);
   const isUnmounting = ref(false);
 
@@ -549,27 +558,6 @@
     handleDrop(event); // uploadConfig);
   };
 
-  ////////////////////
-
-  function handleDoneButtonClick() {
-    uppy.value.clear();
-  }
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'success';
-      case 'error':
-        return 'error';
-      case 'cancelled':
-        return 'warning';
-      case 'uploading':
-        return 'primary';
-      default:
-        return 'grey';
-    }
-  };
-
   // Handlers
   const refreshVirtualMedia = async () => {
     let status = '';
@@ -581,9 +569,8 @@
     } catch (error) {
       status = 'error';
       title = 'Failed to refresh Virtual Media.';
-      message = 'Please try again.';
+      message = error.message || 'Please try again.';
       sendAlert(status, title, message);
-    } finally {
     }
   };
 
@@ -653,24 +640,18 @@
     isProcessing.value = false;
   };
 
-  // Reference to the child component
-  const deleteMsdDialog = ref(null);
-
   const openDeleteMsdImageDialog = (item) => {
     selectedItem.value = item;
     deleteImageDialog.value = true;
   };
 
   const handleRefreshMSDListClick = async () => {
-    loading.value = true;
     try {
       await fetchFilesList();
       // Perform other actions upon success
     } catch (error) {
       // Handle errors
-      sendAlert('error', 'MSD', `Error refreshing MSD list:` + error.message);
-    } finally {
-      loading.value = false;
+      sendAlert('error', 'MSD', error.message || 'Error refreshing MSD list');
     }
   };
 
@@ -748,7 +729,11 @@
       await fetchFilesList();
       fetchMntSize();
     } catch (error) {
-      sendAlert('error', 'Initialization Error', 'Failed to initialize upload component');
+      sendAlert(
+        'error',
+        'Initialization Error',
+        error.message || 'Failed to initialize upload component'
+      );
     }
   });
 

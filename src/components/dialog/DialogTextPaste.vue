@@ -47,13 +47,14 @@
 </template>
 
 <script setup>
+  import { onMounted } from 'vue';
   import { storeToRefs } from 'pinia';
   import { useAppStore } from '@/stores/stores';
   import { useSendText } from '@/composables/useSendText';
 
   const store = useAppStore();
   const { textPasteDialog, isProcessing } = storeToRefs(store);
-  const { confirmSend, cancelSend, pendingText } = useSendText();
+  const { confirmSend, cancelSend } = useSendText();
 
   // TODO standardize
   const handleClick = (value) => {

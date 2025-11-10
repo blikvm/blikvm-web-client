@@ -2,7 +2,7 @@
   <div class="d-flex flex-row align-center">
     <!-- OS Selector -->
     <v-menu>
-      <template v-slot:activator="{ props }">
+      <template #activator="{ props }">
         <v-chip v-bind="props" density="compact" class="mr-2" color="#76FF03">
           <v-icon>{{ currentOSIcon }}</v-icon>
         </v-chip>
@@ -11,11 +11,11 @@
         <v-list-item
           v-for="os in osOptions"
           :key="os.value"
-          @click="targetOS = os.value"
           class="os-menu-item"
+          @click="targetOS = os.value"
         >
           <div class="os-menu-item-wrapper">
-            <div v-if="targetOS === os.value" class="os-menu-border-indicator"></div>
+            <div v-if="targetOS === os.value" class="os-menu-border-indicator" />
             <div class="os-menu-item-content">
               <v-icon>{{ os.icon }}</v-icon>
             </div>
@@ -29,8 +29,8 @@
       :color="canScrollLeft ? '#76FF03' : undefined"
       density="compact"
       style="margin-left: -20px"
-      @click="scrollLeft"
       :disabled="!canScrollLeft"
+      @click="scrollLeft"
     >
       <v-icon>mdi-chevron-left</v-icon>
     </v-chip>
@@ -62,7 +62,7 @@
         @touchcancel="cancelLongPress"
       >
         <v-tooltip v-if="item.warning" location="top">
-          <template v-slot:activator="{ props }">
+          <template #activator="{ props }">
             <span v-bind="props">{{ item.name }}</span>
           </template>
           <span>{{ item.warning }}</span>
@@ -76,8 +76,8 @@
       :color="canScrollRight ? '#76FF03' : undefined"
       density="compact"
       class="ml-2"
-      @click="scrollRight"
       :disabled="!canScrollRight"
+      @click="scrollRight"
     >
       <v-icon>mdi-chevron-right</v-icon>
     </v-chip>
@@ -90,8 +90,8 @@
       @click="handleRecordShortcut"
     >
       <v-tooltip location="top">
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props">mdi-record-circle-outline</v-icon>
+        <template #activator="{ props }">
+          <v-icon v-bind="props"> mdi-record-circle-outline </v-icon>
         </template>
         <span>{{ isRecording ? 'Recording shortcut' : 'Record' }}</span>
       </v-tooltip>
@@ -100,8 +100,8 @@
     <!-- Search button -->
     <v-chip color="grey" class="ml-2" @click="toggleSearch">
       <v-tooltip location="top">
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props">mdi-magnify</v-icon>
+        <template #activator="{ props }">
+          <v-icon v-bind="props"> mdi-magnify </v-icon>
         </template>
         <span>Search shortcuts</span>
       </v-tooltip>
@@ -110,8 +110,8 @@
     <!-- Reset button -->
     <v-chip color="orange-darken-3" class="ml-2" @click="openResetDialog">
       <v-tooltip location="top">
-        <template v-slot:activator="{ props }">
-          <v-icon v-bind="props">mdi-restore</v-icon>
+        <template #activator="{ props }">
+          <v-icon v-bind="props"> mdi-restore </v-icon>
         </template>
         <span>Reset to defaults</span>
       </v-tooltip>
@@ -132,7 +132,6 @@
   import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
-  import { useI18n } from 'vue-i18n';
   import { useAlert } from '@/composables/useAlert';
   import { formatKeys } from '@/utils/keyFormatter.js';
   import { validateKeyCombo } from '@/utils/inputValidation.js';
@@ -142,7 +141,6 @@
   import DialogShortcutDelete from '@/components/dialog/DialogShortcutDelete.vue';
   import DialogShortcutReset from '@/components/dialog/DialogShortcutReset.vue';
 
-  const { t } = useI18n();
   const store = useAppStore();
   const { isProcessing, keyboard, settings } = storeToRefs(store);
 

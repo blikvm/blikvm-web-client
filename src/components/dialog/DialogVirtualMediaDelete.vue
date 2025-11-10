@@ -50,6 +50,7 @@
 </template>
 
 <script setup>
+  import { ref } from 'vue';
   import http from '@/utils/http.js';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
@@ -60,7 +61,7 @@
 
   const { sendAlert } = useAlert();
 
-  const emit = defineEmits(['refreshImageList']);
+  // const emit = defineEmits(['refreshImageList']);
 
   // Local state
   const isProcessing = ref(false);
@@ -81,7 +82,7 @@
           sendAlert('success', 'MSD Deletion Status', msg);
 
           // Emit an event to notify parent of success
-          emit('msdDeleted');
+          // emit('msdDeleted');
         } else {
           sendAlert('error', 'MSD Deletion Status', msg);
         }

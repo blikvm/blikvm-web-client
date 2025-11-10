@@ -15,40 +15,15 @@
       smooth
       auto-draw
       auto-draw-easing
-    >
-    </v-sparkline>
+    />
 
     <div v-else>No data available</div>
   </div>
 </template>
 
 <script setup>
-  import { useDevice } from '@/composables/useDevice';
-
-  //TODO
-  //https://chatgpt.com/c/68474824-b350-8010-95b2-994ecf9fee9e
-
-  const { device } = useDevice();
-  //const data = ref([]);
-  //const color = ref("#da5656");
-
-  /*
-// Watch networkLatency changes
-watch(
-  () => device.value.networkLatency,
-  (newLatency) => {
-    if (isValidNumber(newLatency)) {
-      data.value.unshift(newLatency);
-      if (data.value.length > 15) data.value.pop();
-    } else {
-      console.warn("Ignored invalid latency:", newLatency);
-    }
-  }
-);
-*/
-
+  import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
   const dataPoints = ref([]); // { time: timestamp, value: number }
-  const color = '#76FF03';
   const WINDOW_SECONDS = 5;
 
   function isValidNumber(n) {

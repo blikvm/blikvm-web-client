@@ -2,7 +2,7 @@
   <v-dialog v-model="showRebootDialog" max-width="500">
     <v-card>
       <v-card-title class="text-h5">
-        <v-icon color="warning" class="mr-2">mdi-alert</v-icon>
+        <v-icon color="warning" class="mr-2"> mdi-alert </v-icon>
         {{ $t('settings.device.systemControl.confirmTitle') }}
       </v-card-title>
       <v-card-text>
@@ -12,11 +12,11 @@
         </v-alert>
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn variant="text" @click="showRebootDialog = false" :disabled="isRebooting">
+        <v-spacer />
+        <v-btn variant="text" :disabled="isRebooting" @click="showRebootDialog = false">
           {{ $t('common.cancel') }}
         </v-btn>
-        <v-btn color="error" variant="flat" @click="handleReboot" :loading="isRebooting">
+        <v-btn color="error" variant="flat" :loading="isRebooting" @click="handleReboot">
           {{ $t('settings.device.systemControl.confirmButton') }}
         </v-btn>
       </v-card-actions>
@@ -26,12 +26,9 @@
 
 <script setup>
   import { ref } from 'vue';
-  import { storeToRefs } from 'pinia';
-  import { useAppStore } from '@/stores/stores';
   import { useAlert } from '@/composables/useAlert';
   import http from '@/utils/http.js';
 
-  const store = useAppStore();
   const { sendAlert } = useAlert();
 
   // Reboot dialog state
@@ -108,16 +105,6 @@
       }, 30000); // Reset after 30 seconds
     }
   };
-
-  const handleClick = (value) => {
-    const actions = {};
-
-    if (actions[value]) {
-      actions[value]();
-    }
-  };
-
-  onMounted(() => {});
 </script>
 
 <style scoped></style>

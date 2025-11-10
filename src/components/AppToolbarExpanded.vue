@@ -1,13 +1,14 @@
 <template>
   <v-tooltip location="top" content-class="">
-    <template v-slot:activator="{ props: tooltipProps }">
+    <template #activator="{ props: tooltipProps }">
       <v-icon
         class="toolbar-icon"
         v-bind="tooltipProps"
         :color="device.atx.isPowerLedActive ? '#76FF03' : '#D32F2F'"
         style="cursor: default"
-        >mdi-power</v-icon
       >
+        mdi-power
+      </v-icon>
     </template>
     <span
       >{{ $t('settings.atx.iconInfo') }}
@@ -16,14 +17,15 @@
   </v-tooltip>
 
   <v-tooltip location="top" content-class="">
-    <template v-slot:activator="{ props: tooltipProps }">
+    <template #activator="{ props: tooltipProps }">
       <v-icon
         class="toolbar-icon"
         v-bind="tooltipProps"
         :color="device.atx.isHDDLedActive ? '#76FF03' : '#D32F2F'"
         style="cursor: default"
-        >mdi-set-top-box</v-icon
       >
+        mdi-set-top-box
+      </v-icon>
     </template>
     <span
       >{{ $t('settings.atx.ledHdd') }}
@@ -32,7 +34,7 @@
   </v-tooltip>
 
   <v-tooltip location="top" content-class="">
-    <template v-slot:activator="{ props: tooltipProps }">
+    <template #activator="{ props: tooltipProps }">
       <div
         v-bind="tooltipProps"
         style="cursor: default; display: flex; align-items: center; gap: 4px"
@@ -46,7 +48,6 @@
 </template>
 
 <script setup>
-  import { useAppStore } from '@/stores/stores';
   import { useDevice } from '@/composables/useDevice';
 
   const { device } = useDevice();

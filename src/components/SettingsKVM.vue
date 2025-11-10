@@ -1,15 +1,15 @@
 <template>
   <v-expansion-panel value="kvm" selected-class="selected-panel">
     <v-expansion-panel-title>
-      <template v-slot:default="{ expanded }">
+      <template #default="{ expanded }">
         <v-card class="transparent-card" density="compact" tile width="100%">
           <v-row dense no-gutters>
             <v-col cols="1" class="d-flex justify-start align-center">
-              <v-icon color="primary">mdi-toaster-oven</v-icon>
+              <v-icon color="primary"> mdi-toaster-oven </v-icon>
             </v-col>
             <v-col cols="8" class="d-flex justify-start align-center">
-              {{ systeminfo.hostname }}</v-col
-            >
+              {{ systeminfo.hostname }}
+            </v-col>
             <v-col
               cols="3"
               class="d-flex justify-end align-center"
@@ -52,7 +52,7 @@
             <v-expansion-panels
               v-model="innerPanel"
               multiple
-              @update:modelValue="handleInnerPanelUpdate"
+              @update:model-value="handleInnerPanelUpdate"
             >
               <v-expansion-panel value="general">
                 <v-expansion-panel-text>
@@ -86,7 +86,7 @@
                         {{ device.board.type }} | {{ convertBytesToGiB(systeminfo.memTotal) }}GB |
                         {{ convertBytesToGiB(systeminfo.storageTotal) }}GB &nbsp;
                         <v-tooltip text="Tooltip" content-class="">
-                          <template v-slot:activator="{ props }">
+                          <template #activator="{ props }">
                             <v-icon
                               v-bind="props"
                               class="d-flex align-center"
@@ -115,7 +115,8 @@
                       :style="{
                         color: '#76FF03',
                       }"
-                      ><v-chip>
+                    >
+                      <v-chip>
                         {{ device.os.distro }} {{ device.os.codename }}
                         {{ device.os.release }}
                       </v-chip>
@@ -132,7 +133,8 @@
                       :style="{
                         color: '#76FF03',
                       }"
-                      ><v-chip>
+                    >
+                      <v-chip>
                         {{ device.os.arch }}
                       </v-chip>
                     </v-col>
@@ -148,7 +150,8 @@
                       :style="{
                         color: '#76FF03',
                       }"
-                      ><v-chip>
+                    >
+                      <v-chip>
                         {{ device.uptime }}
                       </v-chip>
                     </v-col>
@@ -164,7 +167,8 @@
                       :style="{
                         color: '#76FF03',
                       }"
-                      ><v-chip>
+                    >
+                      <v-chip>
                         {{ device.timezone }}
                       </v-chip>
                     </v-col>
@@ -180,7 +184,8 @@
                       :style="{
                         color: '#76FF03',
                       }"
-                      ><v-chip>
+                    >
+                      <v-chip>
                         {{ device.clientsConnected }}
                       </v-chip>
                     </v-col>
@@ -190,7 +195,7 @@
 
               <v-expansion-panel value="temperature" class="ma-0">
                 <v-expansion-panel-title>
-                  <template v-slot:default="{ expanded }">
+                  <template #default>
                     <v-row dense no-gutters>
                       <v-col class="d-flex justify-start align-center" cols="4">
                         {{ $t('settings.gui.temperature.title') }}
@@ -200,7 +205,8 @@
                         :style="{
                           color: '#76FF03',
                         }"
-                        ><v-chip> {{ temperatureConverted }}° {{ misc.temperatureUnit }}</v-chip>
+                      >
+                        <v-chip> {{ temperatureConverted }}° {{ misc.temperatureUnit }}</v-chip>
                       </v-col>
                     </v-row>
                   </template>
@@ -215,9 +221,9 @@
                       <v-col cols="auto">
                         <v-btn-toggle
                           v-model="misc.temperatureUnit"
+                          v-ripple
                           density="compact"
                           rounded="lg"
-                          v-ripple
                           color="#76FF03"
                           variant="outlined"
                           group
@@ -227,8 +233,8 @@
                           </v-btn>
                           <v-btn value="F">
                             {{ $t('settings.gui.temperature.fahrenheit') }}
-                            (F)</v-btn
-                          >
+                            (F)
+                          </v-btn>
                         </v-btn-toggle>
                       </v-col>
                     </v-row>
@@ -240,14 +246,14 @@
 
               <v-expansion-panel value="system-control">
                 <v-expansion-panel-title>
-                  <template v-slot:default="{ expanded }">
+                  <template #default="{ expanded }">
                     <v-card class="transparent-card" density="compact" tile width="100%">
                       <v-row no-gutters class="d-flex justify-end align-center">
                         <v-col class="d-flex justify-start align-center" cols="6">
                           {{ $t('settings.device.systemControl.title') }}
                         </v-col>
                         <v-col class="d-flex justify-end align-center">
-                          <v-icon color="warning">mdi-alert-circle</v-icon>
+                          <v-icon color="warning"> mdi-alert-circle </v-icon>
                         </v-col>
                       </v-row>
                       <v-row v-if="expanded" dense class="d-flex justify-start align-center">
@@ -289,7 +295,7 @@
 
               <v-expansion-panel v-if="device.board.type !== 'mangopi'" value="identity">
                 <v-expansion-panel-title>
-                  <template v-slot:default="{ expanded }">
+                  <template #default="{ expanded }">
                     <v-card class="transparent-card" density="compact" tile width="100%">
                       <v-row no-gutters class="d-flex justify-end align-center">
                         <v-col class="d-flex justify-start align-center" cols="6">
@@ -326,9 +332,9 @@
                       <v-col cols="12">
                         <v-text-field
                           v-model="device.meta.monitorName"
+                          v-ripple
                           density="compact"
                           rounded="lg"
-                          v-ripple
                           color="#76FF03"
                           variant="outlined"
                           hide-details
@@ -340,13 +346,14 @@
                             (f) => onEdidFieldFocus('monitorName', f, device.meta.monitorName)
                           "
                         >
-                          <template v-slot:append>
+                          <template #append>
                             <v-icon
                               size="small"
                               color="#76FF03"
                               @click="copyClipboard(device.meta.monitorName)"
-                              >mdi-content-copy</v-icon
                             >
+                              mdi-content-copy
+                            </v-icon>
                           </template>
                         </v-text-field>
                       </v-col>
@@ -359,9 +366,9 @@
                       <v-col cols="12">
                         <v-text-field
                           v-model="device.meta.manufacturer"
+                          v-ripple
                           density="compact"
                           rounded="lg"
-                          v-ripple
                           color="#76FF03"
                           variant="outlined"
                           single-line
@@ -378,13 +385,14 @@
                             (f) => onEdidFieldFocus('manufacturer', f, device.meta.manufacturer)
                           "
                         >
-                          <template v-slot:append>
+                          <template #append>
                             <v-icon
                               size="small"
                               color="#76FF03"
                               @click="copyClipboard(device.meta.manufacturer)"
-                              >mdi-content-copy</v-icon
                             >
+                              mdi-content-copy
+                            </v-icon>
                           </template>
                         </v-text-field>
                       </v-col>
@@ -398,9 +406,9 @@
                       <v-col cols="12">
                         <v-text-field
                           v-model="device.meta.productId"
+                          v-ripple
                           density="compact"
                           rounded="lg"
-                          v-ripple
                           color="#76FF03"
                           variant="outlined"
                           single-line
@@ -420,7 +428,7 @@
                           @update:focused="
                             (f) => onEdidFieldFocus('productId', f, device.meta.productId)
                           "
-                          @update:modelValue="
+                          @update:model-value="
                             (val) => {
                               const num = parseInt(val, 10);
                               if (!isNaN(num)) {
@@ -431,13 +439,14 @@
                             }
                           "
                         >
-                          <template v-slot:append>
+                          <template #append>
                             <v-icon
                               size="small"
                               color="#76FF03"
                               @click="copyClipboard(device.meta.productId)"
-                              >mdi-content-copy</v-icon
                             >
+                              mdi-content-copy
+                            </v-icon>
                           </template>
                         </v-text-field>
                       </v-col>
@@ -451,9 +460,9 @@
                       <v-col cols="12">
                         <v-text-field
                           v-model="device.meta.serial"
+                          v-ripple
                           density="compact"
                           rounded="lg"
-                          v-ripple
                           color="#76FF03"
                           variant="outlined"
                           hide-details
@@ -463,13 +472,14 @@
                           @keyup.stop
                           @update:focused="(f) => onEdidFieldFocus('serial', f, device.meta.serial)"
                         >
-                          <template v-slot:append>
+                          <template #append>
                             <v-icon
                               size="small"
                               color="#76FF03"
                               @click="copyClipboard(device.meta.serial)"
-                              >mdi-content-copy</v-icon
                             >
+                              mdi-content-copy
+                            </v-icon>
                           </template>
                         </v-text-field>
                       </v-col>
@@ -482,7 +492,7 @@
 
               <v-expansion-panel value="display">
                 <v-expansion-panel-title>
-                  <template v-slot:default="{ expanded }">
+                  <template #default="{ expanded }">
                     <v-card class="transparent-card" density="compact" tile width="100%">
                       <v-row no-gutters class="d-flex justify-end align-center">
                         <v-col class="d-flex justify-start" cols="5">
@@ -522,6 +532,7 @@
                       <v-col>
                         <v-select
                           v-model="device.display.mode"
+                          v-ripple
                           :items="displayModes"
                           item-title="title"
                           item-value="value"
@@ -529,38 +540,36 @@
                           rounded="lg"
                           density="compact"
                           tile
-                          v-ripple
                           color="#76FF03"
-                          @update:modelValue="changeDisplayMode"
-                        >
-                        </v-select>
+                          @update:model-value="changeDisplayMode"
+                        />
                       </v-col>
                     </v-row>
                     <br />
-                    <div class="text-caption" v-if="device.display.mode === 'boot'">
+                    <div v-if="device.display.mode === 'boot'" class="text-caption">
                       {{ $t('settings.device.general.display.bootMode') }}
                     </div>
-                    <v-row dense no-gutters v-if="device.display.mode === 'boot'">
+                    <v-row v-if="device.display.mode === 'boot'" dense no-gutters>
                       <v-col cols="12">
                         <v-slider
                           v-model="device.display.displayBootTime"
+                          v-ripple
                           :min="60"
                           :max="3600"
                           :step="100"
                           show-ticks="always"
                           tick-size="2"
-                          v-ripple
                           color="#76FF03"
                           track-color="#76FF03"
                           track-fill-color="#76FF03"
                           @end="changeDisplayBootTime"
                         >
-                          <template v-slot:append>
+                          <template #append>
                             <v-text-field
                               v-model="device.display.displayBootTime"
+                              v-ripple
                               density="compact"
                               rounded="lg"
-                              v-ripple
                               color="#76FF03"
                               style="width: 111px"
                               type="number"
@@ -568,41 +577,41 @@
                               variant="outlined"
                               hide-details
                               single-line
-                            ></v-text-field>
+                            />
                           </template>
                         </v-slider>
                       </v-col>
                     </v-row>
                     <br />
-                    <div class="text-caption" v-if="device.display.mode === 'interval'">
+                    <div v-if="device.display.mode === 'interval'" class="text-caption">
                       {{ $t('settings.device.general.display.intervalMode') }}
                     </div>
                     <v-row
+                      v-if="device.display.mode === 'interval'"
                       no-gutters
                       class="d-flex justify-end align-center"
                       style="align-items: center; justify-content: space-between"
-                      v-if="device.display.mode === 'interval'"
                     >
                       <v-col cols="12" class="d-flex justify-end align-center">
                         <v-slider
                           v-model="device.display.displayOnInterval"
+                          v-ripple
                           :min="10"
                           :max="device.display.totalCycleTime - 10"
                           :step="10"
                           show-ticks="always"
                           tick-size="2"
-                          v-ripple
                           color="#76FF03"
                           track-color="#76FF03"
                           track-fill-color="#76FF03"
                           @end="changeDisplayIntervalTime"
                         >
-                          <template v-slot:append>
+                          <template #append>
                             <v-text-field
                               v-model="device.display.displayOnInterval"
+                              v-ripple
                               density="compact"
                               rounded="lg"
-                              v-ripple
                               color="#76FF03"
                               style="width: 111px"
                               type="number"
@@ -610,40 +619,40 @@
                               variant="outlined"
                               hide-details
                               single-line
-                            ></v-text-field>
+                            />
                           </template>
                         </v-slider>
                       </v-col>
                     </v-row>
-                    <div class="text-caption" v-if="device.display.mode === 'interval'">
+                    <div v-if="device.display.mode === 'interval'" class="text-caption">
                       Total cycle Interval
                     </div>
                     <v-row
+                      v-if="device.display.mode === 'interval'"
                       no-gutters
                       class="d-flex justify-end align-center"
                       style="align-items: center; justify-content: space-between"
-                      v-if="device.display.mode === 'interval'"
                     >
                       <v-col cols="12" class="d-flex justify-end align-center">
                         <v-slider
                           v-model="device.display.totalCycleTime"
+                          v-ripple
                           :min="100"
                           :max="3600"
                           :step="100"
                           show-ticks="always"
                           tick-size="2"
-                          v-ripple
                           color="#76FF03"
                           track-color="#76FF03"
                           track-fill-color="#76FF03"
                           @end="changeDisplayCycleTime"
                         >
-                          <template v-slot:append>
+                          <template #append>
                             <v-text-field
                               v-model="device.display.totalCycleTime"
+                              v-ripple
                               density="compact"
                               rounded="lg"
-                              v-ripple
                               color="#76FF03"
                               style="width: 111px"
                               type="number"
@@ -651,7 +660,7 @@
                               variant="outlined"
                               hide-details
                               single-line
-                            ></v-text-field>
+                            />
                           </template>
                         </v-slider>
                       </v-col>
@@ -663,6 +672,7 @@
                       <v-col>
                         <v-select
                           v-model="device.display.secondaryIP"
+                          v-ripple
                           :items="ifaceArray"
                           item-title="title"
                           item-value="value"
@@ -670,11 +680,9 @@
                           rounded="lg"
                           density="compact"
                           tile
-                          v-ripple
                           color="#76FF03"
-                          @update:modelValue="changeDisplaySecondaryIP"
-                        >
-                        </v-select>
+                          @update:model-value="changeDisplaySecondaryIP"
+                        />
                       </v-col>
                     </v-row>
                   </v-card-text>
@@ -683,7 +691,7 @@
               <!-- Fan -->
               <v-expansion-panel v-if="device.board.type !== 'mangopi'" value="fan">
                 <v-expansion-panel-title>
-                  <template v-slot:default="{ expanded }">
+                  <template #default>
                     <v-row no-gutters class="d-flex justify-end align-center">
                       <v-col class="d-flex justify-start" cols="4">
                         {{ $t('settings.device.general.fan.title') }}
@@ -708,6 +716,7 @@
                       <v-col cols="12">
                         <v-slider
                           v-model="device.fan.tempThreshold"
+                          v-ripple
                           min="0"
                           max="100"
                           :step="1"
@@ -716,13 +725,12 @@
                           :ticks="tickLabels"
                           class="align-center"
                           hide-details
-                          v-ripple
                           color="#76FF03"
                           track-color="#76FF03"
                           track-fill-color="#76FF03"
                           @end="handleFanThresholdChange"
                         >
-                          <template v-slot:thumb-label="{ modelValue }">
+                          <template #thumb-label="{ modelValue }">
                             <span class="custom-thumb-label"> {{ tickLabel(modelValue) }}° C </span>
                           </template>
                         </v-slider>
@@ -731,7 +739,6 @@
                   </v-card-text>
                 </v-expansion-panel-text>
               </v-expansion-panel>
-
             </v-expansion-panels>
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -739,15 +746,15 @@
 
       <!-- Health Check -->
       <SettingHealthCheck
-        v-model:innerPanel="innerPanel"
-        :setHealthThreshold="setHealthThreshold"
+        v-model:inner-panel="innerPanel"
+        :set-health-threshold="setHealthThreshold"
       />
 
       <!-- Video -->
       <v-expansion-panels v-model="innerPanel" multiple>
         <v-expansion-panel value="video">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="{ expanded }">
               <v-card class="transparent-card" density="compact" tile width="100%">
                 <v-row no-gutters class="d-flex justify-start align-center">
                   <v-col cols="1">
@@ -761,7 +768,8 @@
                     :style="{
                       color: '#76FF03',
                     }"
-                    ><v-chip>
+                  >
+                    <v-chip>
                       {{ device.video.isActive ? device.video.videoMode : 'deactivated' }}
                     </v-chip>
                   </v-col>
@@ -783,13 +791,16 @@
       </v-expansion-panels>
 
       <!-- Mic Registration -->
-      <SettingsMic v-if="device.board.type === '4B' || device.board.type === 'CM4'" v-model:innerPanel="innerPanel" />
+      <SettingsMic
+        v-if="device.board.type === '4B' || device.board.type === 'CM4'"
+        v-model:inner-panel="innerPanel"
+      />
 
       <!-- Keyboard & Mouse -->
       <v-expansion-panels v-model="innerPanel" multiple>
         <v-expansion-panel value="hid">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="{ expanded }">
               <v-card class="transparent-card" density="compact" tile width="100%">
                 <v-row no-gutters class="d-flex justify-start align-center">
                   <v-col cols="1">
@@ -842,7 +853,6 @@
   import { useAlert } from '@/composables/useAlert.js';
   import http from '@/utils/http.js';
   import { useTemperature } from '@/composables/useTemperature.js';
-  import { useHealth } from '@/composables/useHealth.js';
   import DialogReboot from '@/components/dialog/DialogReboot.vue';
 
   const { convertBytesToGiB } = useConversion();
@@ -850,34 +860,12 @@
   const innerPanel = ref([]);
   const { copyClipboard } = useClipboard();
   const store = useAppStore();
-  const { misc, isExperimental, systeminfo } = storeToRefs(store);
+  const { misc, systeminfo } = storeToRefs(store);
   const { sendAlert } = useAlert(alert);
-  const { temperatureConverted, tempThresholdDisplay, tempMax, tempMin, temperatureColor } =
-    useTemperature(device);
-  const { getHealthThreshold } = useHealth();
+  const { temperatureConverted } = useTemperature(device);
 
   // Reboot dialog ref
   const rebootDialog = ref(null);
-
-  const ramThresholdColor = computed(() => {
-    return 1 - device.value.mem.actual / systeminfo.value.memTotal <
-      device.value.health.ramThreshold
-      ? '#76FF03'
-      : 'red';
-  });
-
-  const storageColor = computed(() => {
-    return 1 - device.value.storage.actual / systeminfo.value.storageTotal <
-      device.value.health.storageThreshold
-      ? '#76FF03'
-      : 'red';
-  });
-
-  const netWorkColor = computed(() => {
-    return device.value.networkLatency < device.value.health.networkLatencyThreshold
-      ? '#76FF03'
-      : 'red';
-  });
 
   const ifaceArray = computed(() => {
     return device.value.network.interfaces
@@ -896,16 +884,6 @@
         : mode
     )
   );
-
-  // Handle panel open event - load both system info and MSD image list
-  const handlePanelOpen = async (selected) => {
-    if (typeof selected === 'object' && selected && 'value' in selected) {
-      selected = selected.value;
-    }
-    if (!selected) return;
-    // Load system info for device storage data (used by chart)
-    getHealthThreshold();
-  };
 
   const handleInnerPanelUpdate = async (panel) => {
     try {
@@ -983,7 +961,7 @@
         const restartResponse = await http.post('/kvmdmain?action=restart');
         if ((restartResponse.status === 200) & (restartResponse.data.code === 0)) {
           const title = 'KVMD MAIN';
-          const message = `display restart successfully`;
+          const message = 'display restart successfully';
           sendAlert('success', title, message);
         } else {
           const title = 'KVMD MAIN';
@@ -1017,7 +995,7 @@
         const restartResponse = await http.post('/kvmdmain?action=restart');
         if ((restartResponse.status === 200) & (restartResponse.data.code === 0)) {
           const title = 'KVMD MAIN';
-          const message = `fan restart successfully`;
+          const message = 'fan restart successfully';
           sendAlert('success', title, message);
         } else {
           const title = 'KVMD MAIN';
@@ -1056,7 +1034,7 @@
         const restartResponse = await http.post('/kvmdmain?action=restart');
         if ((restartResponse.status === 200) & (restartResponse.data.code === 0)) {
           const title = 'KVMD MAIN';
-          const message = `display restart successfully`;
+          const message = 'display restart successfully';
           sendAlert('success', title, message);
         } else {
           const title = 'KVMD MAIN';
@@ -1098,7 +1076,7 @@
         const restartResponse = await http.post('/kvmdmain?action=restart');
         if ((restartResponse.status === 200) & (restartResponse.data.code === 0)) {
           const title = 'KVMD MAIN';
-          const message = `display restart successfully`;
+          const message = 'display restart successfully';
           sendAlert('success', title, message);
         } else {
           const title = 'KVMD MAIN';
@@ -1140,7 +1118,7 @@
         const restartResponse = await http.post('/kvmdmain?action=restart');
         if ((restartResponse.status === 200) & (restartResponse.data.code === 0)) {
           const title = 'KVMD MAIN';
-          const message = `display restart successfully`;
+          const message = 'display restart successfully';
           sendAlert('success', title, message);
         } else {
           const title = 'KVMD MAIN';
@@ -1182,7 +1160,7 @@
         const restartResponse = await http.post('/kvmdmain?action=restart');
         if ((restartResponse.status === 200) & (restartResponse.data.code === 0)) {
           const title = 'KVMD MAIN';
-          const message = `display restart successfully`;
+          const message = 'display restart successfully';
           sendAlert('success', title, message);
         } else {
           const title = 'KVMD MAIN';
@@ -1260,7 +1238,7 @@
           device.value.meta.productId = response.data.data.product_id;
           device.value.meta.serial = response.data.data.serial_number;
           const title = 'Set EDID';
-          const message = `Update EDID info successfully`;
+          const message = 'Update EDID info successfully';
           sendAlert('success', title, message);
         } else {
           const title = 'Set EDID Error';
@@ -1284,11 +1262,12 @@
         temperature: device.value.health.temperatureThreshold,
       };
       const response = await http.post('/healthcheck', requestBody);
-      if ((response.status === 200) & (response.data.code === 0)) {
-      } else {
+      // Use guard clause to avoid empty block and ensure logical operator
+      if (!(response.status === 200 && response.data.code === 0)) {
         const title = 'Set Health Error';
         const message = response.data.msg;
         sendAlert('error', title, message);
+        return;
       }
     } catch (error) {
       const title = 'Set Health Error';

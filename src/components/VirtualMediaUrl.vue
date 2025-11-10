@@ -10,11 +10,11 @@
             <v-col>
               <!--       :disabled="!url || url.length === 0"-->
               <v-btn
+                v-ripple
                 :loading="isLoading"
                 :disabled="isLoading"
                 color="#76FF03"
                 variant="outlined"
-                v-ripple
                 @click="handleClick('mountStream')"
               >
                 {{ $t('settings.msd.mount') }}
@@ -68,6 +68,8 @@
 </template>
 
 <script setup>
+  import { ref, onMounted, watch } from 'vue';
+
   const isoUrl = ref(null);
   const virtualMedia = ref([]); // Initialize as an array
   const selectedItem = ref(null);
@@ -85,10 +87,6 @@
     } catch (error) {
       console.error('Failed to load virtual media Urls:', error);
     }
-  };
-
-  const actions = {
-    mount: () => console.log(isoUrl.value),
   };
 
   const handleClick = (value) => {

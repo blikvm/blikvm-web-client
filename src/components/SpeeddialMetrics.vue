@@ -1,8 +1,8 @@
 <template>
   <v-speed-dial location="left center" open-on-hover transition="tab-transition">
-    <template v-slot:activator="{ props: activatorProps }">
+    <template #activator="{ props: activatorProps }">
       <v-tooltip content-class="" location="bottom">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-fab
             v-bind="mergeProps(activatorProps, tooltipProps)"
             size="small"
@@ -18,24 +18,22 @@
       <v-btn
         v-for="target in iconDataList"
         :key="target.icon"
+        v-tooltip:bottom="target.tooltip"
         :text="target.text"
         color="success"
-        v-tooltip:bottom="target.tooltip"
         size="x-small"
         style="margin-left: 5px"
-      >
-      </v-btn>
+      />
     </div>
   </v-speed-dial>
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { computed } from 'vue';
   import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
   import { useI18n } from 'vue-i18n';
-  import router from '@/router';
   import { mergeProps } from 'vue';
+  import { useRoute } from 'vue-router';
 
   const route = useRoute();
   const store = useAppStore();

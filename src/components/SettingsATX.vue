@@ -1,7 +1,7 @@
 <template>
   <v-expansion-panel value="power-management" @group:selected="getATXActive">
     <v-expansion-panel-title>
-      <template v-slot:default="{ expanded }">
+      <template #default="{ expanded }">
         <v-card class="transparent-card" density="compact" tile width="100%">
           <v-row no-gutters class="d-flex justify-start align-center">
             <v-col cols="1">
@@ -38,11 +38,11 @@
           <v-col cols="*">
             <v-switch
               v-model="device.isATXActive"
+              v-ripple
               inset
               :label="$t('settings.atx.showATXField')"
-              v-ripple
               color="#76FF03"
-              @update:modelValue="setATXActive"
+              @update:model-value="setATXActive"
             />
           </v-col>
         </v-row>

@@ -1,13 +1,11 @@
 /* not implemented */
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import http from '@/utils/http.js';
 import { useAlert } from '@/composables/useAlert';
 import { useAppStore } from '@/stores/stores';
-import { storeToRefs } from 'pinia';
 import { useDevice } from '@/composables/useDevice';
 import { useConversion } from '@/composables/useConversion.js';
-import Config from '@/config.js';
 
 //make
 const maxMSDImageSize = ref(5);
@@ -23,11 +21,6 @@ const mountImageFiles = ref([]);
 const virtualMediaMount = ref(false); // null, creating, created
 
 // set initial state
-const MsdImageCreateState = {
-  None: 'none',
-  NotCreated: 'not_created',
-  Created: 'created',
-};
 const MsdImageConnectState = {
   None: 'none',
   NotConnect: 'not_connected',
@@ -69,7 +62,6 @@ export function useVirtualMedia() {
 
   const updateMsdConnectState = (state) => {
     console.log('current CONNECT state:', state);
-
     try {
       switch (state) {
         case MsdImageConnectState.NotConnect:
@@ -82,13 +74,15 @@ export function useVirtualMedia() {
           virtualMediaConnected.value = MsdImageConnectState.None;
           return;
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('updateMsdConnectState error:', error);
+    }
   };
 
   const fetchImageList = async (selected) => {
     try {
       if (!selected) return;
-      const response = await http.post(`/msd/images`);
+      const response = await http.post('/msd/images');
       if (response.status === 200 && response.data.code === 0) {
         items.value = response.data.data;
         // Calculate MSD free space in GB with 2 decimal precision (e.g., "18.99")
@@ -104,7 +98,7 @@ export function useVirtualMedia() {
 
   const fetchMntSize = async () => {
     try {
-      const response = await http.get(`/msd/size`);
+      const response = await http.get('/msd/size');
       if (response.status === 200 && response.data.code === 0) {
         const { used, size } = response.data.data;
         console.log('used:', used, 'size:', size);
@@ -129,7 +123,7 @@ export function useVirtualMedia() {
       if (virtualMediaMount.value === false) {
         return;
       }
-      const response = await http.get(`/msd/files`);
+      const response = await http.get('/msd/files');
       if (response.status === 200 && response.data.code === 0) {
         mountImageFiles.value = response.data.data;
       } else {
@@ -233,14 +227,12 @@ export function useVirtualMedia() {
 
   const deleteMedia = async () => {
     try {
-      const response = await http.post('/msd/remove');
+      await http.post('/msd/remove');
       virtualMediaCreated.value = 'null';
       await fetchState();
-
-      // TODO should we also not refresh the list?
     } catch (error) {
       const title = 'MSD Connection Status: Failed to Connect';
-      const message = 'There was an issue connecting the MSD. Please try again.';
+      const message = error.message || 'There was an issue connecting the MSD. Please try again.';
       sendAlert('error', title, message);
       virtualMediaCreated.value = 'created';
     }
@@ -249,11 +241,11 @@ export function useVirtualMedia() {
   const connectMedia = async () => {
     try {
       const action = true;
-      const response = await http.post(`/msd/connect?action=${action}`);
+      await http.post(`/msd/connect?action=${action}`);
       await fetchState();
     } catch (error) {
       const title = 'MSD Connection Status: Failed to Connect';
-      const message = 'There was an issue connecting the MSD. Please try again.';
+      const message = error.message || 'There was an issue connecting the MSD. Please try again.';
       sendAlert('error', title, message);
     }
 
@@ -263,17 +255,17 @@ export function useVirtualMedia() {
   const disconnectMedia = async () => {
     try {
       const action = false;
-      const response = await http.post(`/msd/connect?action=${action}`);
+      await http.post(`/msd/connect?action=${action}`);
       virtualMediaCreated.value = 'created';
       virtualMediaConnected.value = 'not_connected';
     } catch (error) {
       virtualMediaCreated.value = 'created';
       virtualMediaConnected.value = 'connected';
-
-      throw new Error('Connection failed');
+      const title = 'MSD Disconnection Status: Failed to Disconnect';
+      const message =
+        error.message || 'There was an issue disconnecting the MSD. Please try again.';
+      sendAlert('error', title, message);
     }
-
-    console.log('disconnectMedia end');
   };
 
   const mountMedia = async () => {

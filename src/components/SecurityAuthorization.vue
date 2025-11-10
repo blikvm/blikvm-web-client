@@ -4,6 +4,7 @@
     <v-col>
       <v-select
         v-model="ACLMode"
+        v-ripple
         :items="aclmodes"
         item-title="title"
         item-value="value"
@@ -11,26 +12,24 @@
         rounded="lg"
         density="compact"
         tile
-        v-ripple
         color="#76FF03"
-        @update:modelValue="apiChangeACLMode"
-      >
-      </v-select>
+        @update:model-value="apiChangeACLMode"
+      />
     </v-col>
   </v-row>
 
   <v-tabs v-model="tab" :items="tabs" align-tabs="start" slider-color="#76FF03" fixed-tabs>
-    <template v-slot:tab="{ item }">
+    <template #tab="{ item }">
       <v-tab
         :prepend-icon="item.icon"
         :text="item.text"
         :value="item.value"
         color="#76FF03"
         class="text-none"
-      ></v-tab>
+      />
     </template>
 
-    <template v-slot:item="{ item }">
+    <template #item>
       <v-tabs-window-item value="tab-allow" class="pa-4">
         <v-card-subtitle class="d-flex justify-start">
           {{ $t('settings.security.authorization.allowlist') }}
@@ -70,7 +69,6 @@
       value: 'tab-block',
     },
   ];
-  const aclmode = ref('none');
   const aclmodes = [
     { title: 'None', value: 'none' },
     { title: 'Allow List', value: 'allow' },

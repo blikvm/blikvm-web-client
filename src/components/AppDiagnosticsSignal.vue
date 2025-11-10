@@ -19,7 +19,7 @@
         class="position-absolute"
         style="top: 50%; left: 50%; transform: translate(-50%, -50%)"
       >
-        <v-btn icon="undefined" size="180" border="xl" variant="text" text="sdfsf"> </v-btn>
+        <v-btn icon="undefined" size="180" border="xl" variant="text" text="sdfsf" />
       </div>
     </v-fade-transition>
     <!-- Show different states based on connection status -->
@@ -29,7 +29,7 @@
     </div>
 
     <div v-else-if="device.video.connectionState === 'no-signal'" class="connection-failed">
-      <v-icon size="32" color="orange" class="mb-2">mdi-alert-circle</v-icon>
+      <v-icon size="32" color="orange" class="mb-2"> mdi-alert-circle </v-icon>
       <div>{{ $t('diagnostics.noSignal') }}</div>
       <div v-if="!device.video.isActive" class="text-caption mt-1">
         {{ $t('diagnostics.videoStreamerServerClosed') }}

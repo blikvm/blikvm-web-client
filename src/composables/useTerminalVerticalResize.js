@@ -17,7 +17,7 @@ export function useTerminalVerticalResize(initialHeight = 300) {
   const startVerticalResize = (event) => {
     event.preventDefault();
     isVerticalResizing.value = true;
-    
+
     // Handle both mouse and touch events
     const clientY = event.clientY || (event.touches && event.touches[0].clientY);
     startY.value = clientY;
@@ -26,10 +26,10 @@ export function useTerminalVerticalResize(initialHeight = 300) {
     // Add global event listeners
     const handleMove = (e) => {
       if (!isVerticalResizing.value) return;
-      
+
       const currentY = e.clientY || (e.touches && e.touches[0].clientY);
       const deltaY = currentY - startY.value;
-      
+
       // Calculate new height (inverted because we're at the bottom)
       const newHeight = Math.max(200, Math.min(600, startHeight.value - deltaY));
       terminalHeight.value = newHeight;
@@ -52,6 +52,6 @@ export function useTerminalVerticalResize(initialHeight = 300) {
   return {
     terminalHeight,
     isVerticalResizing,
-    startVerticalResize
+    startVerticalResize,
   };
 }
