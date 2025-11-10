@@ -1,5 +1,6 @@
 'use strict';
 
+import { computed } from 'vue';
 import { useAppStore } from '@/stores/stores';
 import { storeToRefs } from 'pinia';
 

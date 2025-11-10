@@ -120,6 +120,8 @@
       </v-tooltip>
     </v-chip>
 
+
+
     <!-- Reset button -->
     <v-chip color="orange-darken-3" class="ml-2" @click="openResetDialog">
       <v-tooltip location="top">
@@ -139,6 +141,18 @@
   <DialogShortcutDelete ref="deleteDialog" @confirm="confirmDelete" />
 
   <DialogShortcutReset ref="resetDialog" :target-o-s="targetOS" @confirm="confirmReset" />
+
+  <!-- Magic Key Composition Overlay -->
+  <ShortcutCompositionOverlay 
+    :is-composing="isComposing" 
+    :display-text="displayText"
+    :current-keys="currentKeys"
+    :magic-key="magicKey"
+    :is-drawer-visible="settings.isVisible"
+    :is-video-visible="isVideoActive"
+    :video-bounds="{ top: 0, left: 0, width: 0, height: 0 }"
+  />
+
 </template>
 
 <script setup>
@@ -153,9 +167,14 @@
   import DialogShortcutName from '@/components/dialog/DialogShortcutName.vue';
   import DialogShortcutDelete from '@/components/dialog/DialogShortcutDelete.vue';
   import DialogShortcutReset from '@/components/dialog/DialogShortcutReset.vue';
+  import ShortcutCompositionOverlay from '@/components/ShortcutCompositionOverlay.vue';
 
   const store = useAppStore();
   const { isProcessing, keyboard, settings } = storeToRefs(store);
+  
+  // Get video state to control magic key overlay visibility  
+  const { device } = useDevice();
+  const { isVideoActive } = useAppKVMVideo(device);
 
   // Target OS constants
   const TargetOS = {
@@ -182,7 +201,10 @@
   ]);
 
   import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
+  import { useDevice } from '@/composables/useDevice';
+  import { useAppKVMVideo } from '@/composables/useAppKVMVideo';
   import { useAdaptiveShortcuts } from '@/composables/useAdaptiveShortcuts';
+  import { useMagicKey } from '@/composables/useMagicKey';
 
   const {
     shortcutList,
@@ -200,6 +222,28 @@
     adaptiveShortcuts,
     trackShortcutUsage,
   } = useAdaptiveShortcuts();
+
+  // Magic key transmission system
+  const handleMagicKeyTransmission = (keys) => {
+    console.log('🎯 Magic key transmission:', keys);
+    
+    // Send the keys directly to KVM
+    sendShortcut(keys);
+    
+    // Track usage in adaptive system (create a shortcut entry for tracking)
+    const shortcutForTracking = {
+      value: keys,
+      name: formatKeys(keys),
+      category: 'magic-transmission'
+    };
+    trackShortcutUsage(shortcutForTracking, 'magic-key');
+  };
+
+  const { 
+    isComposing, displayText, currentKeys, magicKey, setMagicKey 
+  } = useMagicKey(handleMagicKeyTransmission);
+
+
 
   // All shortcuts from API
   const allShortcuts = computed(() => {
@@ -386,6 +430,11 @@
   });
 
   const handleKeyDown = (e) => {
+    // Let magic key events pass through
+    if (e.code === magicKey.value || isComposing.value) {
+      return;
+    }
+    
     if (!isRecording.value) return;
 
     e.preventDefault();
@@ -418,6 +467,11 @@
   };
 
   const handleKeyUp = (e) => {
+    // Let magic key events pass through
+    if (e.code === magicKey.value || isComposing.value) {
+      return;
+    }
+    
     if (!isRecording.value) return;
 
     e.preventDefault();
@@ -572,6 +626,8 @@
   const confirmReset = async () => {
     await resetShortcuts();
   };
+
+
 </script>
 
 <style scoped>

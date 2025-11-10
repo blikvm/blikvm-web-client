@@ -5,6 +5,7 @@ import { ref, watch } from 'vue';
 import { keytoCode } from '../utils/virtualKeyboard.js';
 import { useDevice } from '@/composables/useDevice';
 import { useAppStore } from '@/stores/stores';
+import { isMagicKeyComposing } from '@/composables/useMagicKey.js';
 
 const keyPress = ref('');
 const pressedKeys = ref([]);
@@ -88,6 +89,11 @@ export function useKeyboard() {
   };
 
   const handleKeyDown = (event) => {
+    // Skip processing if magic key is composing
+    if (isMagicKeyComposing()) {
+      return;
+    }
+
     event.preventDefault();
     const code = event.code;
 
@@ -103,8 +109,12 @@ export function useKeyboard() {
 
   ///
   const handleKeyUp = (event) => {
+    // Skip processing if magic key is composing
+    if (isMagicKeyComposing()) {
+      return;
+    }
+
     event.preventDefault();
-    const code = event.code;
 
     // AltGr fix (Windows) – flush pending timer on keyup
     handleAltGrFix('up', code, appStore.platform?.isWindows === true); // no early-return needed

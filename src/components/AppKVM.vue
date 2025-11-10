@@ -119,11 +119,22 @@
     <AudioStreamer />
 -->
     <AppOverlay v-if="showDiagnostics" :z-index="zIndex.overlay" />
+    
+    <!-- Magic Key Composition Overlay -->
+    <ShortcutCompositionOverlay 
+      :is-composing="isComposing"
+      :display-text="displayText"
+      :current-keys="currentKeys"
+      :magic-key="magicKey"
+      :is-drawer-visible="settings.isVisible"
+      :is-video-visible="isVideoActive"
+      :video-bounds="videoBounds"
+    />
   </div>
 </template>
 
 <script setup>
-  import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
+  import { ref, onMounted, onBeforeUnmount, watch, computed, nextTick } from 'vue';
   import Config from '@/config.js';
   import { useAppStore } from '@/stores/stores';
   import { useHealth } from '@/composables/useHealth.js';
@@ -137,12 +148,26 @@
   import { RateLimitedMouse } from '../utils/mouse.js';
   import { useExtractText } from '@/composables/useExtractText';
   import { useAppKVMVideo } from '@/composables/useAppKVMVideo.js';
+  import { useMagicKey } from '@/composables/useMagicKey';
+  import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
   import { zIndex } from '@/styles/zIndex'; // TODO should be constants!
 
   // Stores & States
   const store = useAppStore();
-  const { showResolution, showDiagnostics, pipVideoElement, isExperimental, misc } =
-    storeToRefs(store); //ocr
+  const {
+    showResolution,
+    showDiagnostics,
+    isCameraOn,
+    isShowingPiP,
+    pipVideoElement,
+    isTakingScreenshot,
+    isRecording,
+    isExperimental,
+    errorSource,
+    errorTimings,
+    misc,
+    settings,
+  } = storeToRefs(store); //ocr
 
   const { device } = useDevice();
   const { isVideoActive, isH264, isMjpeg, videoElementStyle } = useAppKVMVideo(device);
@@ -190,8 +215,48 @@
     }
   );
 
+  // Magic Key System for shortcuts - Initialize BEFORE regular keyboard to get priority
+  const { sendShortcut } = useKeyboardShortcuts();
+  const handleMagicKeyTransmission = (keys) => {
+    console.log('🎯 Magic key transmission:', keys);
+    sendShortcut(keys);
+  };
+  const { isComposing, displayText, currentKeys, magicKey } = useMagicKey(handleMagicKeyTransmission);
+
+  // Video bounds tracking for overlay positioning
+  const videoBounds = ref({ top: 0, left: 0, width: 0, height: 0 });
+  
+  // Get video element for bounds tracking
+  const getVideoElement = () => {
+    const videoElement = document.getElementById('webrtc-output') || document.getElementById('mjpeg-output');
+    if (videoElement) {
+      const rect = videoElement.getBoundingClientRect();
+      if (rect.width >= 400 && rect.height >= 200) {
+        return videoElement;
+      }
+    }
+    return document.getElementById('appkvm') || document.querySelector('.video-center-wrapper');
+  };
+
+  // Update video bounds for overlay positioning
+  const updateVideoBounds = () => {
+    const element = getVideoElement();
+    if (!element) return;
+
+    const rect = element.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      videoBounds.value = {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+  };
+  
   // Video, Mouse, Keyboard, OCR, Camera
   const { handleKeyDown, handleKeyUp, releaseAllKey } = useKeyboard();
+  
   const {
     initVideo,
     destroyJanusConnection,
@@ -384,6 +449,13 @@
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('pagehide', releaseAllKey);
     window.addEventListener('blur', releaseAllKey);
+    
+    // Start video bounds tracking
+    nextTick(() => {
+      updateVideoBounds();
+      // Update bounds periodically to track video changes
+      setInterval(updateVideoBounds, 100); // 10fps is sufficient for bounds tracking
+    });
     const savedVideoMode = localStorage.getItem('videoMode');
     if (savedVideoMode) {
       device.value.video.videoMode = savedVideoMode;
