@@ -1,9 +1,9 @@
 <template>
   <v-btn icon size="30" :ripple="true" @click="handleToggleTheme">
     <v-icon>mdi-theme-light-dark</v-icon>
-    <v-tooltip activator="parent" location="bottom" content-class="bg-primary"
-      >Toggle Theme</v-tooltip
-    >
+    <v-tooltip activator="parent" location="bottom" content-class="bg-primary">
+      Toggle Theme
+    </v-tooltip>
   </v-btn>
 </template>
 

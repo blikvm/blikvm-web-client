@@ -12,14 +12,16 @@ export default [
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
-        process: 'readonly'
-      }
+        process: 'readonly',
+        __GIT_COMMIT__: 'readonly',
+        __BUILD_TIME__: 'readonly',
+      },
     },
     rules: {
       semi: ['error', 'always'],
       quotes: ['error', 'single'],
-      'vue/multi-word-component-names': 'off'
+      'vue/multi-word-component-names': 'off',
     },
-    ignores: ['dist/**', 'node_modules/**']
-  }
+    ignores: ['dist/**', 'node_modules/**','dist/**','src/utils/adapter.js','src/utils/janus.js'],
+  },
 ];

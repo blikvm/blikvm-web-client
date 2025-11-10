@@ -141,7 +141,6 @@
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useKeymap } from '@/composables/useKeymap';
-  import { useAlert } from '@/composables/useAlert';
   import { useSendText } from '@/composables/useSendText';
 
   const store = useAppStore();

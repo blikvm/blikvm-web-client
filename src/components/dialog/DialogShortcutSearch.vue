@@ -38,11 +38,11 @@
             :key="index"
             class="ma-1 shortcut-result-chip"
             color="#e77c7c"
-            @click="selectResult(item)"
             style="border: 1px solid rgb(241, 60, 60)"
+            @click="selectResult(item)"
           >
             <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
+              <template #activator="{ props }">
                 <span v-bind="props">{{ item.name }}</span>
               </template>
               <span>{{ formatKeys(item.value) }}</span>
@@ -51,7 +51,7 @@
         </div>
 
         <div v-else-if="searchQuery" class="text-center py-8 text-medium-emphasis">
-          <v-icon size="48" class="mb-2">mdi-magnify-remove-outline</v-icon>
+          <v-icon size="48" class="mb-2"> mdi-magnify-remove-outline </v-icon>
           <div class="text-body-1">No shortcuts found</div>
           <div class="text-caption">Try a different search term</div>
         </div>

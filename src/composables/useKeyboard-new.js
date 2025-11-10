@@ -71,7 +71,7 @@ function handleAltGrFix(phase, code, isWindows) {
 export function useKeyboard() {
   // Access store inside function to ensure platform detection has completed
   const appStore = useAppStore();
-  
+
   const handlePressedKeysChange = (newVal) => {
     const obj = {
       k: newVal,
@@ -106,9 +106,9 @@ export function useKeyboard() {
     event.preventDefault();
     const code = event.code;
 
-      // AltGr fix (Windows) – flush pending timer on keyup
-      handleAltGrFix('up', code, appStore.platform?.isWindows === true); // no early-return needed
-      const index = pressedKeys.value.indexOf(code);
+    // AltGr fix (Windows) – flush pending timer on keyup
+    handleAltGrFix('up', code, appStore.platform?.isWindows === true); // no early-return needed
+    const index = pressedKeys.value.indexOf(code);
     if (index > -1) {
       pressedKeys.value.splice(index, 1);
     } else {

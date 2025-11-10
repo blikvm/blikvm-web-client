@@ -9,7 +9,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
  */
 export function useFullscreen(options = {}) {
   const { onEnter, onExit } = options;
-  
+
   const isFullscreen = ref(false);
 
   // Cross-browser fullscreen detection
@@ -74,7 +74,7 @@ export function useFullscreen(options = {}) {
     document.addEventListener('webkitfullscreenchange', updateFullscreenStatus);
     document.addEventListener('mozfullscreenchange', updateFullscreenStatus);
     document.addEventListener('MSFullscreenChange', updateFullscreenStatus);
-    
+
     // Initial status check
     updateFullscreenStatus();
   });
@@ -90,6 +90,6 @@ export function useFullscreen(options = {}) {
     isFullscreen,
     enterFullscreen,
     exitFullscreen,
-    toggleFullscreen
+    toggleFullscreen,
   };
 }

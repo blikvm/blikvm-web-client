@@ -50,7 +50,7 @@
       @mouseenter="handleMouseEnter"
       @touchmove="handleTouchMove"
       @play="onVideoPlay"
-    ></video>
+    />
 
     <img
       v-else-if="isVideoActive && isMjpeg"
@@ -89,7 +89,7 @@
     </div>
 
     <div v-if="ocr.ocrSelection" class="selection-overlay">
-      <div class="selection-box" :style="selectionStyle"></div>
+      <div class="selection-box" :style="selectionStyle" />
     </div>
 
     <DialogTextExtract />
@@ -112,9 +112,9 @@
       playsinline
       muted
       style="display: none"
-    ></video>
+    />
 
-    <audio v-if="isExperimental" ref="audioElement" mute autoplay></audio>
+    <audio v-if="isExperimental" ref="audioElement" mute autoplay />
     <!--
     <AudioStreamer />
 -->
@@ -136,37 +136,21 @@
   import { useMouse } from '@/composables/useMouse';
   import { RateLimitedMouse } from '../utils/mouse.js';
   import { useExtractText } from '@/composables/useExtractText';
-  import { useCamera } from '@/composables/useCameraWithSwitch.js';
   import { useAppKVMVideo } from '@/composables/useAppKVMVideo.js';
   import { zIndex } from '@/styles/zIndex'; // TODO should be constants!
 
   // Stores & States
   const store = useAppStore();
-  const {
-    showResolution,
-    showDiagnostics,
-    isCameraOn,
-    isShowingPiP,
-    pipVideoElement,
-    isTakingScreenshot,
-    isRecording,
-    isExperimental,
-    errorSource,
-    errorTimings,
-    misc,
-  } = storeToRefs(store); //ocr
+  const { showResolution, showDiagnostics, pipVideoElement, isExperimental, misc } =
+    storeToRefs(store); //ocr
 
   const { device } = useDevice();
-  const { startCamera, stopCamera, enterPiP, exitPiP } = useCamera(device); //error
-
   const { isVideoActive, isH264, isMjpeg, videoElementStyle } = useAppKVMVideo(device);
   const { getHealthThreshold } = useHealth();
 
   // DOM Refs
   const streamElementRef = ref(null);
   const audioElement = ref(null);
-
-  const showOverlay = ref(true);
   const previousResolution = ref(device.value.video.resolution);
 
   // Green dot cursor state
@@ -195,7 +179,7 @@
   const wasNoSignal = ref(true);
   startSession();
 
-  const { requestPointerLock, exitPointerLock, isPointerLocked } = usePointerLock(
+  const { requestPointerLock } = usePointerLock(
     //document.pointerLockElement,
     device,
     (locked) => {
@@ -229,7 +213,7 @@
     handleTouchMove,
   } = useMouse(device, streamElementRef);
 
-  const { ocr, selectionStyle, selection } = useExtractText();
+  const { ocr, selectionStyle } = useExtractText();
   const mousePollingInterval = computed(() => device.value.hid.mouse.mousePollingInterval);
 
   // Wrapper functions for mouse events to handle green dot
@@ -336,7 +320,7 @@
 
   watch(
     () => device.value.video.resolution,
-    (newVal, oldVal) => {
+    (newVal) => {
       if (newVal !== previousResolution.value) {
         showResolution.value = true;
         setTimeout(() => {

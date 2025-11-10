@@ -5,12 +5,7 @@ TODO is this still used?
 <template>
   <span class="ms-1">
     <template v-if="$vuetify.display.smAndUp">
-      <v-divider
-        class="mx-0 align-self-center"
-        :length="length"
-        :thickness="thickness"
-        vertical
-      ></v-divider>
+      <v-divider class="mx-0 align-self-center" :length="length" :thickness="thickness" vertical />
     </template>
 
     <!--
@@ -19,9 +14,9 @@ TODO is this still used?
   </span>
 
   <v-icon
-    class="ms-2"
     v-for="iconData in iconDataList"
     :key="iconData.icon"
+    class="ms-2"
     :color="iconData.color"
     :title="iconData.title"
     @click="iconData.onClick"
@@ -34,11 +29,7 @@ TODO is this still used?
   import { ref, watch } from 'vue';
   import { storeToRefs } from 'pinia';
   import { useAppStore } from '@/stores/stores';
-  import { useI18n } from 'vue-i18n';
   import { useTemperature } from '@/composables/useTemperature.js';
-  // TODO don't know why the toggleFullScreen doesn't work, other translations are OK
-
-  const { t } = useI18n();
 
   const store = useAppStore();
   const { device, keyboard, video, mouse } = storeToRefs(store);

@@ -114,7 +114,7 @@ export function useVideoResolution(device) {
           device.value.video.isRequesting = false;
           if (startResponse.data.data.state === 'RUNNING') {
             const title = 'Video';
-            const message = `Stream FPS set successfully.`;
+            const message = 'Stream FPS set successfully.';
             sendAlert('success', title, message);
           } else {
             const title = 'Video';
@@ -131,7 +131,7 @@ export function useVideoResolution(device) {
         // Stream not active: still reset requesting flag and notify success
         device.value.video.isRequesting = false;
         const title = 'Video';
-        const message = `Stream FPS set successfully.`;
+        const message = 'Stream FPS set successfully.';
         sendAlert('success', title, message);
       }
     } catch (error) {
@@ -175,7 +175,7 @@ export function useVideoResolution(device) {
           device.value.video.isRequesting = false;
           if (startResponse.data.data.state === 'RUNNING') {
             const title = 'Video';
-            const message = `Stream bitrate set successfully.`;
+            const message = 'Stream bitrate set successfully.';
             sendAlert('success', title, message);
           } else {
             const title = 'Video';
@@ -191,7 +191,7 @@ export function useVideoResolution(device) {
       } else {
         device.value.video.isRequesting = false;
         const title = 'Video';
-        const message = `Stream bitrate set successfully.`;
+        const message = 'Stream bitrate set successfully.';
         sendAlert('success', title, message);
       }
     } catch (error) {
@@ -230,7 +230,7 @@ export function useVideoResolution(device) {
           device.value.video.isRequesting = false;
           if (startResponse.data.data.state === 'RUNNING') {
             const title = 'Video';
-            const message = `Stream GOP set successfully.`;
+            const message = 'Stream GOP set successfully.';
             sendAlert('success', title, message);
           } else {
             const title = 'Video';
@@ -246,7 +246,7 @@ export function useVideoResolution(device) {
       } else {
         device.value.video.isRequesting = false;
         const title = 'Video';
-        const message = `Stream GOP set successfully.`;
+        const message = 'Stream GOP set successfully.';
         sendAlert('success', title, message);
       }
     } catch (error) {
@@ -289,7 +289,7 @@ export function useVideoResolution(device) {
           device.value.video.isRequesting = false;
           if (startResponse.data.data.state === 'RUNNING') {
             const title = 'Video';
-            const message = `Stream mjpeg quality set successfully.`;
+            const message = 'Stream mjpeg quality set successfully.';
             sendAlert('success', title, message);
           } else {
             const title = 'Video';
@@ -305,7 +305,7 @@ export function useVideoResolution(device) {
       } else {
         device.value.video.isRequesting = false;
         const title = 'Video';
-        const message = `Stream mjpeg quality set successfully.`;
+        const message = 'Stream mjpeg quality set successfully.';
         sendAlert('success', title, message);
       }
     } catch (error) {

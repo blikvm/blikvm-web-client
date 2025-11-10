@@ -34,8 +34,8 @@
           color="white"
           text="Cancel"
           variant="tonal"
-          @click="showResetDialog = false"
           :disabled="isResetting"
+          @click="showResetDialog = false"
         />
 
         <v-btn
@@ -43,8 +43,8 @@
           color="orange-darken-3"
           text="Reset to Defaults"
           variant="tonal"
-          @click="handleReset"
           :loading="isResetting"
+          @click="handleReset"
         />
       </v-card-actions>
     </v-card>
@@ -55,7 +55,7 @@
   import { ref } from 'vue';
 
   const props = defineProps({
-    targetOS: String,
+    targetOS: { type: String, default: 'windows' },
   });
 
   const emit = defineEmits(['confirm']);

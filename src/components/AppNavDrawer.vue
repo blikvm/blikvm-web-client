@@ -8,10 +8,10 @@
           icon="mdi-close"
           variant="text"
           size="small"
-          style="position: absolute; top: 8px; right: 8px; z-index: 10;"
+          style="position: absolute; top: 8px; right: 8px; z-index: 10"
           @click="settings.isVisible = false"
         />
-        
+
         <div class="text-h4 text-center mb-0 font-weight-medium" style="color: #76ff03">
           BliKVM Matrix
           <v-btn
@@ -54,50 +54,10 @@
   import { ref } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
-  import { useDevice } from '@/composables/useDevice';
-  import { useSessionUtils } from '@/composables/useSessionUtils';
-  import { useRouter } from 'vue-router';
-  import { useI18n } from 'vue-i18n';
-  import pkg from 'package';
 
   const store = useAppStore();
-  const { device } = useDevice();
-  const { inactivateDevice } = useSessionUtils(device);
-  const router = useRouter();
-  const { t } = useI18n();
 
-  const { settings, showManageAccountDialog, showAboutPageDialog, productVersion } =
-    storeToRefs(store);
+  const { settings, productVersion } = storeToRefs(store);
 
   const tab = ref('');
-  const handleAccountClick = () => {
-    showManageAccountDialog.value = true;
-  };
-
-  const handleAboutClick = () => {
-    showAboutPageDialog.value = true;
-  };
-
-  const handleLogoutClick = () => {
-    inactivateDevice();
-    router.push('/');
-  };
-
-  const appendItems = [
-    {
-      icon: 'mdi-account',
-      tooltip: t('account.title'),
-      onClick: handleAccountClick,
-    },
-    {
-      icon: 'mdi-information-outline',
-      tooltip: t('appFooter.about'),
-      onClick: handleAboutClick,
-    },
-    {
-      icon: 'mdi-logout',
-      tooltip: t('login.logout'),
-      onClick: handleLogoutClick,
-    },
-  ];
 </script>

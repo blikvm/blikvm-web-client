@@ -33,6 +33,6 @@ export function useMobileKeyboard(handleKeyPress, handleKeyReleased) {
   return {
     mobileKeyboardText,
     sendMobileText,
-    sendSpecialKey
+    sendSpecialKey,
   };
 }

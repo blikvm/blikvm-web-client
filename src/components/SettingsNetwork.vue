@@ -1,11 +1,11 @@
 <template>
   <v-expansion-panel value="network">
     <v-expansion-panel-title>
-      <template v-slot:default="{ expanded }">
+      <template #default="{ expanded }">
         <v-card class="transparent-card" density="compact" tile width="100%">
           <v-row dense no-gutters>
             <v-col cols="1">
-              <v-icon color="#448AFF">mdi-ip-network</v-icon>
+              <v-icon color="#448AFF"> mdi-ip-network </v-icon>
             </v-col>
             <v-col class="d-flex justify-start align-center" cols="4">
               {{ $t('settings.network.title') }}
@@ -25,7 +25,7 @@
       <v-expansion-panels multiple>
         <v-expansion-panel value="network-general">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-wrench</v-icon>
@@ -44,13 +44,13 @@
               <v-row dense no-gutters>
                 <v-col cols="12">
                   <v-tooltip>
-                    <template v-slot:activator="{ props }">
+                    <template #activator="{ props }">
                       <v-text-field
                         v-model="systeminfo.hostname"
                         v-bind="props"
+                        v-ripple
                         density="compact"
                         rounded="lg"
-                        v-ripple
                         color="#76FF03"
                         variant="outlined"
                         hide-details
@@ -60,13 +60,14 @@
                         @keydown.stop
                         @keyup.stop
                       >
-                        <template v-slot:append>
+                        <template #append>
                           <v-icon
                             size="small"
                             color="#76FF03"
                             @click="copyClipboard(systeminfo.hostname)"
-                            >mdi-content-copy</v-icon
                           >
+                            mdi-content-copy
+                          </v-icon>
                         </template>
                       </v-text-field> </template
                     >{{ $t('common.copy') }}
@@ -83,25 +84,26 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="device.network.interfaces[0].mac"
+                    v-ripple
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     variant="outlined"
                     hide-details
                     single-line
                     disabled
                   >
-                    <template v-slot:append>
+                    <template #append>
                       <v-icon
                         size="small"
                         color="#76FF03"
-                        @click.stop="copyClipboard(device.network.interfaces[0].mac)"
                         style="pointer-events: auto; cursor: pointer"
-                        >mdi-content-copy</v-icon
+                        @click.stop="copyClipboard(device.network.interfaces[0].mac)"
                       >
-                    </template></v-text-field
-                  >
+                        mdi-content-copy
+                      </v-icon>
+                    </template>
+                  </v-text-field>
                 </v-col>
               </v-row>
               <br />
@@ -112,9 +114,9 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="device.network.interfaces[0].ip4"
+                    v-ripple
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     variant="outlined"
                     hide-details
@@ -122,15 +124,16 @@
                     clearable
                     :disabled="device.network.interfaces[0].dhcp"
                   >
-                    <template v-slot:append>
+                    <template #append>
                       <v-icon
                         size="small"
                         color="#76FF03"
                         @click="copyClipboard(device.network.interfaces[0].ip4)"
-                        >mdi-content-copy</v-icon
                       >
-                    </template></v-text-field
-                  >
+                        mdi-content-copy
+                      </v-icon>
+                    </template>
+                  </v-text-field>
                 </v-col>
               </v-row>
               <br />
@@ -159,7 +162,7 @@
 
         <v-expansion-panel value="network-services" @group:selected="getNetworkInfo">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-cog</v-icon>
@@ -180,18 +183,17 @@
                   <div class="d-flex align-center ga-2">
                     <v-number-input
                       v-model="device.network.httpPort"
+                      v-ripple
                       control-variant="hidden"
                       density="compact"
                       type="number"
                       variant="outlined"
                       rounded="lg"
-                      v-ripple
                       color="#76FF03"
                       @update:focused="changeNetworkPorts"
                       @keydown.stop
                       @keyup.stop
-                    >
-                    </v-number-input>
+                    />
                   </div>
                 </v-col>
                 <v-col cols="6">
@@ -201,18 +203,17 @@
                   <div class="d-flex align-center ga-2">
                     <v-number-input
                       v-model="device.network.httpsPort"
+                      v-ripple
                       control-variant="hidden"
                       density="compact"
                       type="number"
                       variant="outlined"
                       rounded="lg"
-                      v-ripple
                       color="#76FF03"
                       @update:focused="changeNetworkPorts"
                       @keydown.stop
                       @keyup.stop
-                    >
-                    </v-number-input>
+                    />
                   </div>
                 </v-col>
               </v-row>
@@ -221,21 +222,21 @@
                 <v-col cols="12">
                   <v-switch
                     v-model="device.network.isHttpsConnectionEnabled"
+                    v-ripple
                     inset
                     :label="$t('settings.network.services.isHttpsConnectionEnabledField')"
-                    v-ripple
                     color="#76FF03"
-                    @update:modelValue="changeNetworkProtocol"
+                    @update:model-value="changeNetworkProtocol"
                   />
                 </v-col>
               </v-row>
-              <v-row dense no-gutters v-if="isExperimental">
+              <v-row v-if="isExperimental" dense no-gutters>
                 <v-col cols="12">
                   <v-switch
                     v-model="device.network.isDiscoverable"
+                    v-ripple
                     inset
                     :label="$t('settings.network.services.isHttpsConnectionEnabledField')"
-                    v-ripple
                     color="#76FF03"
                   />
                 </v-col>
@@ -248,7 +249,7 @@
       <v-expansion-panels multiple>
         <v-expansion-panel value="network-wol">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-lan</v-icon>
@@ -384,8 +385,6 @@
       sendAlert('error', title, message);
     }
   };
-
-  onMounted(() => {});
 </script>
 
 <style scoped>

@@ -1,8 +1,8 @@
 <template>
   <v-speed-dial location="left center" open-on-hover transition="tab-transition">
-    <template v-slot:activator="{ props: activatorProps }">
+    <template #activator="{ props: activatorProps }">
       <v-tooltip content-class="" location="bottom">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-fab
             v-bind="mergeProps(activatorProps, tooltipProps)"
             size="small"
@@ -24,18 +24,18 @@
         size="x-small"
         style="margin-left: 5px"
         @click="setOrientation(target.orientation)"
-      >
-      </v-btn>
+      />
     </div>
   </v-speed-dial>
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { computed } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useRotate } from '/src/composables/useOrientation.js';
   import { mergeProps } from 'vue';
+  import { useRoute } from 'vue-router';
 
   const route = useRoute();
   const store = useAppStore();
@@ -49,7 +49,7 @@
     return foundDevice; // Return the found device or undefined if not found
   });
 
-  const { streamElementRef, video } = storeToRefs(store);
+  const { streamElementRef } = storeToRefs(store);
 
   // Function to handle orientation
   const setOrientation = (orientation) => {

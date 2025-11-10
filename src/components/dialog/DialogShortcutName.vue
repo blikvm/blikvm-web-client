@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showNameDialog" max-width="400">
-    <v-card @keydown.stop @keyup.stop rounded="lg">
+    <v-card rounded="lg" @keydown.stop @keyup.stop>
       <v-list class="py-6" :lines="false">
         <v-list-item>
           <template #prepend>
@@ -61,8 +61,8 @@
           :color="duplicateKeys ? '#76FF03' : 'white'"
           :text="duplicateKeys ? 'Close' : 'Cancel'"
           variant="tonal"
-          @click="handleCancel"
           :disabled="isSaving"
+          @click="handleCancel"
         />
 
         <v-btn
@@ -71,9 +71,9 @@
           color="#76FF03"
           text="Save"
           variant="tonal"
-          @click="handleSave"
           :loading="isSaving"
           :disabled="!shortcutName || !!nameErrorMessage || !!keyComboErrorMessage"
+          @click="handleSave"
         />
       </v-card-actions>
     </v-card>

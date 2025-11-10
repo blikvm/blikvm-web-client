@@ -5,9 +5,9 @@
     open-on-hover
     transition="tab-transition"
   >
-    <template v-slot:activator="{ props: activatorProps }">
+    <template #activator="{ props: activatorProps }">
       <v-tooltip content-class="" location="bottom">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-badge
             v-if="activeChannel !== null && !isActive"
             :content="activeChannel"
@@ -77,23 +77,15 @@
 <script setup>
   import { ref, computed } from 'vue';
   import http from '@/utils/http.js';
-  import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
   import { useHdmiSwitch } from '@/composables/useHdmiSwitch';
   import { mergeProps } from 'vue';
-  const route = useRoute();
 
   const { kvmSwitch } = useHdmiSwitch();
   console.log(kvmSwitch.value);
   // Computed property to access hdmiSwitch items
   const kvmSwitchItems = computed(() => kvmSwitch.value.items || []);
-
-  const store = useAppStore();
-  const { isProcessing } = storeToRefs(store);
-
   const { device } = useDevice();
-
   const activeChannel = ref(null);
 
   const filteredChannels = computed(() => {
@@ -135,7 +127,6 @@
       }
     } catch (error) {
       console.error(`Error invoking ${api}:`, error);
-    } finally {
     }
   };
 </script>

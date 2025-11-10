@@ -3,7 +3,7 @@
     <!-- Controls -->
     <div class="controls">
       <button @click="startStreams">Start All PiP Streams</button>
-      <button @click="stopStreams" :disabled="!isStreaming">Stop All Streams</button>
+      <button :disabled="!isStreaming" @click="stopStreams">Stop All Streams</button>
     </div>
 
     <!-- Main video -->
@@ -16,7 +16,7 @@
       autoplay
       playsinline
       loop
-    ></video>
+    />
 
     <!-- PiP Videos Container -->
     <div class="pip-videos">
@@ -31,11 +31,11 @@
           playsinline
           loop
           @click="swapMainAndPipVideo(index)"
-        ></video>
+        />
         <!--
         <img :src="pipVideo" @click="swapMainAndPipVideo(index)" />
 -->
-        <button @click="enablePiP(index)" :disabled="!isPiPSupported">
+        <button :disabled="!isPiPSupported" @click="enablePiP(index)">
           PIP Channel {{ index + 1 }}
         </button>
       </div>
@@ -72,17 +72,6 @@
   // Start WebRTC streams (Main and PiP streams from URLs)
   const startStreams = async () => {
     try {
-      // Start the main stream (front camera or video URL)
-      const mainStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-        audio: false,
-      });
-
-      // Assign the main stream to the main video element
-      if (mainVideo.value) {
-        //    mainVideo.value.srcObject = mainStream;
-      }
-
       // Save PiP stream URLs to the pipStreams array
       pipStreams.value = pipUrls;
 

@@ -12,10 +12,17 @@
     >
       <!-- Connection Status Tab -->
       <v-tab :value="'status'" class="terminal-status-tab" style="min-width: auto; padding: 0 12px">
-        <v-icon :color="isConnected ? 'rgba(255, 255, 255, 0.7)' : '#D32F2F'" size="small" class="mr-2">
+        <v-icon
+          :color="isConnected ? 'rgba(255, 255, 255, 0.7)' : '#D32F2F'"
+          size="small"
+          class="mr-2"
+        >
           {{ isConnected ? 'mdi-serial-port' : 'mdi-close-circle-outline' }}
         </v-icon>
-        <span class="text-caption" :style="{ color: isConnected ? 'rgba(255, 255, 255, 0.7)' : '#D32F2F' }">
+        <span
+          class="text-caption"
+          :style="{ color: isConnected ? 'rgba(255, 255, 255, 0.7)' : '#D32F2F' }"
+        >
           {{ isConnected ? 'Serial Console' : t('terminal.disconnected') }}
         </span>
       </v-tab>
@@ -23,46 +30,56 @@
       <v-spacer />
 
       <!-- Action Tabs -->
-      <v-tab :value="'clear'" @click="clearTerminal" class="terminal-action-tab">
+      <v-tab :value="'clear'" class="terminal-action-tab" @click="clearTerminal">
         <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-close-circle-outline </v-icon>
+          <template #activator="{ props }">
+            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small">
+              mdi-close-circle-outline
+            </v-icon>
           </template>
           <span>{{ t('terminal.clearTerminal') }}</span>
         </v-tooltip>
       </v-tab>
 
-      <v-tab :value="'copy'" @click="copyClipboardHandler" class="terminal-action-tab">
+      <v-tab :value="'copy'" class="terminal-action-tab" @click="copyClipboardHandler">
         <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-content-copy </v-icon>
+          <template #activator="{ props }">
+            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small">
+              mdi-content-copy
+            </v-icon>
           </template>
           <span>{{ t('terminal.copyText') }}</span>
         </v-tooltip>
       </v-tab>
 
-      <v-tab :value="'paste'" @click="pasteClipboard" class="terminal-action-tab">
+      <v-tab :value="'paste'" class="terminal-action-tab" @click="pasteClipboard">
         <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-content-paste </v-icon>
+          <template #activator="{ props }">
+            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small">
+              mdi-content-paste
+            </v-icon>
           </template>
           <span>{{ t('terminal.pasteText') }}</span>
         </v-tooltip>
       </v-tab>
 
-      <v-tab :value="'scroll-top'" @click="scrollTop" class="terminal-action-tab">
+      <v-tab :value="'scroll-top'" class="terminal-action-tab" @click="scrollTop">
         <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-arrow-up-bold </v-icon>
+          <template #activator="{ props }">
+            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small">
+              mdi-arrow-up-bold
+            </v-icon>
           </template>
           <span>{{ t('terminal.scrollToTop') }}</span>
         </v-tooltip>
       </v-tab>
 
-      <v-tab :value="'scroll-bottom'" @click="scrollBottom" class="terminal-action-tab">
+      <v-tab :value="'scroll-bottom'" class="terminal-action-tab" @click="scrollBottom">
         <v-tooltip location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small"> mdi-arrow-down-bold </v-icon>
+          <template #activator="{ props }">
+            <v-icon v-bind="props" color="rgba(255, 255, 255, 0.7)" size="small">
+              mdi-arrow-down-bold
+            </v-icon>
           </template>
           <span>{{ t('terminal.scrollToBottom') }}</span>
         </v-tooltip>
@@ -81,13 +98,13 @@
             elevation="1"
             rounded="lg"
             flat
+            tabindex="0"
+            :aria-label="t('appFooter.serialTerminal')"
             @contextmenu="handleContextMenu"
             @mouseenter="enableKeyboardEvents"
             @mouseleave="disableKeyboardEvents"
             @keydown="handleKeydown"
             @keyup="handleKeyup"
-            tabindex="0"
-            :aria-label="t('appFooter.serialTerminal')"
           >
             <div ref="terminal" class="terminal-content" />
           </v-sheet>
@@ -102,8 +119,6 @@
   import { useAlert } from '@/composables/useAlert.js';
   import { useClipboard } from '@/composables/useClipboard.js';
   import { useSerialPorts } from '@/composables/useSerialTerminal.js';
-  import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
   import { useTheme } from 'vuetify';
   import { useI18n } from 'vue-i18n';
   import { Terminal } from '@xterm/xterm';
@@ -112,8 +127,6 @@
   import { debounce } from 'lodash';
   import Config from '@/config.js';
 
-  const store = useAppStore();
-  const { systeminfo } = storeToRefs(store);
   const { sendAlert } = useAlert();
   const { copyClipboard } = useClipboard();
   const { setSerial } = useSerialPorts();
@@ -320,7 +333,7 @@
   const onErrorSocket = () => {
     ws.value.onerror = () => {
       const title = '';
-      const message = `serial websocket connection failed, please refresh`;
+      const message = 'serial websocket connection failed, please refresh';
       sendAlert('error', title, message);
     };
   };

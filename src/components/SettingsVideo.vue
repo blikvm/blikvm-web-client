@@ -7,24 +7,24 @@
             <v-col>
               <v-switch
                 v-model="device.video.isActive"
+                v-ripple
                 inset
                 :label="$t('settings.device.video.isHDMIActivateField')"
                 density="compact"
-                v-ripple
                 color="#76FF03"
-                @update:modelValue="toggleVideo"
+                @update:model-value="toggleVideo"
               />
             </v-col>
           </v-row>
 
-          <v-row no-gutters class="d-flex justify-start align-center" v-if="isExperimental">
+          <v-row v-if="isExperimental" no-gutters class="d-flex justify-start align-center">
             <v-col>
               <v-switch
                 v-model="device.video.excludeFromStreaming"
+                v-ripple
                 inset
                 :label="$t('device.video.excludeFromStreamingField')"
                 density="compact"
-                v-ripple
                 color="#76FF03"
               />
             </v-col>
@@ -39,10 +39,10 @@
           <v-row dense no-gutters class="d-flex justify-start align-center">
             <v-col cols="auto">
               <v-btn-toggle
+                v-ripple
                 :model-value="localVideoMode"
                 density="compact"
                 rounded="lg"
-                v-ripple
                 color="#76FF03"
                 variant="outlined"
                 group
@@ -55,8 +55,8 @@
                   h264
                 </v-btn>
                 <v-tooltip v-else text="Tooltip" content-class="">
-                  <template v-slot:activator="{ props }">
-                    <v-btn v-bind="props" value="h264" @click="handleVideoModeChange('h264')">
+                  <template #activator="{ slotProps }">
+                    <v-btn v-bind="slotProps" value="h264" @click="handleVideoModeChange('h264')">
                       h264
                     </v-btn>
                   </template>
@@ -69,15 +69,17 @@
 
           <br /><br />
           <!-- Input Format Section -->
-          <v-row dense no-gutters v-if="device.board.type === '4B' || device.board.type === 'CM4'">
+          <v-row v-if="device.board.type === '4B' || device.board.type === 'CM4'" dense no-gutters>
             <v-col cols="6" class="d-flex align-center">
               <span class="text-caption">{{ $t('settings.device.video.inputFormat') }}</span>
             </v-col>
             <v-col cols="6" class="d-flex align-center justify-end">
-              <span class="metric-display">{{ device.video.resolution }}@{{ device.video.sourceFps }}fps</span>
+              <span class="metric-display"
+                >{{ device.video.resolution }}@{{ device.video.sourceFps }}fps</span
+              >
             </v-col>
           </v-row>
-          <v-row dense no-gutters v-else>
+          <v-row v-else dense no-gutters>
             <v-col cols="12">
               <v-select
                 v-model="device.video.resolution"
@@ -89,18 +91,20 @@
                 density="compact"
                 variant="outlined"
                 tile
-                @update:modelValue="setResolution"
+                @update:model-value="setResolution"
               />
             </v-col>
           </v-row>
 
           <!-- Live Format Section -->
-          <v-row dense no-gutters v-if="device.video.videoMode === 'h264'">
+          <v-row v-if="device.video.videoMode === 'h264'" dense no-gutters>
             <v-col cols="6" class="d-flex align-center">
               <span class="text-caption">{{ $t('settings.device.video.liveFormat') }}</span>
             </v-col>
             <v-col cols="6" class="d-flex align-center justify-end">
-              <span class="metric-display">{{ device.video.bitrate }}kbps / {{ device.video.streamFps }}fps</span>
+              <span class="metric-display"
+                >{{ device.video.bitrate }}kbps / {{ device.video.streamFps }}fps</span
+              >
             </v-col>
           </v-row>
 
@@ -113,15 +117,15 @@
             <v-col cols="auto">
               <v-btn-toggle
                 v-model="device.video.orientation"
+                v-ripple
                 density="compact"
                 rounded="lg"
-                v-ripple
                 color="#76FF03"
                 variant="outlined"
                 divided
                 @click="setOrientation(device.video.orientation)"
               >
-                <v-btn value="0"> 0°</v-btn>
+                <v-btn value="0"> 0° </v-btn>
                 <v-btn value="180"> 180° </v-btn>
               </v-btn-toggle>
             </v-col>
@@ -137,24 +141,24 @@
             <v-col cols="12">
               <v-slider
                 v-model="device.video.desiredFps"
+                v-ripple
                 :max="60"
                 :step="10"
                 show-ticks="always"
                 tick-size="2"
-                v-ripple
                 color="#76FF03"
                 track-fill-color="#76FF03"
+                :disabled="device.video.isRequesting"
                 @click:revert="handleRefreshClick('mjpegFps')"
                 @end="setStreamFPS"
-                :disabled="device.video.isRequesting"
               >
-                <template v-slot:append>
+                <template #append>
                   <v-text-field
                     v-model="device.video.desiredFps"
+                    v-ripple
                     readonly
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     style="width: 94px"
                     type="number"
@@ -162,7 +166,7 @@
                     variant="outlined"
                     hide-details
                     single-line
-                  ></v-text-field>
+                  />
                 </template>
               </v-slider>
             </v-col>
@@ -181,25 +185,25 @@
             <v-col cols="12">
               <v-slider
                 v-model="device.video.mjpegQuality"
+                v-ripple
                 :min="10"
                 :max="100"
                 :step="10"
                 show-ticks="always"
                 tick-size="2"
-                v-ripple
                 color="#76FF03"
                 track-fill-color="#76FF03"
+                :disabled="device.video.isRequesting"
                 @click:revert="handleRefreshClick('mjpegQuality')"
                 @end="setStreamQuality"
-                :disabled="device.video.isRequesting"
               >
-                <template v-slot:append>
+                <template #append>
                   <v-text-field
                     v-model="device.video.mjpegQuality"
+                    v-ripple
                     readonly
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     style="width: 90px"
                     type="number"
@@ -207,7 +211,7 @@
                     variant="outlined"
                     hide-details
                     single-line
-                  ></v-text-field>
+                  />
                 </template>
               </v-slider>
             </v-col>
@@ -221,25 +225,25 @@
             <v-col cols="12">
               <v-slider
                 v-model="device.video.WebRTCMbps"
+                v-ripple
                 :min="0.1"
                 :max="10"
                 :step="0.1"
                 show-ticks="always"
                 tick-size="2"
-                v-ripple
                 color="#76FF03"
                 track-fill-color="#76FF03"
+                :disabled="device.video.isRequesting"
                 @click:revert="handleRefreshClick('WebRTCFps')"
                 @end="setStreamBitrate"
-                :disabled="device.video.isRequesting"
               >
-                <template v-slot:append>
+                <template #append>
                   <v-text-field
                     v-model="device.video.WebRTCMbps"
+                    v-ripple
                     readonly
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     style="width: 123px"
                     type="number"
@@ -247,7 +251,7 @@
                     variant="outlined"
                     hide-details
                     single-line
-                  ></v-text-field>
+                  />
                 </template>
               </v-slider>
             </v-col>
@@ -261,32 +265,32 @@
             <v-col cols="12">
               <v-slider
                 v-model="device.video.WebRTCGop"
+                v-ripple
                 :max="60"
                 :min="0"
                 :step="1"
                 show-ticks="always"
                 tick-size="2"
-                v-ripple
                 color="#76FF03"
                 track-fill-color="#76FF03"
+                :disabled="device.video.isRequesting"
                 @click:revert="handleRefreshClick('WebRTCGop')"
                 @end="setStreamGOP"
-                :disabled="device.video.isRequesting"
               >
-                <template v-slot:append>
+                <template #append>
                   <v-text-field
                     v-model="device.video.WebRTCGop"
+                    v-ripple
                     readonly
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     style="width: 104px"
                     type="number"
                     variant="outlined"
                     hide-details
                     single-line
-                  ></v-text-field>
+                  />
                 </template>
               </v-slider>
             </v-col>
@@ -315,13 +319,14 @@
   const { initVideo, destroyJanusConnection, clearImageSource, initMjpeg } = useVideo();
 
   // Define the props and use v-model binding
-  const props = defineProps({
-    label: String,
-    index: Number,
-    modelValue: Boolean, // Auto-bound for v-model:is-menu-visible
+  // Props are declared for parent binding but not used locally
+  defineProps({
+    label: { type: String, default: '' },
+    index: { type: Number, default: 0 },
+    modelValue: { type: Boolean, default: false }, // Auto-bound for v-model:is-menu-visible
   });
 
-  const emit = defineEmits(['update:modelValue']);
+  // Removed unused emit (no v-model updates triggered here). Re-add if component needs to emit later.
   const {
     getVideoConfig,
     toggleVideo,
@@ -332,7 +337,6 @@
     setResolution,
   } = useVideoResolution(device);
   const { setOrientation } = useOrientation(device);
-  const isRequesting = ref(false);
 
   // Mapping available resolution options from the store
   const resolutionOptions = ref([
@@ -375,23 +379,6 @@
   const keepMenuOpen = (event) => {
     // You can add additional logic here if needed
     event.stopPropagation(); // Stop the event from bubbling up
-  };
-
-  const cancel = async () => {
-    try {
-    } catch (error) {
-      console.error('Error during cancel operation:', error);
-    }
-  };
-
-  // !! TODO you have to think when you want to process the user's changes. Directly or centrally (with OK button)
-  // For me it should be centrally
-
-  const save = async () => {
-    try {
-    } catch (error) {
-      console.error('Error during save operation:', error);
-    }
   };
 </script>
 

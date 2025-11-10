@@ -1,11 +1,11 @@
 <template>
   <!-- Navigation bar -->
-  <v-row 
-    v-if="footer.showFooter" 
-    no-gutters 
-    dense 
-    align="center" 
-    class="w-100" 
+  <v-row
+    v-if="footer.showFooter"
+    no-gutters
+    dense
+    align="center"
+    class="w-100"
     style="height: 40px"
   >
     <v-spacer />
@@ -40,15 +40,14 @@
 
     <v-spacer />
 
-
     <v-col order="last" class="d-flex justify-end align-center pa-0 ma-0">
       <!-- Current key press indicator -->
       <v-chip
         v-if="device.hid.keyboard.keyPress"
+        v-tooltip:top="$t('common.keypress')"
         grow
         color="#76FF03"
         :ripple="false"
-        v-tooltip:top="$t('common.keypress')"
         class="align-center cursor-default"
         @click.stop
       >
@@ -74,47 +73,47 @@ import { computed, watch, ref } from 'vue';
 import { useI18n } from "vue-i18n";
 import { useDisplay } from 'vuetify';
 
-// Props
-const props = defineProps({
-  footer: {
-    type: Object,
-    required: true
-  },
-  activeToggle: {
-    type: Array,
-    required: true
-  },
-  device: {
-    type: Object,
-    required: true
-  },
-  lockStates: {
-    type: Array,
-    required: true
-  },
-  isTouchDevice: {
-    type: Boolean,
-    required: true
-  },
-  handleToggleChange: {
-    type: Function,
-    required: true
-  },
-});
+  // Props
+  const props = defineProps({
+    footer: {
+      type: Object,
+      required: true,
+    },
+    activeToggle: {
+      type: Array,
+      required: true,
+    },
+    device: {
+      type: Object,
+      required: true,
+    },
+    lockStates: {
+      type: Array,
+      required: true,
+    },
+    isTouchDevice: {
+      type: Boolean,
+      required: true,
+    },
+    handleToggleChange: {
+      type: Function,
+      required: true,
+    },
+  });
 
-// Composables
-const { t } = useI18n();
-const { smAndUp } = useDisplay();
+  // Composables
+  const { t } = useI18n();
+  const { smAndUp } = useDisplay();
 
-// Menu items configuration
-const menuItems = [
-  { id: "keyboard", text: t("common.keyboard"), icon: "mdi-keyboard" },
-  { id: "video", text: t("common.video"), icon: "mdi-monitor" },
-  { id: "mouse", text: t("common.virtualMouse"), icon: "mdi-mouse-outline" },
-  { id: "console", text: t("appFooter.sshTerminal"), icon: "mdi-console-line" },
-  { id: "serial", text: t("appFooter.serialTerminal"), icon: "mdi-serial-port" },
-  { id: "notifications", text: t("notification.title"), icon: "mdi-bell-outline" }
-];
+  // Menu items configuration
+  const menuItems = [
+    { id: 'keyboard', text: t('common.keyboard'), icon: 'mdi-keyboard' },
+    { id: 'video', text: t('common.video'), icon: 'mdi-monitor' },
+    { id: 'mouse', text: t('common.virtualMouse'), icon: 'mdi-mouse-outline' },
+    { id: 'console', text: t('appFooter.sshTerminal'), icon: 'mdi-console-line' },
+    { id: 'serial', text: t('appFooter.serialTerminal'), icon: 'mdi-serial-port' },
+    { id: 'notifications', text: t('notification.title'), icon: 'mdi-bell-outline' },
+  ];
 
 // Computed properties
 const availableMenuItems = computed(() => 
@@ -167,9 +166,9 @@ watch(() => props.device.hid.keyboard.keyPress, (newValue) => {
 </script>
 
 <style scoped>
-.cursor-default {
-  cursor: default;
-}
+  .cursor-default {
+    cursor: default;
+  }
 
 .footer-toggle-center {
   position: absolute;
