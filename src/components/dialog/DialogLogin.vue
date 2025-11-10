@@ -54,7 +54,7 @@
                 class="coc-link"
               >
                 {{ $t('login.eCOC') }}
-                <v-icon size="small" icon="mdi-open-in-new"></v-icon>
+                <v-icon size="small" icon="mdi-open-in-new" />
               </a>
               <br />
               <strong class="font-weight-bold"> {{ $t('login.forbidden') }} </strong>
@@ -63,102 +63,103 @@
         </v-sheet>
 
         <v-form
-          ref="loginForm"
           id="loginForm"
+          ref="loginForm"
           autocomplete="on"
           method="post"
           @submit.prevent="handleLoginClick"
         >
           <v-sheet min-width="420" rounded="lg" class="pa-0">
-          <v-text-field
-            v-model="user"
-            name="username"
-            id="username"
-            density="compact"
-            flat
-            :placeholder="$t('login.username')"
-            type="text"
-            rounded="lg"
-            variant="solo"
-            hide-details
-            class="ma-0"
-            :rules="[rules.required]"
-            aria-label="Username"
-            autocomplete="username"
-            @keyup.enter="handleLoginClick"
-          >
-            <template #prepend-inner>
-              <v-icon color="#76FF03" icon="mdi-account" />
-            </template>
-          </v-text-field>
-
-          <v-text-field
-            v-model="password"
-            name="password"
-            id="password"
-            :append-inner-icon="visiblePassword ? 'mdi-eye-off' : 'mdi-eye'"
-            density="compact"
-            flat
-            :placeholder="$t('login.password')"
-            :type="visiblePassword ? 'text' : 'password'"
-            rounded="lg"
-            variant="solo"
-            hide-details
-            class="ma-0"
-            :rules="[rules.password]"
-            aria-label="Password"
-            autocomplete="current-password"
-            @click:append-inner="
-              visiblePassword = !visiblePassword;
-              if (visiblePassword) visibleUsername = false;
-            "
-            @keyup.enter="handleLoginClick"
-          >
-            <template #prepend-inner>
-              <v-icon color="#76FF03" icon="mdi-lock" />
-            </template>
-          </v-text-field>
-
-          <v-text-field
-            density="compact"
-            flat
-            variant="solo"
-            readonly
-            :placeholder="$t('login.otp')"
-            hide-details
-            class="ma-0"
-            tabindex="-1"
-          >
-            <template #prepend-inner>
-              <v-icon color="#76FF03" icon="mdi-shield-lock" />
-            </template>
-          </v-text-field>
-
-          <div class="pa-3 pt-1">
-            <v-otp-input
-              v-model="twoFaCode"
-              :disabled="validating"
+            <v-text-field
+              id="username"
+              v-model="user"
+              name="username"
               density="compact"
+              flat
+              :placeholder="$t('login.username')"
+              type="text"
               rounded="lg"
-              variant="outlined"
-              :color="isFocused ? '#76FF03' : undefined"
-              @focus="isFocused = true"
-              @blur="isFocused = false"
-              @finish="handleLoginClick"
+              variant="solo"
+              hide-details
+              class="ma-0"
+              :rules="[rules.required]"
+              aria-label="Username"
+              autocomplete="username"
+              @keyup.enter="handleLoginClick"
             >
-            </v-otp-input>
-          </div>
-          <div class="px-3 pb-3">
-            <v-btn
-              block
-              variant="tonal"
-              class="text-none mt-2"
-              color="#76FF03"
+              <template #prepend-inner>
+                <v-icon color="#76FF03" icon="mdi-account" />
+              </template>
+            </v-text-field>
+
+            <v-text-field
+              id="password"
+              v-model="password"
+              name="password"
+              :append-inner-icon="visiblePassword ? 'mdi-eye-off' : 'mdi-eye'"
+              density="compact"
+              flat
+              :placeholder="$t('login.password')"
+              :type="visiblePassword ? 'text' : 'password'"
               rounded="lg"
-              :loading="validating"
-              type="submit"
-            >{{ $t('login.login') }}</v-btn>
-          </div>
+              variant="solo"
+              hide-details
+              class="ma-0"
+              :rules="[rules.password]"
+              aria-label="Password"
+              autocomplete="current-password"
+              @click:append-inner="
+                visiblePassword = !visiblePassword;
+                if (visiblePassword) visibleUsername = false;
+              "
+              @keyup.enter="handleLoginClick"
+            >
+              <template #prepend-inner>
+                <v-icon color="#76FF03" icon="mdi-lock" />
+              </template>
+            </v-text-field>
+
+            <v-text-field
+              density="compact"
+              flat
+              variant="solo"
+              readonly
+              :placeholder="$t('login.otp')"
+              hide-details
+              class="ma-0"
+              tabindex="-1"
+            >
+              <template #prepend-inner>
+                <v-icon color="#76FF03" icon="mdi-shield-lock" />
+              </template>
+            </v-text-field>
+
+            <div class="pa-3 pt-1">
+              <v-otp-input
+                v-model="twoFaCode"
+                :disabled="validating"
+                density="compact"
+                rounded="lg"
+                variant="outlined"
+                :color="isFocused ? '#76FF03' : undefined"
+                @focus="isFocused = true"
+                @blur="isFocused = false"
+                @finish="handleLoginClick"
+              />
+            </div>
+            <div class="px-3 pb-3">
+              <v-btn
+                block
+                variant="tonal"
+                class="text-none mt-2"
+                color="#76FF03"
+                rounded="lg"
+                :loading="validating"
+                type="submit"
+              >
+                {{ $t('login.login') }}
+              </v-btn>
+            </div>
           </v-sheet>
         </v-form>
 
@@ -176,8 +177,6 @@
           >
             {{ errorMessage }}
           </v-alert>
-
-          
         </v-sheet>
       </v-col>
     </v-row>
@@ -197,20 +196,16 @@
 <script setup>
   import http from '@/utils/http.js';
   import { useRouter } from 'vue-router';
-  import { useI18n } from 'vue-i18n';
+  import { ref, getCurrentInstance } from 'vue';
 
   const { proxy } = getCurrentInstance();
   const router = useRouter();
-  const { t } = useI18n();
 
   import { storeToRefs } from 'pinia';
   import { useAppStore } from '@/stores/stores';
-  import pkg from 'package';
-
-  import Config from '@/config.js';
 
   const store = useAppStore();
-  const { devices, loginDialog, misc, account, productVersion } = storeToRefs(store);
+  const { loginDialog, misc, account, productVersion } = storeToRefs(store); // removed unused 'devices'
 
   const user = ref('');
   const password = ref('');

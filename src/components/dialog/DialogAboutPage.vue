@@ -4,7 +4,7 @@
       <!-- Compact Header -->
       <v-row class="mb-2" align="center" justify="center">
         <v-col cols="auto" class="d-flex align-center">
-          <v-icon size="28" color="#76FF03" class="mr-2">mdi-information-outline</v-icon>
+          <v-icon size="28" color="#76FF03" class="mr-2"> mdi-information-outline </v-icon>
           <span class="text-h5 font-weight-bold">BliKVM Matrix {{ productVersion }}</span>
         </v-col>
       </v-row>
@@ -21,8 +21,8 @@
             {{ $t('aboutPage.newVersion') }} {{ githubLatestVersion }} {{ $t('common.available') }}
           </v-chip>
           <v-chip v-else size="small">
-            <template v-slot:prepend>
-              <v-icon color="#76FF03">mdi-check-circle</v-icon>
+            <template #prepend>
+              <v-icon color="#76FF03"> mdi-check-circle </v-icon>
             </template>
             &nbsp; {{ $t('aboutPage.runningLatestVersion') }}
           </v-chip>
@@ -38,7 +38,7 @@
         <v-col cols="12">
           <v-card variant="flat" class="pa-3">
             <v-card-subtitle class="text-body-2 pb-2 text-center">
-              <v-icon size="small" color="#76FF03" class="mr-2">mdi-update</v-icon>
+              <v-icon size="small" color="#76FF03" class="mr-2"> mdi-update </v-icon>
               {{ $t('aboutPage.newVersion') }} {{ githubLatestVersion }}
             </v-card-subtitle>
             <v-card-text class="pt-0">
@@ -53,7 +53,7 @@
                   {{ isUpdating ? $t('aboutPage.updating') : $t('aboutPage.startUpgrade') }}
                 </v-btn>
               </div>
-              <div v-if="isUpdating" class="log-box" ref="logBoxRef">
+              <div v-if="isUpdating" ref="logBoxRef" class="log-box">
                 <pre class="log-pre">{{ sseOutput }}</pre>
               </div>
             </v-card-text>
@@ -61,13 +61,13 @@
         </v-col>
       </v-row>
 
-      <v-divider class="my-2"></v-divider>
+      <v-divider class="my-2" />
 
       <!-- Details Section -->
       <v-expansion-panels flat class="mb-3">
         <v-expansion-panel elevation="0">
           <v-expansion-panel-title>
-            <v-icon size="small" class="mr-2">mdi-information-variant</v-icon>
+            <v-icon size="small" class="mr-2"> mdi-information-variant </v-icon>
             <span class="text-body-2">Build Details</span>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -77,7 +77,7 @@
                   <tr>
                     <td class="pb-1" style="white-space: nowrap">
                       <div class="d-flex align-center">
-                        <v-icon size="x-small" class="mr-2">mdi-application</v-icon>
+                        <v-icon size="x-small" class="mr-2"> mdi-application </v-icon>
                         <span class="text-body-2 text-medium-emphasis">Client:</span>
                       </div>
                     </td>
@@ -88,7 +88,7 @@
                   <tr>
                     <td class="pb-1" style="white-space: nowrap">
                       <div class="d-flex align-center">
-                        <v-icon size="x-small" class="mr-2">mdi-server</v-icon>
+                        <v-icon size="x-small" class="mr-2"> mdi-server </v-icon>
                         <span class="text-body-2 text-medium-emphasis">Server:</span>
                       </div>
                     </td>
@@ -99,7 +99,7 @@
                   <tr>
                     <td class="pb-1" style="white-space: nowrap">
                       <div class="d-flex align-center">
-                        <v-icon size="x-small" class="mr-2">mdi-calendar-clock</v-icon>
+                        <v-icon size="x-small" class="mr-2"> mdi-calendar-clock </v-icon>
                         <span class="text-body-2 text-medium-emphasis">Build:</span>
                       </div>
                     </td>
@@ -110,7 +110,7 @@
                   <tr>
                     <td style="white-space: nowrap">
                       <div class="d-flex align-center">
-                        <v-icon size="x-small" class="mr-2">mdi-source-commit</v-icon>
+                        <v-icon size="x-small" class="mr-2"> mdi-source-commit </v-icon>
                         <span class="text-body-2 text-medium-emphasis">Commit:</span>
                       </div>
                     </td>
@@ -125,7 +125,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
 
-      <v-divider class="mb-2"></v-divider>
+      <v-divider class="mb-2" />
 
       <!-- Social Links -->
       <!-- Footer Section -->
@@ -172,14 +172,11 @@
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { getLatestVersion, githubLatestVersion } from '@/composables/useAccount-version.js';
-  import { useAlert } from '@/composables/useAlert';
 
   const store = useAppStore();
 
   const { showAboutPageDialog, isUpdateAvailable, productVersion, serverVersion } =
     storeToRefs(store); // Access the same reactive ref
-
-  const { sendAlert } = useAlert();
 
   const email = 'info@blicube.com';
   const clientVersion = ref(pkg.version);
@@ -285,7 +282,9 @@
     if (es) {
       try {
         es.close();
-      } catch (_) {}
+      } catch (error) {
+        console.error('Error closing SSE:', error);
+      }
     }
     es = null;
   }

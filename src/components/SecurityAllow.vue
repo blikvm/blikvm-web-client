@@ -1,14 +1,15 @@
 <template>
-  <v-btn-group density="compact" rounded="lg" v-ripple variant="tonal">
+  <v-btn-group v-ripple density="compact" rounded="lg" variant="tonal">
     <v-btn
+      v-ripple
       class="flex-grow-1 text-none"
       prepend-icon="mdi-refresh"
       color="#76FF03"
-      v-ripple
       tile
       @click.stop="getACLState"
-      >{{ $t('common.refresh') }}</v-btn
     >
+      {{ $t('common.refresh') }}
+    </v-btn>
   </v-btn-group>
   <div style="max-height: 265px; overflow-y: auto; overflow-x: hidden">
     <v-data-table
@@ -24,28 +25,32 @@
       :page-text="$t('dataIterator.pageText')"
       :return-object="true"
     >
-      <template v-slot:loading>
-        <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
+      <template #loading>
+        <v-skeleton-loader type="table-row@10" />
       </template>
 
-      <template v-slot:item.ip="{ item }">
+      <!-- eslint-disable-next-line vue/valid-v-slot -->
+      <template #item.ip="{ item }">
         {{ item.ip }}
       </template>
 
-      <template v-slot:item.added="{ item }">
+      <!-- eslint-disable-next-line vue/valid-v-slot -->
+      <template #item.added="{ item }">
         <span style="white-space: nowrap">{{ item.addedAt }}</span>
       </template>
 
-      <template v-slot:item.remove="{ item }">
+      <!-- eslint-disable-next-line vue/valid-v-slot -->
+      <template #item.remove="{ item }">
         <v-tooltip text="Tooltip" content-class="">
-          <template v-slot:activator="{ props }">
+          <template #activator="{ props }">
             <v-icon
+              v-ripple
               v-bind="props"
               color="#76FF03"
-              v-ripple
               class="justify-center"
               @click="handleRemove(item.ip)"
-              >mdi-trash-can
+            >
+              mdi-trash-can
             </v-icon>
           </template>
           {{ $t('common.delete') }}
@@ -58,12 +63,12 @@
     <v-col cols="12">
       <v-text-field
         v-model="deviceName"
+        v-ripple
         minlength="1"
         :rules="deviceNameRules"
         density="compact"
         tile
         rounded="lg"
-        v-ripple
         color="#76FF03"
         variant="outlined"
         :placeholder="$t('settings.security.authorization.newIPAdress')"
@@ -71,24 +76,24 @@
         single-line
         @keydown.stop
         @keyup.stop
-      >
-      </v-text-field>
+      />
     </v-col>
   </v-row>
 
   <v-row dense class="d-flex justify-end align-center">
     <v-col cols="auto">
       <v-btn
+        v-ripple
         class="flex-grow-1 text-none"
         prepend-icon="mdi-plus"
         color="#76FF03"
-        v-ripple
         tile
         rounded="lg"
         flat
         variant="tonal"
         @click.stop="handleAddClick"
-        >{{ $t('common.add') }}
+      >
+        {{ $t('common.add') }}
         <template #prepend>
           <v-icon color="#76FF03" />
         </template>
@@ -101,17 +106,12 @@
 
 <script setup>
   import { ref, onMounted } from 'vue';
-  import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
   import { useACL } from '@/composables/useACL';
   import { useWOL } from '@/composables/useWOL';
   import { useAlert } from '@/composables/useAlert.js';
 
   const { deviceNameRules } = useWOL();
-
-  const store = useAppStore();
   const { sendAlert } = useAlert(alert);
-  const { dialogDeleteItem } = storeToRefs(store);
   const loading = ref(false);
   const deviceName = ref('');
 
@@ -134,8 +134,6 @@
       key: 'remove',
     },
   ]);
-
-  const allowList = ref([]); // Initialize hdmiSwitch as an object with items array
   const { ACLAllowList, getACLState, apiRemove, apiAdd } = useACL();
 
   const handleRemove = (ip) => {

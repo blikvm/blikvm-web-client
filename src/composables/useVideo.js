@@ -6,11 +6,11 @@ import adapter from 'webrtc-adapter';
 import { useDevice } from '@/composables/useDevice';
 import { useAppStore } from '@/stores/stores';
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 
 const store = useAppStore();
 const { device } = useDevice();
 const { audio } = storeToRefs(store);
-
 
 // 单例实例
 let videoSingleton = null;
@@ -29,7 +29,6 @@ export function useVideo() {
   let frames = 0;
   let __orient = 0;
   let __allow_audio = true;
-  let __allow_mic = false;
   let __ice = null;
 
   const initMjpeg = () => {
@@ -45,6 +44,7 @@ export function useVideo() {
     __janus.value = new Janus({
       server: urlJanus,
       destroyOnUnload: false,
+      iceServers: __getIceServers(),
       success: __attachJanus,
       error: console.error,
     });
@@ -52,13 +52,22 @@ export function useVideo() {
 
   const __sendStart = (jsep) => {
     if (__handle) {
-      console.log("Sending START ...");
-      __handle.send({ "message": { "request": "start" }, "jsep": jsep });
+      console.log('Sending START ...');
+      __handle.send({ message: { request: 'start' }, jsep: jsep });
     }
   };
 
   const destroyJanusConnection = () => {
     __destroyJanus();
+  };
+
+  const __getIceServers = () => {
+    if (__ice !== null && __ice.url) {
+      console.log('Using the custom ICE Server got from uStreamer:', __ice);
+      return [{ urls: __ice.url }];
+    } else {
+      return [];
+    }
   };
 
   const __destroyJanus = () => {
@@ -67,7 +76,7 @@ export function useVideo() {
     }
     __stopInfoInterval();
     if (__handle) {
-      console.log("uStreamer detaching ...:", __handle.getPlugin(), __handle.getId());
+      console.log('uStreamer detaching ...:', __handle.getPlugin(), __handle.getId());
       __handle.detach();
       __handle = null;
     }
@@ -83,19 +92,21 @@ export function useVideo() {
 
   const __sendWatch = () => {
     if (__handle) {
-      console.log(`Sending WATCH(orient=${__orient}, audio=${__allow_audio}, mic=${audio.value.isMicrophoneOn}) ...`);
+      console.log(
+        `Sending WATCH(orient=${__orient}, audio=${__allow_audio}, mic=${audio.value.isMicrophoneOn}) ...`
+      );
       __handle.send({
-        "message": {
-          "request": "watch", "params": {
-            "orientation": __orient,
-            "audio": __allow_audio,
-            "mic": audio.value.isMicrophoneOn,
-          }
-        }
+        message: {
+          request: 'watch',
+          params: {
+            orientation: __orient,
+            audio: __allow_audio,
+            mic: audio.value.isMicrophoneOn,
+          },
+        },
       });
     }
   };
-
 
   const resetJanus = () => {
     __destroyJanus();
@@ -114,14 +125,14 @@ export function useVideo() {
       // on Janus reconnecting.
       el.srcObject = null;
     }
-  }
+  };
 
   const __addTrack = (track) => {
     let el = document.getElementById('webrtc-output');
     if (el.srcObject) {
       for (let tr of el.srcObject.getTracks()) {
         if (tr.kind === track.kind && tr.id !== track.id) {
-          removeTrack(tr);
+          __removeTrack(tr);
         }
       }
     }
@@ -138,111 +149,110 @@ export function useVideo() {
     console.log('attach ustreamer plugin');
     __janus.value.attach({
       plugin: 'janus.plugin.ustreamer',
-      opaqueId: "oid-" + Janus.randomString(12),
+      opaqueId: 'oid-' + Janus.randomString(12),
 
       success: (handle) => {
         __handle = handle;
-        console.log("uStreamer attached:", handle.getPlugin(), handle.getId());
-        console.log("Sending FEATURES ...");
-        __handle.send({ "message": { "request": "features" } });
+        console.log('uStreamer attached:', handle.getPlugin(), handle.getId());
+        console.log('Sending FEATURES ...');
+        __handle.send({ message: { request: 'features' } });
       },
 
       error: (error) => {
-        console.error('Can\'t attach uStreamer:', error);
+        console.error("Can't attach uStreamer:", error);
         __destroyJanus();
       },
 
       connectionState: (state) => {
-        console.log("Peer connection state changed to", state);
-        if (state === "failed") {
+        console.log('Peer connection state changed to', state);
+        if (state === 'failed') {
           __destroyJanus();
         }
       },
 
       iceState: (state) => {
-        console.log("ICE state changed to", state);
+        console.log('ICE state changed to', state);
       },
 
       webrtcState: function (up) {
-        console.log("Janus says our WebRTC PeerConnection is", (up ? "up" : "down"), "now");
+        console.log('Janus says our WebRTC PeerConnection is', up ? 'up' : 'down', 'now');
       },
 
       onmessage: (msg, jsep) => {
-
         if (msg.result) {
-          console.log("Got uStreamer result message:", msg.result); // starting, started, stopped
-          if (msg.result.status === "started") {
-
-          } else if (msg.result.status === "stopped") {
-
-          } else if (msg.result.status === "features") {
-            console.log("audio:", msg.result.features.audio, "mic:", msg.result.features.mic);
+          console.log('Got uStreamer result message:', msg.result); // starting, started, stopped
+          if (msg.result.status === 'started') {
+            console.log('uStreamer started');
+          } else if (msg.result.status === 'stopped') {
+            console.log('uStreamer stopped');
+          } else if (msg.result.status === 'features') {
+            console.log('audio:', msg.result.features.audio, 'mic:', msg.result.features.mic);
             __ice = msg.result.features.ice;
             __sendWatch();
           }
         } else if (msg.error_code || msg.error) {
-          console.error("Got uStreamer error message:", msg.error_code, "-", msg.error);
+          console.error('Got uStreamer error message:', msg.error_code, '-', msg.error);
           return;
         } else {
-          console.log("Got uStreamer other message:", msg);
+          console.log('Got uStreamer other message:', msg);
         }
 
         if (jsep) {
-          console.log("Handling SDP:", jsep);
-          let tracks = [{ "type": "video", "capture": false, "recv": true, "add": true }];
+          console.log('Handling SDP:', jsep);
+          let tracks = [{ type: 'video', capture: false, recv: true, add: true }];
           if (__allow_audio) {
-            tracks.push({ "type": "audio", "capture": audio.value.isMicrophoneOn, "recv": true, "add": true });
+            tracks.push({
+              type: 'audio',
+              capture: audio.value.isMicrophoneOn,
+              recv: true,
+              add: true,
+            });
           }
-          console.log("Creating answer with tracks:", tracks);
+          console.log('Creating answer with tracks:', tracks);
           __handle.createAnswer({
             jsep: jsep,
 
             tracks: tracks,
 
-
-
             // Chrome is playing OPUS as mono without this hack
             //   - https://issues.webrtc.org/issues/41481053 - IT'S NOT FIXED!
             //   - https://github.com/ossrs/srs/pull/2683/files
             customizeSdp: (jsep) => {
-              jsep.sdp = jsep.sdp.replace("useinbandfec=1", "useinbandfec=1;stereo=1");
+              jsep.sdp = jsep.sdp.replace('useinbandfec=1', 'useinbandfec=1;stereo=1');
             },
-
 
             success: (jsep) => {
               console.log('Got SDP:', jsep);
               __sendStart(jsep);
             },
 
-
             error: (error) => {
-              console.error("Error on SDP handling:", error);
-            }
+              console.error('Error on SDP handling:', error);
+            },
           });
         }
       },
       onremotetrack: (track, id, added, meta) => {
-				// Chrome sends `muted` notifiation for tracks in `disconnected` ICE state
-				// and Janus.js just removes muted track from list of available tracks.
-				// But track still exists actually so it's safe to just ignore
-				// reason === "mute" and "unmute".
+        // Chrome sends `muted` notifiation for tracks in `disconnected` ICE state
+        // and Janus.js just removes muted track from list of available tracks.
+        // But track still exists actually so it's safe to just ignore
+        // reason === "mute" and "unmute".
         let reason = (meta || {}).reason;
         console.log('Got onRemoteTrack:', id, added, reason, track, meta);
-        if (added && reason === "created") {
-					__addTrack(track);
-					if (track.kind === "video") {
-						__startInfoInterval();
-					}
-				} else if (!added && reason === "ended") {
-					__removeTrack(track);
-				}
+        if (added && reason === 'created') {
+          __addTrack(track);
+          if (track.kind === 'video') {
+            __startInfoInterval();
+          }
+        } else if (!added && reason === 'ended') {
+          __removeTrack(track);
+        }
       },
 
-
       oncleanup: () => {
-				console.log("Got a cleanup notification");
-				__stopInfoInterval();
-			},
+        console.log('Got a cleanup notification');
+        __stopInfoInterval();
+      },
     });
   };
 
@@ -254,8 +264,6 @@ export function useVideo() {
       videoEl.src = '';
     }
   };
-
-
 
   const adjustVolume = (value) => {
     const videoElement = document.getElementById('webrtc-output');
@@ -289,7 +297,6 @@ export function useVideo() {
 
   const updateInfo = () => {
     if (__handle !== null) {
-      let info = '';
       const el = document.getElementById('webrtc-output');
       let currentFrames = null;
       if (el && el.webkitDecodedFrameCount !== undefined) {
@@ -297,7 +304,7 @@ export function useVideo() {
       } else if (el && el.mozPaintedFrames !== undefined) {
         currentFrames = el.mozPaintedFrames;
       }
-      
+
       let bitrateKbps = null;
       if (typeof __handle.getBitrate === 'function') {
         const br = `${__handle.getBitrate()}`; // e.g. "1234 kbits/sec"
@@ -310,6 +317,7 @@ export function useVideo() {
         try {
           device.value.video.bitrate = Math.round(bitrateKbps);
         } catch (e) {
+          console.error(e);
           // ignore assignment error, but keep UI info string updated
         }
       }
@@ -318,6 +326,7 @@ export function useVideo() {
         try {
           device.value.video.streamFps = fpsDynamic; // Maps from 'fps' to streamFps for clarity
         } catch (e) {
+          console.error(e);
           // ignore assignment error
         }
         frames = currentFrames;

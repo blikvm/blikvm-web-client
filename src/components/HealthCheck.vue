@@ -1,6 +1,6 @@
 <template>
   <v-tooltip text="Tooltip" location="bottom" content-class="">
-    <template v-slot:activator="{ props }">
+    <template #activator="">
       <v-chip :color="healthIconColor">
         <v-icon>mdi-heart-pulse</v-icon>
       </v-chip>

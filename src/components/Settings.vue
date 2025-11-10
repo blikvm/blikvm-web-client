@@ -16,14 +16,14 @@
         <SettingsText />
       </v-expansion-panels>
 
-      <v-expansion-panels v-model="outerPanel4" multiple v-if="isExperimental">
+      <v-expansion-panels v-if="isExperimental" v-model="outerPanel4" multiple>
         <v-expansion-panel value="scripts">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="{ expanded }">
               <v-card class="transparent-card" density="compact" tile width="100%">
                 <v-row dense no-gutters>
                   <v-col cols="1">
-                    <v-icon color="#26A69A">mdi-file-code-outline</v-icon>
+                    <v-icon color="#26A69A"> mdi-file-code-outline </v-icon>
                   </v-col>
                   <v-col class="d-flex justify-start align-center" cols="6">
                     {{ $t('settings.scripts.title') }}
@@ -45,14 +45,14 @@
         </v-expansion-panel>
       </v-expansion-panels>
 
-      <v-expansion-panels v-model="outerPanel5" multiple v-if="isExperimental">
+      <v-expansion-panels v-if="isExperimental" v-model="outerPanel5" multiple>
         <v-expansion-panel value="analytics" readonly>
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="{ expanded }">
               <v-card class="transparent-card" density="compact" tile width="100%">
                 <v-row dense no-gutters>
                   <v-col cols="1">
-                    <v-icon color="#00E5FF">mdi-view-dashboard</v-icon>
+                    <v-icon color="#00E5FF"> mdi-view-dashboard </v-icon>
                   </v-col>
                   <v-col class="d-flex justify-start align-center" cols="6">
                     {{ $t('settings.analytics.title') }}
@@ -70,7 +70,7 @@
             </template>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
-            <v-expansion-panels v-model="innerPanel" multiple> </v-expansion-panels>
+            <v-expansion-panels v-model="innerPanel" multiple />
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -78,11 +78,11 @@
       <v-expansion-panels v-model="outerPanel6" multiple>
         <v-expansion-panel value="virtual-media">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="{ expanded }">
               <v-card class="transparent-card" density="compact" tile width="100%">
                 <v-row dense no-gutters>
                   <v-col cols="1">
-                    <v-icon color="#76FF03">mdi-folder-cog-outline</v-icon>
+                    <v-icon color="#76FF03"> mdi-folder-cog-outline </v-icon>
                   </v-col>
                   <v-col class="d-flex justify-start align-center" cols="5">
                     {{ $t('settings.msd.title') }}
@@ -116,11 +116,11 @@
       <v-expansion-panels v-model="outerPanel9" multiple>
         <v-expansion-panel value="kvm-switch" @group:selected="loadHdmiSwitch">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="{ expanded }">
               <v-card class="transparent-card" density="compact" tile width="100%">
                 <v-row dense no-gutters>
                   <v-col cols="1">
-                    <v-icon color="#FFEA00">mdi-server-network-outline</v-icon>
+                    <v-icon color="#FFEA00"> mdi-server-network-outline </v-icon>
                   </v-col>
                   <v-col class="d-flex justify-start align-center" cols="4">
                     {{ $t('settings.switch.title') }}
@@ -161,11 +161,11 @@
       <v-expansion-panels v-model="outerPanel11" multiple>
         <v-expansion-panel value="terminal">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="{ expanded }">
               <v-card class="transparent-card" density="compact" tile width="100%">
                 <v-row dense no-gutters>
                   <v-col cols="1">
-                    <v-icon color="#26A69A">mdi-console-line</v-icon>
+                    <v-icon color="#26A69A"> mdi-console-line </v-icon>
                   </v-col>
                   <v-col class="d-flex justify-start align-center" cols="6">
                     {{ $t('settings.serial.title') }}
@@ -191,35 +191,24 @@
 </template>
 
 <script setup>
-  import { onMounted } from 'vue';
+  import { ref, watchEffect } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
-  import { useDevice } from '@/composables/useDevice.js';
-  import { useSecurity } from '/src/composables/useSecurity.js';
   import { useHdmiSwitch } from '@/composables/useHdmiSwitch';
 
   const store = useAppStore();
-  const { device } = useDevice();
   const { loadHdmiSwitch } = useHdmiSwitch();
 
-  // TODO are we will using this, why?
-  // Define the props and use v-model binding
-  const props = defineProps({
-    label: String,
-    index: Number,
-    modelValue: Boolean, // Auto-bound for v-model:is-menu-visible
+  // Props only passed from parent (not consumed internally), so no local variable to avoid no-unused-vars.
+  defineProps({
+    label: { type: String, default: '' },
+    index: { type: Number, default: 0 },
+    modelValue: { type: Boolean, default: false }, // Auto-bound for v-model:is-menu-visible
   });
 
-  const emit = defineEmits(['update:modelValue']);
+  defineEmits(['update:modelValue']);
 
-  const { security, misc, isExperimental } = storeToRefs(store);
-  const { resetConfig } = useSecurity(device);
-
-  // Method to keep the menu open
-  const keepMenuOpen = (event) => {
-    // You can add additional logic here if needed
-    event.stopPropagation(); // Stop the event from bubbling up
-  };
+  const { security, isExperimental } = storeToRefs(store);
 
   const outerPanel1 = ref([]);
   const outerPanel2 = ref([]);
@@ -232,85 +221,14 @@
   const outerPanel9 = ref([]);
   const outerPanel10 = ref([]);
   const outerPanel11 = ref([]);
-  const outerPanel12 = ref([]);
-  const outerPanel13 = ref([]);
   const innerPanel = ref([]);
 
-  const tickLabels = computed(() => {
-    if (misc.value.temperatureUnit === 'C') {
-      return {
-        0: 'min',
-        100: 'max',
-      };
-    } else {
-      return {
-        0: 'min',
-        120: 'max',
-      };
-    }
-  });
-
-  const tickLabel = (value) => {
-    return tickLabels.value[value] || value; // Default to the number if no label is found
-  };
-
-  const handleReset = async (device) => {
-    try {
-      await resetConfig(device);
-      console.log('Device reset completed');
-    } catch (error) {
-      console.error('Error resetting device:', error);
-    }
-  };
-
-  ////////////
-  // TODO move to useSecurity
   // Ensure isAuthEnabled is true if is2FaEnabled is true
   watchEffect(() => {
     if (security.value.is2FaEnabled) {
       security.value.isAuthEnabled = true;
     }
   });
-
-  const cancel = async () => {
-    try {
-      // Emit the event to the parent
-      emit('update:modelValue', false);
-      device.value.hid.mouse.isMenuActive = false;
-    } catch (error) {
-      console.error('Error during cancel operation:', error);
-    }
-  };
-
-  const save = async () => {
-    try {
-      // Emit the event to the parent
-      emit('update:modelValue', false);
-    } catch (error) {
-      console.error('Error during save operation:', error);
-    }
-  };
-
-  const actionHandlers = {
-    //  resetDefaults: handleResetDefaults,
-    ok: save,
-    cancel: cancel,
-  };
-
-  const handleClick = async (actionType) => {
-    const action = actionHandlers[actionType];
-    if (action) {
-      try {
-        await action(); // Await the action if it's async
-      } catch (error) {
-        console.error(`Error handling actionType ${actionType}:`, error);
-      }
-    } else {
-      console.error(`No handler found for actionType: ${actionType}`);
-    }
-  };
-
-  onMounted(() => {});
 </script>
 
 <style scoped>

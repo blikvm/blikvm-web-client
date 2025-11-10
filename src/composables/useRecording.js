@@ -52,10 +52,10 @@ export function useRecording(isRecording) {
 
       mediaRecorder.onstop = function () {
         console.log('Stopping media recorder...');
-        
+
         // Create blob from recorded chunks
         const blob = new Blob(recordedChunks, { type: 'video/webm' });
-        
+
         // Create download link
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -65,10 +65,10 @@ export function useRecording(isRecording) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+
         console.log('Recording downloaded');
         isRecording.value = false;
-        
+
         // Stop timer and reset
         clearInterval(recordingTimer);
         recordingTimer = null;

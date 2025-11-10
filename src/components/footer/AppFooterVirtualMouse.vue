@@ -8,13 +8,13 @@
 </template>
 
 <script setup>
-import VirtualMouse from "@/components/VirtualMouse.vue";
+  import VirtualMouse from '@/components/VirtualMouse.vue';
 
-// Props
-defineProps({
-  showVirtualMouse: {
-    type: Boolean,
-    required: true
-  }
-});
+  // Props
+  defineProps({
+    showVirtualMouse: {
+      type: Boolean,
+      required: true,
+    },
+  });
 </script>

@@ -7,20 +7,21 @@ import { computed } from 'vue';
 
 // Header menu positioning constants
 const HEADER_MENU_CONSTANTS = {
-  RIGHT_OFFSET: 10 // pixels
+  RIGHT_OFFSET: 10, // pixels
 };
 
 export function useHeaderMenu() {
   const store = useAppStore();
   const { device } = useDevice();
-  const { settings, footer, toolbar, showManageAccountDialog, showAboutPageDialog, account } = storeToRefs(store);
+  const { settings, footer, toolbar, showManageAccountDialog, showAboutPageDialog, account } =
+    storeToRefs(store);
   const { inactivateDevice } = useSessionUtils(device);
   const router = useRouter();
 
   // Computed style for header menu positioning
   const headerMenuStyle = computed(() => ({
     right: `calc(${HEADER_MENU_CONSTANTS.RIGHT_OFFSET}px - ${toolbar.value.offset}px)`,
-    transition: 'right 0.2s ease-out'
+    transition: 'right 0.2s ease-out',
   }));
 
   const handleLayoutClick = (action) => {
@@ -43,7 +44,7 @@ export function useHeaderMenu() {
       titleKey: 'appFooter.about',
       action: () => {
         showAboutPageDialog.value = true;
-      }
+      },
     },
     {
       id: 'account',
@@ -51,11 +52,11 @@ export function useHeaderMenu() {
       titleKey: 'account.title',
       action: () => {
         showManageAccountDialog.value = true;
-      }
+      },
     },
     {
       id: 'divider',
-      isDivider: true
+      isDivider: true,
     },
     {
       id: 'logout',
@@ -64,12 +65,12 @@ export function useHeaderMenu() {
       action: () => {
         inactivateDevice();
         router.push('/');
-      }
-    }
+      },
+    },
   ];
 
   const handleUserClick = (action) => {
-    const item = menuItems.find(item => item.id === action);
+    const item = menuItems.find((item) => item.id === action);
     if (item && item.action) {
       item.action();
     }
@@ -82,13 +83,13 @@ export function useHeaderMenu() {
     footer,
     showManageAccountDialog,
     showAboutPageDialog,
-    
+
     // Menu data
     menuItems,
-    
+
     // Computed styles
     headerMenuStyle,
-    
+
     // Actions
     handleLayoutClick,
     handleUserClick,

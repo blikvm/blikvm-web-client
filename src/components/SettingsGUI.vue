@@ -1,11 +1,11 @@
 <template>
   <v-expansion-panel value="gui">
     <v-expansion-panel-title>
-      <template v-slot:default="{ expanded }">
+      <template #default="{ expanded }">
         <v-card class="transparent-card" density="compact" tile width="100%">
           <v-row dense no-gutters>
             <v-col cols="1">
-              <v-icon color="#FF7043">mdi-monitor-dashboard</v-icon>
+              <v-icon color="#FF7043"> mdi-monitor-dashboard </v-icon>
             </v-col>
             <v-col class="d-flex justify-start align-center" cols="11">
               {{ $t('settings.gui.title') }}
@@ -26,7 +26,7 @@
       <v-expansion-panels v-model="innerPanel" multiple>
         <v-expansion-panel value="language">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-translate</v-icon>
@@ -39,7 +39,8 @@
                   :style="{
                     color: '#76FF03',
                   }"
-                  ><v-chip>
+                >
+                  <v-chip>
                     {{ currentLanguage }}
                   </v-chip>
                 </v-col>
@@ -59,7 +60,7 @@
                     variant="outlined"
                     color="#76FF03"
                     :label="$t('settings.gui.language.languageField')"
-                    @update:modelValue="changeLanguage"
+                    @update:model-value="changeLanguage"
                   />
                 </v-col>
               </v-row>
@@ -75,7 +76,8 @@
                     color="#76FF03"
                     rel="noopener noreferrer"
                     target="_blank"
-                    >{{ $t('settings.gui.language.helpTranslate') }}
+                  >
+                    {{ $t('settings.gui.language.helpTranslate') }}
                   </v-chip>
                 </v-col>
               </v-row>
@@ -85,7 +87,7 @@
 
         <v-expansion-panel value="alert">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-alert-box-outline</v-icon>
@@ -98,7 +100,8 @@
                   :style="{
                     color: '#76FF03',
                   }"
-                  ><v-chip>
+                >
+                  <v-chip>
                     {{ misc.alert.location }}
                   </v-chip>
                 </v-col>
@@ -111,11 +114,11 @@
                 <v-col cols="*">
                   <v-switch
                     v-model="misc.alert.isEnabled"
+                    v-ripple
                     inset
                     :label="$t('settings.gui.alert.isAlertField')"
-                    v-ripple
                     color="#76FF03"
-                    @update:modelValue="handleAlertToggle"
+                    @update:model-value="handleAlertToggle"
                   />
                 </v-col>
               </v-row>
@@ -124,6 +127,7 @@
                 <v-col cols="*">
                   <v-select
                     v-model="misc.alert.location"
+                    v-ripple
                     :items="locationOptions"
                     item-title="text"
                     item-value="value"
@@ -132,10 +136,9 @@
                     variant="outlined"
                     rounded="lg"
                     tile
-                    v-ripple
                     color="#76FF03"
                     :label="$t('settings.gui.alert.locationField')"
-                    @update:modelValue="setLocation"
+                    @update:model-value="setLocation"
                   />
                 </v-col>
               </v-row>
@@ -145,7 +148,7 @@
 
         <v-expansion-panel value="cursor">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-cursor-default</v-icon>
@@ -178,18 +181,18 @@
                 <v-col cols="*">
                   <v-switch
                     v-model="misc.isLocalCursorVisible"
+                    v-ripple
                     inset
                     :label="$t('settings.gui.isLocalCursorVisibleField')"
-                    v-ripple
                     color="#76FF03"
-                    @update:modelValue="saveCursorStatus"
+                    @update:model-value="saveCursorStatus"
                   />
                 </v-col>
               </v-row>
               <br />
               <v-row dense no-gutters>
                 <v-col cols="*">
-                  <v-list @click.stop="keepMenuOpen" :disabled="!misc.isLocalCursorVisible">
+                  <v-list :disabled="!misc.isLocalCursorVisible" @click.stop="keepMenuOpen">
                     <v-list-item
                       v-for="(item, index) in cursorList"
                       :key="index"
@@ -198,10 +201,7 @@
                       @click="changeCursor(item)"
                     >
                       <div class="item-wrapper">
-                        <div
-                          v-if="misc.currentCursor === item.cursor"
-                          class="border-indicator"
-                        ></div>
+                        <div v-if="misc.currentCursor === item.cursor" class="border-indicator" />
                         <div
                           :class="{
                             'selected-item-inner': misc.currentCursor !== item.cursor,
@@ -209,7 +209,9 @@
                           class="item-content"
                         >
                           <v-list-item-title>
-                            <v-icon :color="item.color" class="mr-2">{{ item.icon }}</v-icon>
+                            <v-icon :color="item.color" class="mr-2">
+                              {{ item.icon }}
+                            </v-icon>
                             {{ item.label }}
                           </v-list-item-title>
                         </div>
@@ -224,7 +226,7 @@
 
         <v-expansion-panel value="login" @group:selected="getCocState">
           <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <template #default="">
               <v-row dense no-gutters>
                 <v-col cols="1">
                   <v-icon>mdi-login</v-icon>
@@ -242,12 +244,12 @@
                 <v-col cols="*">
                   <v-switch
                     v-model="misc.showCoc"
+                    v-ripple
                     inset
                     :label="$t('settings.gui.login.showCocField')"
                     :disabled="!misc.cocUrl"
-                    v-ripple
                     color="#76FF03"
-                    @update:modelValue="activeCoc"
+                    @update:model-value="activeCoc"
                   />
                 </v-col>
               </v-row>
@@ -260,20 +262,20 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="misc.cocUrl"
+                    v-ripple
                     density="compact"
                     rounded="lg"
-                    v-ripple
                     color="#76FF03"
                     variant="outlined"
                     placeholder="URL"
                     hide-details
                     single-line
                     clearable
-                    @update:modelValue="setCocUrl"
+                    @update:model-value="setCocUrl"
                     @keydown.stop
                     @keyup.stop
                   >
-                    <template v-slot:append>
+                    <template #append>
                       <v-btn
                         color="#76FF03"
                         icon="mdi-content-copy"
@@ -311,7 +313,6 @@
   import { useLanguage } from '@/composables/useLanguage.js';
   import { useAlert } from '@/composables/useAlert.js';
   import { useCursors } from '@/composables/useCursors.js';
-  import { useDevice } from '@/composables/useDevice.js';
   import { useClipboard } from '@/composables/useClipboard.js';
   import http from '@/utils/http.js';
 
@@ -322,13 +323,7 @@
   const { locationOptions, setLocation, sendAlert } = useAlert();
   const { proxy } = getCurrentInstance();
   const { cursorList, changeCursor } = useCursors();
-  const { device } = useDevice();
   const { copyClipboard } = useClipboard();
-
-  // About dialog preference
-  const showAboutDialogAfterLogin = ref(
-    localStorage.getItem('skipAboutDialogAfterLogin') !== 'true'
-  );
 
   function changeLanguage(language) {
     misc.value.language = language;
@@ -338,16 +333,6 @@
 
   function saveCursorStatus(status) {
     localStorage.setItem('cursorStatus', status);
-  }
-
-  function updateAboutDialogPreference(value) {
-    if (value) {
-      // If turning ON (show dialog), remove the skip flag
-      localStorage.removeItem('skipAboutDialogAfterLogin');
-    } else {
-      // If turning OFF (don't show dialog), set the skip flag
-      localStorage.setItem('skipAboutDialogAfterLogin', 'true');
-    }
   }
 
   const getCocState = async (selected) => {

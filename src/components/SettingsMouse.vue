@@ -13,11 +13,11 @@
               <v-col cols="12">
                 <v-switch
                   v-model="device.hid.isActive"
+                  v-ripple
                   inset
                   :label="$t('hid.isActiveField')"
-                  v-ripple
                   color="#76FF03"
-                  @update:modelValue="toggleHid"
+                  @update:model-value="toggleHid"
                 />
               </v-col>
             </v-row>
@@ -26,11 +26,11 @@
               <v-col cols="12" class="d-flex justify-start">
                 <v-switch
                   v-model="device.hid.passThrough"
+                  v-ripple
                   inset
                   :label="$t('hid.passthrough')"
-                  v-ripple
                   color="#76FF03"
-                  @update:modelValue="isActiveHIDPassthrough"
+                  @update:model-value="isActiveHIDPassthrough"
                 />
               </v-col>
             </v-row>
@@ -42,6 +42,7 @@
 
             <v-select
               v-model="device.hid.mouse.mouseMode"
+              v-ripple
               :items="hidRegistrationOptions"
               item-title="title"
               item-value="value"
@@ -49,11 +50,9 @@
               rounded="lg"
               density="compact"
               tile
-              v-ripple
               color="#76FF03"
-              @update:modelValue="changeHidMouseMode"
-            >
-            </v-select>
+              @update:model-value="changeHidMouseMode"
+            />
 
             <!-- Mouse Behaviour Mode -->
             <div
@@ -72,13 +71,13 @@
               <v-col cols="auto">
                 <v-btn-toggle
                   v-model="device.hid.mouse.absoluteMode"
+                  v-ripple
                   density="compact"
                   rounded="lg"
-                  v-ripple
                   color="#76FF03"
                   variant="outlined"
                   group
-                  @update:modelValue="changeMouseMode"
+                  @update:model-value="changeMouseMode"
                 >
                   <v-btn :value="true">
                     {{ $t('settings.device.hid.absolute') }}
@@ -107,11 +106,11 @@
               <v-col cols="12">
                 <!-- TODO change to v-slider -->
                 <sliderField
-                  :modelValue="device.hid.mouse.relativeSensitivity"
+                  :model-value="device.hid.mouse.relativeSensitivity"
                   :min="0.1"
                   :max="2"
                   :step="0.1"
-                  @update:modelValue="handleSensitivityChange"
+                  @update:model-value="handleSensitivityChange"
                 />
               </v-col>
             </v-row>
@@ -120,24 +119,24 @@
               <v-col cols="12">
                 <v-switch
                   v-model="device.hid.mouse.wheelReverse"
+                  v-ripple
                   inset
                   :label="$t('hid.wheelReverseField')"
-                  v-ripple
                   color="#76FF03"
-                  @update:modelValue="setMouseWheelDirection"
+                  @update:model-value="setMouseWheelDirection"
                 />
               </v-col>
             </v-row>
 
-            <v-row dense no-gutters v-if="device.hid.passThrough">
+            <v-row v-if="device.hid.passThrough" dense no-gutters>
               <v-col cols="12">
                 <v-switch
                   v-model="device.hid.passThroughWheelReverse"
+                  v-ripple
                   inset
                   :label="$t('hid.passthroughWheelReverseField')"
-                  v-ripple
                   color="#76FF03"
-                  @update:modelValue="updateHIDPassthrough"
+                  @update:model-value="updateHIDPassthrough"
                 />
               </v-col>
             </v-row>
@@ -150,22 +149,22 @@
                 <v-field variant="plain" active class="align-center">
                   <v-slider
                     v-model="device.hid.mouse.mousePollingInterval"
+                    v-ripple
                     :min="10"
                     :max="100"
                     :step="10"
                     show-ticks="always"
                     tick-size="2"
-                    v-ripple
                     color="#76FF03"
                     track-fill-color="#76FF03"
                   >
-                    <template v-slot:append>
+                    <template #append>
                       <v-text-field
                         v-if="device.hid.mouse.mousePollingInterval > 0"
                         v-model="device.hid.mouse.mousePollingInterval"
+                        v-ripple
                         density="compact"
                         rounded="lg"
-                        v-ripple
                         color="#76FF03"
                         style="width: 101px"
                         type="number"
@@ -173,7 +172,7 @@
                         variant="outlined"
                         hide-details
                         single-line
-                      ></v-text-field>
+                      />
                       <v-text-field
                         v-else
                         readonly
@@ -186,8 +185,8 @@
                       >
                         {{ $t('common.inactive') }}
                       </v-text-field>
-                    </template></v-slider
-                  >
+                    </template>
+                  </v-slider>
                 </v-field>
               </v-col>
             </v-row>
@@ -200,23 +199,23 @@
                 <v-field variant="plain" active class="align-center">
                   <v-slider
                     v-model="device.hid.mouse.jigglerInterval"
+                    v-ripple
                     min="0"
                     :max="100"
                     :step="10"
                     show-ticks="always"
                     tick-size="2"
-                    v-ripple
                     :color="device.hid.mouse.jigglerInterval === 0 ? '' : '#76FF03'"
                     track-fill-color="#76FF03"
                     @end="apiJiggler"
                   >
-                    <template v-slot:append>
+                    <template #append>
                       <v-text-field
                         v-if="device.hid.mouse.jigglerInterval > 0"
                         v-model="device.hid.mouse.jigglerInterval"
+                        v-ripple
                         density="compact"
                         rounded="lg"
-                        v-ripple
                         color="#76FF03"
                         style="width: 101px"
                         type="number"
@@ -224,7 +223,7 @@
                         variant="outlined"
                         hide-details
                         single-line
-                      ></v-text-field>
+                      />
                       <v-text-field
                         v-else
                         readonly
@@ -260,13 +259,12 @@
   import { useI18n } from 'vue-i18n';
 
   // Define the props and use v-model binding
-  const props = defineProps({
-    label: String,
-    index: Number,
-    modelValue: Boolean, // Auto-bound for v-model:is-menu-visible
+  defineProps({
+    label: { type: String, default: '' },
+    index: { type: Number, default: 0 },
+    modelValue: { type: Boolean, default: false }, // Auto-bound for v-model:is-menu-visible
   });
 
-  const emit = defineEmits(['update:modelValue']);
   const store = useAppStore();
   const { device } = useDevice();
   const { t } = useI18n();
@@ -280,37 +278,6 @@
   );
 
   const { sendAlert } = useAlert(alert);
-
-  const handleRefreshClick = (key) => {
-    switch (key) {
-      case 'mouseMode':
-        device.value.hid.mouse.mouseMode = hid.originalMouse.mouseMode.value;
-        break;
-
-      case 'pollingIntervalMS':
-        device.value.hid.mouse.pollingIntervalMS = hid.originalMouse.pollingIntervalMS.value;
-        break;
-
-      case 'relativeSensitivity':
-        device.value.hid.mouse.relativeSensitivity = hid.originalMouse.relativeSensitivity.value;
-        break;
-
-      case 'jiggler':
-        device.value.hid.mouse.jigglerIntervalList = hid.originalMouse.jiggler.value;
-        break;
-
-      case 'squashRelativeMoves':
-        device.value.hid.mouse.squashRelativeMoves = originalMouse.squashRelativeMoves.value;
-        break;
-
-      case 'reverseScrolling':
-        device.value.hid.mouse.reverseScrolling = hid.originalMouse.reverseScrolling.value;
-        break;
-
-      default:
-        break;
-    }
-  };
 
   async function apiJiggler(value) {
     isProcessing.value = true;
@@ -425,9 +392,10 @@
     try {
       const actionValue = newValue ? 'enable' : 'disable';
       const response = await http.post(`/hid?action=${actionValue}`);
-      if (response.status === 200 && response.data.code === 0) {
-      } else {
+      // Guard clause to avoid empty block and ensure clear error path
+      if (!(response.status === 200 && response.data.code === 0)) {
         console.log(`${actionValue} error`);
+        return;
       }
     } catch (error) {
       const title = 'Toggle HID';
@@ -443,7 +411,7 @@
         device.value.hid.passThrough = response.data.data.enabled;
         device.value.hid.passThroughWheelReverse = response.data.data.wheelReverse;
       } else {
-        console.log(`${actionValue} error`);
+        console.log('get HID Passthrough status error');
       }
     } catch (error) {
       console.error('Error during atx button trigger:', error);

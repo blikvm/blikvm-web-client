@@ -1,11 +1,11 @@
 <template>
   <v-dialog
     v-model="device.isDisconnected"
-    @keydown.stop
-    @keyup.stop
     max-width="500px"
     :persistent="isReconnecting"
     :z-index="zIndex.modal"
+    @keydown.stop
+    @keyup.stop
   >
     <v-card rounded="lg">
       <v-list class="py-6" :lines="false">
@@ -29,9 +29,8 @@
               size="24"
               width="3"
               class="mr-3"
-            >
-            </v-progress-circular>
-            <v-icon v-else color="warning" class="mr-3" size="24">mdi-alert-circle</v-icon>
+            />
+            <v-icon v-else color="warning" class="mr-3" size="24"> mdi-alert-circle </v-icon>
 
             <div class="flex-grow-1">
               <div v-if="isReconnecting" class="text-body-2 mb-2">
@@ -92,8 +91,7 @@
   import { zIndex } from '@/styles/zIndex';
 
   const { device } = useDevice();
-  const { isProcessing, countdownSeconds, reload, retryConnection, maxCountdownSeconds } =
-    useConnection(device);
+  const { countdownSeconds, reload, retryConnection, maxCountdownSeconds } = useConnection(device);
 
   const isReconnecting = computed(() => {
     // With infinite retries, we're always reconnecting unless user cancels

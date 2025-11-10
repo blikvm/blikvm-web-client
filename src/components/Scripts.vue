@@ -39,90 +39,17 @@
       scrim
       tile
       density="compact"
-    ></v-file-upload>
+    />
   </v-sheet>
 </template>
 
 <script setup>
-  import { ref } from 'vue';
-  import http from '@/utils/http.js';
-  import { useAppStore } from '@/stores/stores';
-  import { storeToRefs } from 'pinia';
-  import { useAlert } from '@/composables/useAlert';
-
   // Define the props and use v-model binding
-  const props = defineProps({
-    label: String,
-    index: Number,
-    modelValue: Boolean, // Auto-bound for v-model:is-menu-visible
+  defineProps({
+    label: { type: String, default: '' },
+    index: { type: Number, default: 0 },
+    modelValue: { type: Boolean, default: false }, // Auto-bound for v-model:is-menu-visible
   });
 
-  const emit = defineEmits(['update:modelValue']);
-  const store = useAppStore();
-  const { isProcessing, scripts } = storeToRefs(store);
-
-  const { sendAlert } = useAlert();
-
-  const input = ref('');
-
-  const send = async () => {
-    isProcessing.value = true;
-
-    const contentTypeTextPlain = `Content-Type': 'text/plain'`;
-
-    try {
-      const response = await http.post('/upload', input.value, {
-        headers: { contentTypeTextPlain },
-      });
-
-      if (response.status === 200) {
-        console.log('text: paste to target ok');
-      }
-    } catch (error) {
-      console.error(error);
-      const title = 'TODO Paste Status: Failed';
-      const message = `An issue occurred during pasting. Please try again later.`;
-      sendAlert('error', title, message);
-    } finally {
-      isProcessing.value = false;
-    }
-  };
-
-  const cancel = async () => {
-    try {
-      // Emit the event to the parent
-      emit('update:modelValue', false);
-      scripts.value.isMenuActive = false;
-    } catch (error) {
-      console.error('Error during cancel operation:', error);
-    }
-  };
-
-  const save = async () => {
-    try {
-      // Emit the event to the parent
-      emit('update:modelValue', false);
-    } catch (error) {
-      console.error('Error during save operation:', error);
-    }
-  };
-
-  const actionHandlers = {
-    //  resetDefaults: handleResetDefaults,
-    ok: save,
-    cancel: cancel,
-  };
-
-  const handleClick = async (actionType) => {
-    const action = actionHandlers[actionType];
-    if (action) {
-      try {
-        await action(); // Await the action if it's async
-      } catch (error) {
-        console.error(`Error handling actionType ${actionType}:`, error);
-      }
-    } else {
-      console.error(`No handler found for actionType: ${actionType}`);
-    }
-  };
+  defineEmits(['update:modelValue']);
 </script>

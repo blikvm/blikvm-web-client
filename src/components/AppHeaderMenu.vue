@@ -13,7 +13,7 @@
     <!-- Layout Controls Button Group -->
     <v-btn-group variant="elevated" color="black" class="layout-btn-group">
       <v-tooltip location="bottom" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-btn
             v-bind="tooltipProps"
             class="layout-btn"
@@ -23,14 +23,14 @@
             variant="tonal"
             @click="handleLayoutClick('left')"
           >
-            <v-icon :color="settings.isVisible ? '#76FF03' : 'white'">mdi-dock-left</v-icon>
+            <v-icon :color="settings.isVisible ? '#76FF03' : 'white'"> mdi-dock-left </v-icon>
           </v-btn>
         </template>
         <span>Toggle settings</span>
       </v-tooltip>
 
       <v-tooltip location="bottom" content-class="">
-        <template v-slot:activator="{ props: tooltipProps }">
+        <template #activator="{ props: tooltipProps }">
           <v-btn
             v-bind="tooltipProps"
             class="layout-btn"
@@ -40,12 +40,12 @@
             variant="tonal"
             @click="handleLayoutClick('bottom')"
           >
-            <v-icon :color="footer.showFooter ? '#76FF03' : 'white'">mdi-dock-bottom</v-icon>
+            <v-icon :color="footer.showFooter ? '#76FF03' : 'white'"> mdi-dock-bottom </v-icon>
           </v-btn>
         </template>
         <span>Toggle footer</span>
       </v-tooltip>
-<!--
+      <!--
       <v-tooltip location="bottom" content-class="">
         <template v-slot:activator="{ props: tooltipProps }">
           <v-btn
@@ -61,15 +61,16 @@
         <span>Layout mode</span>
       </v-tooltip>
 
--->    </v-btn-group>
+-->
+    </v-btn-group>
 
-    <v-spacer></v-spacer>
+    <v-spacer />
 
     <!-- User Menu -->
     <v-menu offset-y>
-      <template v-slot:activator="{ props: menuProps }">
+      <template #activator="{ props: menuProps }">
         <v-tooltip location="bottom" content-class="">
-          <template v-slot:activator="{ props: tooltipProps }">
+          <template #activator="{ props: tooltipProps }">
             <v-btn
               v-bind="{ ...menuProps, ...tooltipProps }"
               class="user-menu-button"
@@ -78,7 +79,7 @@
               variant="elevated"
               color="black"
             >
-              <v-icon color="white">mdi-account-circle</v-icon>
+              <v-icon color="white"> mdi-account-circle </v-icon>
             </v-btn>
           </template>
           <span>{{ account.user }} </span>
@@ -86,9 +87,9 @@
       </template>
       <v-list>
         <template v-for="item in menuItems" :key="item.id">
-          <v-divider v-if="item.isDivider"></v-divider>
+          <v-divider v-if="item.isDivider" />
           <v-list-item v-else @click="handleUserClick(item.id)">
-            <template v-slot:prepend>
+            <template #prepend>
               <v-icon>{{ item.icon }}</v-icon>
             </template>
             <v-list-item-title>{{ $t(item.titleKey) }}</v-list-item-title>
@@ -116,7 +117,7 @@
 <style scoped>
   .user-menu-toolbar {
     --header-menu-top-offset: 7px;
-    
+
     position: fixed;
     top: var(--header-menu-top-offset);
     z-index: 999;
@@ -134,7 +135,6 @@
     border-radius: 50%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
-
 
   .layout-btn-group .v-btn {
     border-right: none !important;

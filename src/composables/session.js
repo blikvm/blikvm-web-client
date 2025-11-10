@@ -27,14 +27,13 @@ import { useAlert } from '@/composables/useAlert';
 import { useState } from '@/composables/useState.js';
 
 const store = useAppStore();
-const { misc, isHidActive, notification } = storeToRefs(store);
+const { notification } = storeToRefs(store);
 
 const { device } = useDevice();
 const { sendAlert } = useAlert();
 const { apiBinState } = useState();
 
 let __ping_timer = null;
-const pingTimeout = 1000;
 let __ws = null;
 let __missed_heartbeats = 0;
 
@@ -57,7 +56,7 @@ const startSession = () => {
   __ws.onmessage = (event) => handleWSMessage(event.data);
   __ws.onclose = __wsCloseHandler;
   __ws.onerror = __wsErrorHandler;
-}
+};
 
 const __wsOpenHandler = () => {
   device.value.isDisconnected = false;
@@ -69,8 +68,7 @@ const __wsOpenHandler = () => {
   device.value.ws = __ws;
   __missed_heartbeats = 0;
   __ping_timer = setInterval(__pingServer, 1000);
-}
-
+};
 
 const handleWSMessage = (event) => {
   const message = JSON.parse(event); // Assuming the message is in the correct format
@@ -182,83 +180,83 @@ const handleWSMessage = (event) => {
 };
 
 const __pingServer = () => {
-    try {
-      __missed_heartbeats += 1;
-      if (__missed_heartbeats >= 15) {
-				throw new Error("Too many missed heartbeats");
-			}
-      const timestamp = new Date().getTime();
-      __ws.send(JSON.stringify({ ping: timestamp }));
-    } catch (error) {
-      __wsErrorHandler(error.message);
+  try {
+    __missed_heartbeats += 1;
+    if (__missed_heartbeats >= 15) {
+      throw new Error('Too many missed heartbeats');
     }
+    const timestamp = new Date().getTime();
+    __ws.send(JSON.stringify({ ping: timestamp }));
+  } catch (error) {
+    __wsErrorHandler(error.message);
+  }
 };
 
 const __wsErrorHandler = (error) => {
   console.error('Session: socket error:', error);
-  if(__ws){
-    	__ws.onclose = null;
-			__ws.close();
-			__wsCloseHandler(null);
+  if (__ws) {
+    __ws.onclose = null;
+    __ws.close();
+    __wsCloseHandler(null);
   }
-}
+};
 
 const attemptReconnect = () => {
-    // Check if this was an intentional close
-    if (device.value.isIntentionalClose) {
-      return;
-    }
+  // Check if this was an intentional close
+  if (device.value.isIntentionalClose) {
+    return;
+  }
 
-    // Check if user manually cancelled reconnection
-    if (device.value.userCancelledReconnect) {
-      console.log('Reconnection cancelled by user');
-      return;
-    }
+  // Check if user manually cancelled reconnection
+  if (device.value.userCancelledReconnect) {
+    console.log('Reconnection cancelled by user');
+    return;
+  }
 
-    // Clear any existing timeout to prevent duplicates
-    if (device.value.reconnectTimeout) {
-      clearTimeout(device.value.reconnectTimeout);
-      device.value.reconnectTimeout = null;
-    }
+  // Clear any existing timeout to prevent duplicates
+  if (device.value.reconnectTimeout) {
+    clearTimeout(device.value.reconnectTimeout);
+    device.value.reconnectTimeout = null;
+  }
 
-    // Increment count immediately to prevent race conditions
-    const currentAttempt = device.value.reconnectCount;
-    device.value.reconnectCount++;
+  // Increment count immediately to prevent race conditions
+  const currentAttempt = device.value.reconnectCount;
+  device.value.reconnectCount++;
 
-    // Exponential backoff algorithm: 1s, 10s, 20s, then 40s
-    const delays = [1000, 10000, 20000, 40000];
-    const delay = delays[Math.min(currentAttempt, delays.length - 1)];
+  // Exponential backoff algorithm: 1s, 10s, 20s, then 40s
+  const delays = [1000, 10000, 20000, 40000];
+  const delay = delays[Math.min(currentAttempt, delays.length - 1)];
 
-    console.log(
-      `Reconnecting in ${(delay / 1000).toFixed(0)}s (attempt ${device.value.reconnectCount})`
-    );
-    apiBinState(); // Check API status on each reconnect attempt
+  console.log(
+    `Reconnecting in ${(delay / 1000).toFixed(0)}s (attempt ${device.value.reconnectCount})`
+  );
+  apiBinState(); // Check API status on each reconnect attempt
 
-    device.value.reconnectTimeout = setTimeout(() => {
-      startSession();
-    }, delay);
-}
+  device.value.reconnectTimeout = setTimeout(() => {
+    startSession();
+  }, delay);
+};
 
 const __wsCloseHandler = (ev) => {
-  console.log("Session: socket closed:", ev);
+  console.log('Session: socket closed:', ev);
   if (__ping_timer) {
-		clearInterval(__ping_timer);
-		__ping_timer = null;
-	}
+    clearInterval(__ping_timer);
+    __ping_timer = null;
+  }
   if (!device.value.isIntentionalClose) {
     device.value.isDisconnected = true;
     device.value.video.isActive = false; // Stop video stream
     if (!device.value.lastDisconnectTime) {
       device.value.lastDisconnectTime = Date.now();
     }
-    } else {
+  } else {
     // Reset flag for next connection
     device.value.isIntentionalClose = false;
   }
-  
+
   __ws = null;
   attemptReconnect();
   // setTimeout(() => startSession(), 1000);
-}
+};
 
 export { startSession };

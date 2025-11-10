@@ -1,15 +1,15 @@
 <template>
   <div class="keyboardContainer">
-    <div ref="keyboardMainRef" class="simple-keyboard-main"></div>
+    <div ref="keyboardMainRef" class="simple-keyboard-main" />
 
     <div class="controlArrows">
-      <div ref="keyboardControlRef" class="simple-keyboard-control"></div>
-      <div ref="keyboardArrowsRef" class="simple-keyboard-arrows"></div>
+      <div ref="keyboardControlRef" class="simple-keyboard-control" />
+      <div ref="keyboardArrowsRef" class="simple-keyboard-arrows" />
     </div>
 
     <div class="numPad">
-      <div ref="keyboardNumpadRef" class="simple-keyboard-numpad"></div>
-      <div ref="keyboardNumpadEndRef" class="simple-keyboard-numpadEnd"></div>
+      <div ref="keyboardNumpadRef" class="simple-keyboard-numpad" />
+      <div ref="keyboardNumpadEndRef" class="simple-keyboard-numpadEnd" />
     </div>
   </div>
 </template>
@@ -22,7 +22,7 @@
 
   const { device } = useDevice();
   const props = defineProps({
-    input: String,
+    input: { type: String, default: '' },
   });
 
   const emit = defineEmits(['onChange', 'onKeyPress', 'onKeyReleased']);
@@ -36,10 +36,7 @@
 
   // Keyboard instances
   let keyboardMain = null;
-  let keyboardControlPad = null;
-  let keyboardArrows = null;
-  let keyboardNumPad = null;
-  let keyboardNumPadEnd = null;
+  // Other keyboard instances are created for side-effects only and not referenced later
 
   const keyStates = reactive({
     '{shift}': false,
@@ -122,7 +119,7 @@
       },
     });
 
-    keyboardControlPad = new Keyboard('.simple-keyboard-control', {
+    new Keyboard('.simple-keyboard-control', {
       ...commonKeyboardOptions,
       layout: {
         default: [
@@ -133,14 +130,14 @@
       },
     });
 
-    keyboardArrows = new Keyboard('.simple-keyboard-arrows', {
+    new Keyboard('.simple-keyboard-arrows', {
       ...commonKeyboardOptions,
       layout: {
         default: ['{arrowup}', '{arrowleft} {arrowdown} {arrowright}'],
       },
     });
 
-    keyboardNumPad = new Keyboard('.simple-keyboard-numpad', {
+    new Keyboard('.simple-keyboard-numpad', {
       ...commonKeyboardOptions,
       layout: {
         default: [
@@ -153,7 +150,7 @@
       },
     });
 
-    keyboardNumPadEnd = new Keyboard('.simple-keyboard-numpadEnd', {
+    new Keyboard('.simple-keyboard-numpadEnd', {
       ...commonKeyboardOptions,
       layout: {
         default: ['{numpadsubtract}', '{numpadadd}', '{numpadenter}'],
@@ -161,8 +158,7 @@
     });
 
     const onChange = (input) => {
-      // console.log("onchage:",input);
-      // emit("onChange", input);
+      emit('onChange', input);
     };
 
     const onKeyPress = (button, event) => {
@@ -233,7 +229,7 @@
   };
 */
 
-    const onKeyReleased = (button, event) => {
+    const onKeyReleased = (button) => {
       const modifierKeys = [
         '{shift}',
         '{shiftleft}',

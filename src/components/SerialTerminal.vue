@@ -13,6 +13,7 @@
           <div class="d-flex align-center ga-2">
             <v-select
               v-model="serial.serialFile"
+              v-ripple
               :items="serialPortList"
               item-title="name"
               item-value="value"
@@ -20,9 +21,8 @@
               rounded="lg"
               density="compact"
               tile
-              v-ripple
               color="#76FF03"
-            ></v-select>
+            />
           </div>
         </v-col>
 
@@ -34,6 +34,7 @@
           <div class="d-flex align-center ga-2">
             <v-select
               v-model="serial.baudrate"
+              v-ripple
               :items="serialBaudrateList"
               item-title="name"
               item-value="value"
@@ -41,9 +42,8 @@
               rounded="lg"
               density="compact"
               tile
-              v-ripple
               color="#76FF03"
-            ></v-select>
+            />
           </div>
         </v-col>
       </v-row>

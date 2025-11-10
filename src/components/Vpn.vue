@@ -10,22 +10,22 @@
         <v-list-item v-for="(item, i) in vpnList" :key="i" :value="i">
           <v-switch
             v-model="item.active"
-            @update:modelValue="(value) => onActiveVpn(item.id, value)"
             :label="item.title"
             color="#76FF03"
             density="compact"
             hide-details
             class="pa-2"
             inset
+            @update:model-value="(value) => onActiveVpn(item.id, value)"
           >
-            <template v-slot:label> {{ $t('common.use') }} {{ item.title }} </template>
+            <template #label> {{ $t('common.use') }} {{ item.title }} </template>
           </v-switch>
 
           <v-text-field
+            v-ripple
             :model-value="item.ip"
             density="compact"
             rounded="lg"
-            v-ripple
             color="#76FF03"
             variant="outlined"
             hide-details
@@ -55,7 +55,6 @@
 </template>
 
 <script setup>
-  import { useAppStore } from '@/stores/stores';
   import { useVpnStore } from '@/stores/useVpnStore';
   import { storeToRefs } from 'pinia';
   import { onMounted } from 'vue';
