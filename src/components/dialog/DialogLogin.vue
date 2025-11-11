@@ -223,6 +223,7 @@
   };
 
   const handleLoginClick = async () => {
+    if (validating.value) return; // Prevent multiple submissions
     // Clear previous errors
     errorMessage.value = '';
 

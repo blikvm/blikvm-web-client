@@ -28,9 +28,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import { useAppStore } from '@/stores/stores';
-import { storeToRefs } from 'pinia';
 import { registerPlugins } from '@/plugins';
-import { updateAbilityForRole } from '@/plugins';
 import http from '@/utils/http.js';
 import router from '@/router';
 
