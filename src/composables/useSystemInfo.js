@@ -7,7 +7,7 @@ import { storeToRefs } from 'pinia';
 const { device } = useDevice();
 const { sendAlert } = useAlert();
 const store = useAppStore();
-const { systeminfo } = storeToRefs(store);
+const { systeminfo, devicePersist } = storeToRefs(store);
 
 export async function getSystemInfo(selected = true) {
   try {
@@ -31,7 +31,7 @@ export async function getSystemInfo(selected = true) {
       device.value.network.interfaces = response.data.data.network;
       device.value.mem.actual = response.data.data.mem.actual;
       device.value.storage.actual = response.data.data.storage.actual;
-      device.value.isATXActive = response.data.data.config.isATXActive;
+      devicePersist.value.isATXActive = response.data.data.config.isATXActive;
       device.value.mic.isRegistered = response.data.data.mic.isRegistered;
     } else {
       const title = 'System Info Error';

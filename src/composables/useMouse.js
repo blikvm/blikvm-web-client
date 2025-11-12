@@ -1,5 +1,6 @@
 'use strict';
-//
+
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { RateLimitedMouse } from '../utils/mouse.js';
 import { useExtractText } from '@/composables/useExtractText';
 
@@ -12,7 +13,6 @@ export function useMouse(device, videoElement, pointerLockElement) {
 
   const mouseMode = computed(() => device.value?.hid?.mouse?.mouseMode);
   const absoluteMode = computed(() => device.value?.hid?.mouse?.absoluteMode);
-  const mousePollingInterval = computed(() => device.value?.hid?.mouse?.mousePollingInterval);
 
   const handleMouseEvent = (event) => {
     const obj = {
@@ -68,7 +68,6 @@ export function useMouse(device, videoElement, pointerLockElement) {
   };
 
   const handleTouchMove = (event) => {
-    event.preventDefault();
     if (rateLimitedMouse != null) {
       rateLimitedMouse.onTouchMove(event);
     } else {
@@ -86,8 +85,6 @@ export function useMouse(device, videoElement, pointerLockElement) {
 
   const handleWheel = (event) => {
     if (mouseMode.value !== 'absolute' && !isMouseInside.value) return;
-
-    event.preventDefault();
     rateLimitedMouse?.onWheel(event);
   };
 

@@ -131,11 +131,11 @@
     >
       <!-- Combined Switch and ATX Controls Group -->
       <div
-        v-if="filteredChannels.length > 0 || device.isATXActive"
+        v-if="devicePersist.isHDMISwitchActive || devicePersist.isATXActive"
         class="control-group switch-controls"
       >
         <!-- Switch Controls -->
-        <template v-if="filteredChannels.length > 0">
+        <template v-if="devicePersist.isHDMISwitchActive">
           <v-tooltip location="top" content-class="">
             <template #activator="{ props: tooltipProps }">
               <v-icon v-bind="tooltipProps" icon="mdi-monitor-multiple" :size="size" />
@@ -168,7 +168,7 @@
         </template>
 
         <!-- ATX Controls -->
-        <v-tooltip v-if="device.isATXActive" location="top" content-class="">
+        <v-tooltip v-if="devicePersist.isATXActive" location="top" content-class="">
           <template #activator="{ props: tooltipProps }">
             <v-menu location="top" :style="{ zIndex: zIndex.overlay }">
               <template #activator="{ props }">
@@ -269,9 +269,8 @@
   const store = useAppStore();
   const { device } = useDevice();
   const { t } = useI18n();
-  const { kvmSwitch, changeSwitchChannel } = useHdmiSwitch();
+  const { changeSwitchChannel } = useHdmiSwitch();
   // Computed property to access hdmiSwitch items
-  const kvmSwitchItems = computed(() => kvmSwitch.value.items || []);
   const canUseMic = computed(() => device.value?.mic?.isRegistered === true);
 
   const onMicClick = () => {
@@ -289,6 +288,7 @@
     audio,
     isRecording,
     settings,
+    devicePersist,
   } = storeToRefs(store);
 
   const isHoveringVolume = ref(false);
@@ -440,12 +440,10 @@
   });
 
   // Switch functionality - combine duplicate logic
-  const selectedSwitch = computed(() => {
-    return kvmSwitchItems.value.find((item) => item.id === kvmSwitch.value.activeSwitchId);
-  });
-
-  const activeChannel = computed(() => selectedSwitch.value?.activeChannel ?? -1);
-  const filteredChannels = computed(() => selectedSwitch.value?.channels ?? []);
+  const activeChannel = computed(
+    () => devicePersist.value.HDMISwitchActiveItem?.activeChannel ?? -1
+  );
+  const filteredChannels = computed(() => devicePersist.value.HDMISwitchActiveItem?.channels ?? []);
 
   // Recording functionality
   const { formattedRecordingTime, videoRecord } = useRecording(isRecording);

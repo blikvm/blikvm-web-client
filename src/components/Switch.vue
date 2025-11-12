@@ -79,7 +79,7 @@
                       v-model="item.deviceFile"
                       :label="$t('settings.switch.deviceFile')"
                       density="compact"
-                      :color="device.kvmSwitch.isActive ? '#76FF03' : ''"
+                      :color="kvmSwitch.isActive ? '#76FF03' : ''"
                       clearable
                       @keydown.stop
                       @keypress.stop
@@ -132,7 +132,6 @@
 
 <script setup>
   import { ref } from 'vue';
-  import { useDevice } from '@/composables/useDevice';
   import { useHdmiSwitch } from '@/composables/useHdmiSwitch';
   import { useAlert } from '@/composables/useAlert.js';
 
@@ -146,8 +145,6 @@
     index: { type: Number, default: 0 },
     modelValue: { type: Boolean, default: false }, // Auto-bound for v-model:is-menu-visible
   });
-
-  const { device } = useDevice();
 
   const expandedPanels = ref([]);
 

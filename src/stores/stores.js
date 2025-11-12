@@ -23,7 +23,7 @@ import { defineStore } from 'pinia';
 
 export const useAppStore = defineStore('app', {
   persist: {
-    pick: ['settings', 'systeminfo', 'mic'], // Persist settings and systeminfo
+    pick: ['settings', 'systeminfo', 'mic', 'devicePersist'], // Persist settings and systeminfo
   },
   state: () => ({
     // default store values
@@ -214,14 +214,7 @@ export const useAppStore = defineStore('app', {
         mntTotalSize: 20,
         mntUsedSize: 0,
       },
-      kvmSwitch: {
-        //      isActive: true,
-        activeSwitchId: null,
-      },
       atx: {
-        // / TODO not in favour of name of this variables
-        command: '',
-        isATXActive: false,
         isHDDLedActive: false,
         isPowerLedActive: false, // TODO not in favour of name of this variable. check what does the Power LED represents?
       },
@@ -266,6 +259,11 @@ export const useAppStore = defineStore('app', {
     settings: {
       isVisible: true,
       targetOS: 'windows',
+    },
+    devicePersist: {
+      isATXActive: false,
+      isHDMISwitchActive: false,
+      HDMISwitchActiveItem: null,
     },
     systeminfo: {
       hostname: 'blikvm',
@@ -438,7 +436,10 @@ export const useAppStore = defineStore('app', {
       console.log('Initializing app');
       // Fetch initial system info to populate memory and storage values
       const { getSystemInfo } = await import('@/composables/useSystemInfo.js');
+      const { useHdmiSwitch } = await import('@/composables/useHdmiSwitch.js');
+      const { loadHdmiSwitch } = useHdmiSwitch();
       await getSystemInfo();
+      loadHdmiSwitch();
     },
     addDevice(device) {
       this.devices.push(device);

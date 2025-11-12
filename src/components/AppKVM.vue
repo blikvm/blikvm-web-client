@@ -44,11 +44,11 @@
       @mousemove="handleMouseMoveWithGreenDot"
       @mousedown="handleMouseDown"
       @mouseup="handleMouseUp"
-      @wheel="handleWheel"
+      @wheel.passive="handleWheel"
       @contextmenu="handleContextMenu"
       @mouseleave="handleMouseLeave"
       @mouseenter="handleMouseEnter"
-      @touchmove="handleTouchMove"
+      @touchmove.passive="handleTouchMove"
       @play="onVideoPlay"
     />
 
@@ -69,11 +69,11 @@
       @mousemove="handleMouseMoveWithGreenDot"
       @mousedown="handleMouseDown"
       @mouseup="handleMouseUp"
-      @wheel="handleWheel"
+      @wheel.passive="handleWheel"
       @contextmenu="handleContextMenu"
       @mouseleave="handleMouseLeave"
       @mouseenter="handleMouseEnter"
-      @touchmove="handleTouchMove"
+      @touchmove.passive="handleTouchMove"
     />
 
     <div v-else>

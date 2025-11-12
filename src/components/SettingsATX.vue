@@ -14,11 +14,11 @@
               cols="3"
               class="d-flex justify-end align-center"
               :style="{
-                color: device.isATXActive ? '#76FF03' : '#D32F2F',
+                color: devicePersist.isATXActive ? '#76FF03' : '#D32F2F',
               }"
             >
               <v-chip>
-                {{ device.isATXActive ? $t('common.active') : $t('common.unavailable') }}
+                {{ devicePersist.isATXActive ? $t('common.active') : $t('common.unavailable') }}
               </v-chip>
             </v-col>
           </v-row>
@@ -37,7 +37,7 @@
         <v-row dense no-gutters>
           <v-col cols="*">
             <v-switch
-              v-model="device.isATXActive"
+              v-model="devicePersist.isATXActive"
               v-ripple
               inset
               :label="$t('settings.atx.showATXField')"
@@ -52,20 +52,22 @@
 </template>
 
 <script setup>
-  import { useDevice } from '@/composables/useDevice.js';
   import { onMounted } from 'vue';
   import http from '@/utils/http.js';
   import { useAlert } from '@/composables/useAlert';
+  import { storeToRefs } from 'pinia';
+  import { useAppStore } from '@/stores/stores';
 
-  const { device } = useDevice();
   const { sendAlert } = useAlert();
+  const store = useAppStore();
+  const { devicePersist } = storeToRefs(store);
 
   async function getATXActive(selected) {
     try {
       if (!selected) return;
       const response = await http.get('/atx');
       if (response.status === 200 && response.data.code === 0) {
-        device.value.isATXActive = response.data.data.isActive;
+        devicePersist.value.isATXActive = response.data.data.isActive;
       } else {
         const title = 'ATX active';
         const message = response.data.msg || 'Failed to get ATX active status';
@@ -85,7 +87,7 @@
       };
       const response = await http.post('/atx', requestBody);
       if (response.status === 200 && response.data.code === 0) {
-        device.value.isATXActive = response.data.data.isActive;
+        devicePersist.value.isATXActive = response.data.data.isActive;
       } else {
         const title = 'ATX active';
         const message = response.data.msg || 'Failed to set ATX active status';

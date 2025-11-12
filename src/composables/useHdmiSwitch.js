@@ -1,8 +1,12 @@
 'use strict';
-
-import { onMounted } from 'vue';
+import { ref } from 'vue';
 import http from '@/utils/http.js';
 import { useAlert } from '@/composables/useAlert.js';
+import { useAppStore } from '@/stores/stores.js';
+import { storeToRefs } from 'pinia';
+
+const store = useAppStore();
+const { devicePersist } = storeToRefs(store);
 
 const { sendAlert } = useAlert();
 
@@ -79,7 +83,15 @@ export function useHdmiSwitch() {
       //  console.log("Response from /api/switch:", response);
       if (response.status === 200 && response.data.code === 0) {
         kvmSwitch.value = response.data.data; // Assign json kvmSwitch object to ref
-        // console.log("HDMI Switch loaded successfully:", kvmSwitch.value);
+        devicePersist.value.isHDMISwitchActive = kvmSwitch.value.isActive;
+        if (kvmSwitch.value.isActive && kvmSwitch.value.activeSwitchId) {
+          devicePersist.value.HDMISwitchActiveItem =
+            kvmSwitch.value.items.find((item) => item.id === kvmSwitch.value.activeSwitchId) ||
+            null;
+        } else {
+          devicePersist.value.isHDMISwitchActive = false;
+          devicePersist.value.HDMISwitchActiveItem = null;
+        }
       }
     } catch (error) {
       console.error('Failed to load shortcuts:', error);
@@ -123,8 +135,6 @@ export function useHdmiSwitch() {
       console.log(error);
     }
   };
-
-  onMounted(() => {});
 
   return {
     kvmSwitch,
