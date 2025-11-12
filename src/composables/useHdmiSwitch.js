@@ -85,7 +85,6 @@ export function useHdmiSwitch() {
         kvmSwitch.value = response.data.data; // Assign json kvmSwitch object to ref
         devicePersist.value.isHDMISwitchActive = kvmSwitch.value.isActive;
         if (kvmSwitch.value.isActive && kvmSwitch.value.activeSwitchId) {
-          devicePersist.value.isHDMISwitchActive = true;
           devicePersist.value.HDMISwitchActiveItem =
             kvmSwitch.value.items.find((item) => item.id === kvmSwitch.value.activeSwitchId) ||
             null;
