@@ -72,7 +72,7 @@
         "title": "音频输入",
         "subtitle": "配置您的音频偏好",
         "isRegisteredField": "启用音频输入？",
-        "registerMic": "注册麦克风"
+        "registerMic": "注册麦克风(⚠️ 可能需要重启)"
       },
       "hid": {
         "title": "键盘和鼠标",
