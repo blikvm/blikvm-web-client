@@ -97,23 +97,6 @@
   const shouldShowFooter = computed(() => footer.value.showFooter);
 
   function handleToggleChange(newToggles) {
-    // Business rules: mutual exclusions
-    // 1. notifications vs (keyboard, console, serial)
-    // 2. keyboard vs (console, serial)
-    // 3. video is display-only, cannot be toggled by user
-    // Rule: newest clicked component wins, hides all conflicting ones
-
-    const interactiveComponents = ['keyboard', 'console', 'serial', 'notifications'];
-    const newItem = newToggles.find((item) => !previousToggleState.value.includes(item));
-
-    // If user clicked video, ignore it (video is controlled by video state, not user)
-    if (newItem === 'video') {
-      // Restore previous state - video toggle is display-only
-      activeToggle.value = previousToggleState.value;
-      return;
-    }
-
-  function handleToggleChange(newToggles) {
     // If user clicked video, ignore it (video is controlled by video state, not user)
     const newItem = newToggles.find(item => !previousToggleState.value.includes(item))
     if (newItem === 'video') {
@@ -161,79 +144,74 @@
   // Setup component visibility watcher
   watchToggleChanges(activeToggle);
 
+  // Enhanced touch detection for USB touch screens
+  const detectTouchDevice = () => {
+    // Standard touch detection
+    const hasOntouchstart = 'ontouchstart' in window;
+    const hasMaxTouchPoints = navigator.maxTouchPoints > 0;
+    const hasMsMaxTouchPoints = navigator.msMaxTouchPoints > 0;
+    
+    // Additional detection for USB touch screens
+    const hasPointerEvents = 'onpointerdown' in window;
+    const hasTouchEvents = 'TouchEvent' in window;
+    
+    // Check media queries for touch capability
+    const hasTouchMediaQuery = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    
+    // More precise touch detection - only consider actual touch capability
+    const isTouch = hasOntouchstart || hasMaxTouchPoints || hasMsMaxTouchPoints || 
+                   hasTouchMediaQuery;
+    
+    console.log('Touch Detection Results:', {
+      ontouchstart: hasOntouchstart,
+      maxTouchPoints: navigator.maxTouchPoints,
+      msMaxTouchPoints: navigator.msMaxTouchPoints,
+      pointerEvents: hasPointerEvents,
+      touchEvents: hasTouchEvents,
+      touchMediaQuery: hasTouchMediaQuery,
+      finalDecision: isTouch
+    });
+    
+    return isTouch;
+  };
+
+  // Re-check when USB devices are connected/disconnected
+  const recheckTouchDevice = () => {
+    const newValue = detectTouchDevice();
+    if (newValue !== isTouchDevice.value) {
+      console.log('Touch device status changed:', isTouchDevice.value, '→', newValue);
+      isTouchDevice.value = newValue;
+    }
+  };
+
 // Component lifecycle
 onMounted(() => {
   if (typeof window !== 'undefined') {
-    // Enhanced touch detection for USB touch screens
-    const detectTouchDevice = () => {
-      // Standard touch detection
-      const hasOntouchstart = 'ontouchstart' in window;
-      const hasMaxTouchPoints = navigator.maxTouchPoints > 0;
-      const hasMsMaxTouchPoints = navigator.msMaxTouchPoints > 0;
-      
-      // Additional detection for USB touch screens
-      const hasPointerEvents = 'onpointerdown' in window;
-      const hasTouchEvents = 'TouchEvent' in window;
-      
-      // Check media queries for touch capability
-      const hasTouchMediaQuery = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-      
-      // More precise touch detection - only consider actual touch capability
-      const isTouch = hasOntouchstart || hasMaxTouchPoints || hasMsMaxTouchPoints || 
-                     hasTouchMediaQuery;
-      
-      console.log('Touch Detection Results:', {
-        ontouchstart: hasOntouchstart,
-        maxTouchPoints: navigator.maxTouchPoints,
-        msMaxTouchPoints: navigator.msMaxTouchPoints,
-        pointerEvents: hasPointerEvents,
-        touchEvents: hasTouchEvents,
-        touchMediaQuery: hasTouchMediaQuery,
-        finalDecision: isTouch
-      });
-      
-      return isTouch;
-    };
-    
     isTouchDevice.value = detectTouchDevice();
     
     // Global debug function for manual override
-    if (typeof window !== 'undefined') {
-      window.setTouchDevice = (value) => {
-        console.log(`Manual touch device override: ${isTouchDevice.value} → ${value}`);
-        isTouchDevice.value = value;
-      };
-      window.getTouchDeviceStatus = () => {
-        console.log('Touch Device Status:', {
-          current: isTouchDevice.value,
-          detected: detectTouchDevice()
-        });
-        return { current: isTouchDevice.value, detected: detectTouchDevice() };
-      };
-    }
-    
-    // Re-check when USB devices are connected/disconnected
-    const recheckTouchDevice = () => {
-      const newValue = detectTouchDevice();
-      if (newValue !== isTouchDevice.value) {
-        console.log('Touch device status changed:', isTouchDevice.value, '→', newValue);
-        isTouchDevice.value = newValue;
-      }
+    window.setTouchDevice = (value) => {
+      console.log(`Manual touch device override: ${isTouchDevice.value} → ${value}`);
+      isTouchDevice.value = value;
+    };
+    window.getTouchDeviceStatus = () => {
+      console.log('Touch Device Status:', {
+        current: isTouchDevice.value,
+        detected: detectTouchDevice()
+      });
+      return { current: isTouchDevice.value, detected: detectTouchDevice() };
     };
     
     // Listen for device changes (when USB devices are plugged/unplugged)
     if (navigator.mediaDevices) {
       navigator.mediaDevices.addEventListener('devicechange', recheckTouchDevice);
     }
-    
-    // Remove the periodic checking - only check on device change events
-    
-    // Cleanup
-    onBeforeUnmount(() => {
-      if (navigator.mediaDevices) {
-        navigator.mediaDevices.removeEventListener('devicechange', recheckTouchDevice);
-      }
-    });
+  }
+});
+
+onBeforeUnmount(() => {
+  if (navigator.mediaDevices) {
+    navigator.mediaDevices.removeEventListener('devicechange', recheckTouchDevice);
   }
 });
 </script>

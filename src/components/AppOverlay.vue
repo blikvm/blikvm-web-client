@@ -387,22 +387,29 @@
       // This prevents overlay compression during HDMI activation transition
       const rect = videoElement.getBoundingClientRect();
       const currentDimensions = `${rect.width} x ${rect.height}`;
+      
+      console.log('Video element found:', videoElement.id, 'dimensions:', currentDimensions, 'position:', { top: rect.top, left: rect.left });
+      
       if (lastLoggedDimensions !== currentDimensions) {
-        // console.log('Video element dimensions:', currentDimensions);
+        console.log('Video element dimensions changed:', lastLoggedDimensions, '→', currentDimensions);
         lastLoggedDimensions = currentDimensions;
+        // Force immediate overlay repositioning when video dimensions change significantly
+        setTimeout(() => updateOverlayPosition(), 0);
       }
 
-      // Use stricter validation - video must be reasonably sized
-      if (rect.width >= 400 && rect.height >= 200) {
+      // For 4K resolution, the video might be very large - let's be more permissive
+      if (rect.width >= 100 && rect.height >= 100) {
         if (lastLoggedElementType !== 'video') {
-          // console.log('Using video element for overlay tracking');
+          console.log('Using video element for overlay tracking');
           lastLoggedElementType = 'video';
         }
         return videoElement;
       }
       // Video element exists but dimensions too small - fall back to container
-      // Track element type for performance optimization
+      console.log('Video element too small, falling back to container');
       lastLoggedElementType = 'container';
+    } else {
+      console.log('No video element found (webrtc-output or mjpeg-output)');
     }
     
     // No video element found or video not ready - use container fallback
@@ -417,6 +424,10 @@
       console.error('Overlay: No suitable container found for positioning');
       container = document.querySelector('.main-layout') || document.body;
     }
+    
+    const rect = container.getBoundingClientRect();
+    console.log('Using container fallback:', container.className || container.id, 'dimensions:', `${rect.width} x ${rect.height}`, 'position:', { top: rect.top, left: rect.left });
+    
     return container;
   };
 
@@ -687,6 +698,35 @@
     nextTick(updateOverlayPosition);
   });
 
+  // Watch for overlay being enabled/disabled - force repositioning when enabled
+  watch(() => showOverlay.value, (isEnabled) => {
+    if (isEnabled) {
+      console.log('Overlay enabled - forcing position update');
+      // Clear cache and wait for proper video element
+      lastBounds = { top: 0, left: 0, width: 0, height: 0 };
+      lastElementType = null;
+      waitForVideoElement();
+    }
+  });
+
+  // Watch for HDMI activation changes - critical for overlay positioning
+  watch(() => device.value.video.isHDMIActivate, (isActive, wasActive) => {
+    console.log('HDMI activation changed:', wasActive, '→', isActive);
+    if (isActive && showOverlay.value) {
+      console.log('HDMI activated with overlay enabled - repositioning');
+      // Clear all cached data when HDMI state changes
+      lastBounds = { top: 0, left: 0, width: 0, height: 0 };
+      lastElementType = null;
+      lastLoggedElementType = null;
+      lastLoggedDimensions = null;
+      // Wait for video element to be properly positioned after HDMI activation
+      setTimeout(() => {
+        waitForVideoElement();
+      }, 100);
+    }
+  });
+
+
   // Performance reporting for development
   const getPerformanceReport = () => {
     const metrics = performanceMetrics.value;
@@ -709,10 +749,46 @@
     window.getOverlayPerformanceReport = getPerformanceReport;
   }
 
+  // Wait for video element to be ready and properly sized before positioning overlay
+  const waitForVideoElement = () => {
+    const checkVideo = () => {
+      const videoElement = document.getElementById('webrtc-output') || document.getElementById('mjpeg-output');
+      if (videoElement) {
+        const rect = videoElement.getBoundingClientRect();
+        // Video must be reasonably sized (not just a tiny placeholder)
+        // and positioned (not at 0,0 which indicates not ready)
+        if (rect.width >= 100 && rect.height >= 100 && (rect.top > 0 || rect.left > 0)) {
+          console.log('Video element ready with proper dimensions:', rect.width + 'x' + rect.height, 'at', rect.top + ',' + rect.left);
+          updateOverlayPosition();
+          return true;
+        }
+        console.log('Video element found but not ready:', rect.width + 'x' + rect.height, 'at', rect.top + ',' + rect.left);
+      }
+      return false;
+    };
+
+    // Try immediately
+    if (checkVideo()) return;
+
+    // If not ready, poll every 50ms for up to 10 seconds (more aggressive)
+    let attempts = 0;
+    const maxAttempts = 200;
+    const interval = setInterval(() => {
+      attempts++;
+      if (checkVideo() || attempts >= maxAttempts) {
+        clearInterval(interval);
+        if (attempts >= maxAttempts) {
+          console.log('Video element not found after 10 seconds, using fallback positioning');
+          updateOverlayPosition();
+        }
+      }
+    }, 50);
+  };
+
   // Lifecycle management - event-driven approach
   onMounted(() => {
-    // Initial position update
-    nextTick(updateOverlayPosition);
+    // Wait for video element before initial positioning
+    waitForVideoElement();
     
     // Setup ResizeObserver for DOM changes
     resizeObserver.value = setupResizeObserver();

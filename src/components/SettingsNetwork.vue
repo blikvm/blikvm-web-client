@@ -83,7 +83,8 @@
               <v-row dense no-gutters>
                 <v-col cols="12">
                   <v-text-field
-                    v-model="device.network.interfaces[0].mac"
+                    :value="device.network.interfaces?.[0]?.mac"
+                    readonly
                     v-ripple
                     density="compact"
                     rounded="lg"
@@ -98,7 +99,7 @@
                         size="small"
                         color="#76FF03"
                         style="pointer-events: auto; cursor: pointer"
-                        @click.stop="copyClipboard(device.network.interfaces[0].mac)"
+                        @click.stop="copyClipboard(device.network.interfaces?.[0]?.mac)"
                       >
                         mdi-content-copy
                       </v-icon>
@@ -113,7 +114,8 @@
               <v-row dense no-gutters>
                 <v-col cols="12">
                   <v-text-field
-                    v-model="device.network.interfaces[0].ip4"
+                    :value="device.network.interfaces?.[0]?.ip4"
+                    @input="updateNetworkIP($event)"
                     v-ripple
                     density="compact"
                     rounded="lg"
@@ -122,13 +124,13 @@
                     hide-details
                     single-line
                     clearable
-                    :disabled="device.network.interfaces[0].dhcp"
+                    :disabled="device.network.interfaces?.[0]?.dhcp"
                   >
                     <template #append>
                       <v-icon
                         size="small"
                         color="#76FF03"
-                        @click="copyClipboard(device.network.interfaces[0].ip4)"
+                        @click="copyClipboard(device.network.interfaces?.[0]?.ip4)"
                       >
                         mdi-content-copy
                       </v-icon>
@@ -149,7 +151,7 @@
                 >
                   <v-chip>
                     {{
-                      device.network.interfaces[0].dhcp
+                      device.network.interfaces?.[0]?.dhcp
                         ? $t('settings.network.general.dynamic')
                         : $t('settings.network.general.static')
                     }}
@@ -383,6 +385,13 @@
       const title = 'Network Ports Error';
       const message = `${error.message}`;
       sendAlert('error', title, message);
+    }
+  };
+
+  // Handle network IP updates safely
+  const updateNetworkIP = (newValue) => {
+    if (device.value?.network?.interfaces?.[0]) {
+      device.value.network.interfaces[0].ip4 = newValue;
     }
   };
 </script>
