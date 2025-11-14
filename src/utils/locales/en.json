@@ -72,7 +72,7 @@
         "title": "Audio-in",
         "subtitle": "Configure your audio preferences",
         "isRegisteredField": "Audio-in registered?",
-        "registerMic": "Register microphone"
+        "registerMic": "Register microphone(⚠️ Possible Restart Required)"
       },
       "hid": {
         "title": "Keyboard & Mouse",
