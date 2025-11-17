@@ -57,7 +57,7 @@ review:
 
 style:
   code_blocks: true
-  line_length: 120
+  line_length: 100
   markdown: true
 
 commits:
