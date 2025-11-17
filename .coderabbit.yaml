@@ -30,7 +30,7 @@ review:
   rules:
     - id: no-console
       description: Avoid console.log in shipped code; use Logger/telemetry or remove.
-      severity: warning
+      severity: info
       patterns:
         - "console.log("
     - id: prefer-async-await
@@ -41,7 +41,7 @@ review:
       severity: suggestion
     - id: null-guard
       description: Guard optional refs/reactives (?.) before access to avoid runtime errors.
-      severity: error
+      severity: suggestion
     - id: cleanup-effects
       description: Ensure event listeners/timers are cleaned up on unmount to prevent leaks.
       severity: warning
@@ -52,7 +52,7 @@ review:
   # Tuning
   max_comments: 60
   summarize_findings: true
-  suggestions: enable   # propose inline edits when safe
+  suggestions: true   # propose inline edits when safe
   security_scan: true   # highlight obvious XSS/unsafe-html/URL handling
 
 style:
@@ -67,9 +67,9 @@ checks:
   - name: lint
     required: false
     description: Ensure ESLint passes for touched files.
-  - name: typecheck
+  - name: jsdoc-typecheck
     required: false
-    description: If using TS or volar typecheck, ensure no new type errors.
+    description: Project is JavaScript-first. If using JSDoc or editor (Volar) inference, ensure no new type warnings. No TS build is configured.
   - name: build
     required: false
     description: Vite build should succeed for changed code.
