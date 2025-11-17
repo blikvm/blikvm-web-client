@@ -1,0 +1,80 @@
+# CodeRabbit configuration for web_client (Vue 3 + Vite)
+# Docs: https://coderabbit.ai/docs/config
+
+version: 1
+
+project:
+  name: blikvm-web-client
+  language: javascript
+  frameworks:
+    - vue
+    - vite
+  description: >-
+    Front-end SPA for blikvm. Prefer clean, accessible UI with robust input handling
+    and minimal side effects.
+
+review:
+  # Scope the review to app source; ignore built or vendored assets
+  include:
+    - "src/**"
+  exclude:
+    - "dist/**"
+    - "public/**"
+    - "**/*.min.js"
+    - "**/*.map"
+    - "node_modules/**"
+    - "coverage/**"
+    - "**/.vite/**"
+
+  # Limit noise and focus on actionable feedback
+  rules:
+    - id: no-console
+      description: Avoid console.log in shipped code; use Logger/telemetry or remove.
+      severity: info
+      patterns:
+        - "console.log("
+    - id: prefer-async-await
+      description: Prefer async/await over then-chains for readability.
+      severity: info
+    - id: passive-events
+      description: For wheel/touchmove that do not call preventDefault, prefer passive listeners.
+      severity: suggestion
+    - id: null-guard
+      description: Guard optional refs/reactives (?.) before access to avoid runtime errors.
+      severity: suggestion
+    - id: cleanup-effects
+      description: Ensure event listeners/timers are cleaned up on unmount to prevent leaks.
+      severity: warning
+    - id: i18n-strings
+      description: User-facing strings should use i18n; avoid hard-coded text.
+      severity: suggestion
+
+  # Tuning
+  max_comments: 60
+  summarize_findings: true
+  suggestions: true   # propose inline edits when safe
+  security_scan: true   # highlight obvious XSS/unsafe-html/URL handling
+
+style:
+  code_blocks: true
+  line_length: 100
+  markdown: true
+
+commits:
+  conventional: true     # encourage conventional commits in PR title/commits
+
+checks:
+  - name: lint
+    required: false
+    description: Ensure ESLint passes for touched files.
+  - name: jsdoc-typecheck
+    required: false
+    description: Project is JavaScript-first. If using JSDoc or editor (Volar) inference, ensure no new type warnings. No TS build is configured.
+  - name: build
+    required: false
+    description: Vite build should succeed for changed code.
+
+notes:
+  - Focus on src/components, composables, stores, router, utils.
+  - Avoid reviewing generated files, lockfiles, or vendored assets.
+  - For performance-sensitive handlers (wheel/touch), avoid expensive sync work.
