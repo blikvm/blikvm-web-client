@@ -479,7 +479,13 @@
     "notifications": "Notifications",
     "toggleSettings": "Toggle settings",
     "toggleFooter": "Toggle footer",
-    "atxPower": "ATX Power"
+    "atxPower": "ATX Power",
+    "buzzer": "Buzzer",
+    "buzzerControls": "Buzzer Controls",
+    "buzzerDisabled": "Buzzer Disabled",
+    "quickBuzz": "Quick Buzz",
+    "beep": "Beep",
+    "alert": "Alert"
   },
   "label": {
     "connected": "Connected",
