@@ -31,17 +31,12 @@ export function useComponentVisibility(device, isTouchDevice) {
    * @param {Array} toggleSelection - Array of selected toggle IDs
    */
   const updateVisibility = (toggleSelection) => {
-    console.log('🎛️ updateVisibility called with:', toggleSelection);
-    console.log('🎛️ isTouchDevice:', isTouchDevice.value);
-    
     const hasKeyboard = toggleSelection.includes("keyboard");
     const hasConsole = toggleSelection.includes("console");
     const hasSerial = toggleSelection.includes("serial");
     const hasNotifications = toggleSelection.includes("notifications");
     const hasTommy = toggleSelection.includes("tommy");
     const hasMouse = toggleSelection.includes("mouse");
-    
-    console.log('🎛️ Toggle states:', { hasKeyboard, hasConsole, hasSerial, hasNotifications, hasMouse });
     
     // Business rules:
     // - Notifications and keyboard are mutually exclusive
@@ -102,19 +97,12 @@ export function useComponentVisibility(device, isTouchDevice) {
       
       // Show keyboard - always use desktop keyboard for now (mobile keyboard for separate release)
       if (hasKeyboard) {
-        console.log('🎛️ KEYBOARD LOGIC: hasKeyboard=true, showing desktop keyboard');
         showKeyboard.value = true;
         showMobileKeyboard.value = false;
       } else {
-        console.log('🎛️ KEYBOARD LOGIC: hasKeyboard=false, hiding keyboard');
         showKeyboard.value = false;
         showMobileKeyboard.value = false;
       }
-      
-      console.log('🎛️ Final keyboard states:', {
-        showKeyboard: showKeyboard.value,
-        showMobileKeyboard: showMobileKeyboard.value
-      });
     }
   };
 

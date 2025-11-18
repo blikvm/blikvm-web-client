@@ -305,8 +305,10 @@
   import { useDragHandle, DRAG_CONSTANTS } from '@/composables/useDragHandle';
   import { useFullscreen } from '@/composables/useFullscreen';
   import { onMounted, onBeforeUnmount, ref, computed, nextTick, watch } from 'vue';
+  import { useI18n } from 'vue-i18n';
 
   const store = useAppStore();
+  const { t } = useI18n();
 
   const { settings, footer, toolbar, showOverlay, systeminfo } = storeToRefs(store);
 
