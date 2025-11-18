@@ -936,7 +936,7 @@
 
   @container video-overlay (max-width: 300px) {
     /* Hide experimental controls on tiny videos */
-    .control-group:has([data-experimental="true"]) {
+    .control-group[data-experimental="true"] {
       display: none !important;
     }
   }
