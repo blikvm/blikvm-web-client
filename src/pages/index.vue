@@ -25,9 +25,8 @@
 </template>
 
 <script setup>
-  import { ref, shallowRef, onMounted } from 'vue';
+  import { onMounted, getCurrentInstance } from 'vue';
   import { storeToRefs } from 'pinia';
-  import { useRouter } from 'vue-router';
   import { useAppStore } from '@/stores/stores';
 
   const store = useAppStore();
@@ -35,7 +34,6 @@
   const { proxy } = getCurrentInstance();
 
   onMounted(() => {
-    console.log('LoginPage mounted');
     const locale = localStorage.getItem('locale');
 
     if (locale) {

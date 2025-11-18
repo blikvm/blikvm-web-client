@@ -1,6 +1,9 @@
 <template>
   <!-- Unified single footer with toggle navigation -->
-  <v-footer v-if="shouldShowFooter" class="d-flex flex-column pa-0 bg-black">
+  <v-footer
+    v-if="shouldShowFooter"
+    class="d-flex flex-column pa-0 bg-black"
+  >
     <!-- Content sections with proper ordering: Virtual Mouse → Notifications → Terminals → Keyboard -->
     <div v-if="hasActiveComponents">
       <!-- Virtual Mouse Section -->
@@ -98,19 +101,19 @@
 
   function handleToggleChange(newToggles) {
     // If user clicked video, ignore it (video is controlled by video state, not user)
-    const newItem = newToggles.find(item => !previousToggleState.value.includes(item))
+    const newItem = newToggles.find(item => !previousToggleState.value.includes(item));
     if (newItem === 'video') {
       // Restore previous state - video toggle is display-only
-      activeToggle.value = previousToggleState.value
-      return
+      activeToggle.value = previousToggleState.value;
+      return;
     }
     
     // Update previous state for next time
-    previousToggleState.value = [...newToggles]
+    previousToggleState.value = [...newToggles];
     
     // Let useFooterToggle handle the mutual exclusion logic
-    handleFooterToggleChange(newToggles)
-    updateVisibility(newToggles)
+    handleFooterToggleChange(newToggles);
+    updateVisibility(newToggles);
   }
 
   // State synchronization with device store
@@ -162,15 +165,7 @@
     const isTouch = hasOntouchstart || hasMaxTouchPoints || hasMsMaxTouchPoints || 
                    hasTouchMediaQuery;
     
-    console.log('Touch Detection Results:', {
-      ontouchstart: hasOntouchstart,
-      maxTouchPoints: navigator.maxTouchPoints,
-      msMaxTouchPoints: navigator.msMaxTouchPoints,
-      pointerEvents: hasPointerEvents,
-      touchEvents: hasTouchEvents,
-      touchMediaQuery: hasTouchMediaQuery,
-      finalDecision: isTouch
-    });
+    // Touch detection logic - using multiple detection methods for accuracy
     
     return isTouch;
   };
@@ -179,7 +174,6 @@
   const recheckTouchDevice = () => {
     const newValue = detectTouchDevice();
     if (newValue !== isTouchDevice.value) {
-      console.log('Touch device status changed:', isTouchDevice.value, '→', newValue);
       isTouchDevice.value = newValue;
     }
   };
@@ -191,14 +185,9 @@ onMounted(() => {
     
     // Global debug function for manual override
     window.setTouchDevice = (value) => {
-      console.log(`Manual touch device override: ${isTouchDevice.value} → ${value}`);
       isTouchDevice.value = value;
     };
     window.getTouchDeviceStatus = () => {
-      console.log('Touch Device Status:', {
-        current: isTouchDevice.value,
-        detected: detectTouchDevice()
-      });
       return { current: isTouchDevice.value, detected: detectTouchDevice() };
     };
     

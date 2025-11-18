@@ -38,11 +38,19 @@
     </slot>
 
     <template v-if="$vuetify.display.smAndUp">
-      <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical />
+      <v-divider
+        class="mx-1 align-self-center"
+        length="24"
+        thickness="2"
+        vertical
+      />
     </template>
 
     <!-- LAN Connectivity Status (always visible) -->
-    <v-tooltip location="top" content-class="">
+    <v-tooltip
+      location="top"
+      content-class=""
+    >
       <template #activator="{ props: tooltipProps }">
         <v-icon
           v-bind="tooltipProps"
@@ -57,8 +65,12 @@
     </v-tooltip>
 
     <!-- Health Status (always visible when connected) -->
-    <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
-      <template v-slot:activator="{ props: tooltipProps }">
+    <v-tooltip
+      v-if="!device?.isDisconnected"
+      location="top"
+      content-class=""
+    >
+      <template #activator="{ props: tooltipProps }">
         <v-icon
           v-bind="tooltipProps"
           :color="healthIconColor"
@@ -73,9 +85,12 @@
 
     <!-- Expanded Controls Section -->
     <template v-if="toolbar.expanded">
-
       <!-- KVM Status Icons -->
-      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+      <v-tooltip
+        v-if="!device?.isDisconnected"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -85,29 +100,37 @@
             mdi-keyboard
           </v-icon>
         </template>
-        <span
-          >{{ $t('common.keyboard') }}
+        <span>{{ $t('common.keyboard') }}
           {{
             device.hid.isActive && device.hid.keyboard.isActive
               ? $t('common.active')
               : $t('common.inactive')
-          }}</span
-        >
+          }}</span>
       </v-tooltip>
 
-      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+      <v-tooltip
+        v-if="!device?.isDisconnected"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
-          <v-icon v-bind="tooltipProps" :color="isVideoActive ? '#76FF03' : '#D32F2F'" size="small">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="isVideoActive ? '#76FF03' : '#D32F2F'"
+            size="small"
+          >
             mdi-monitor
           </v-icon>
         </template>
-        <span
-          >{{ $t('settings.device.video.title') }}
-          {{ isVideoActive ? $t('common.active') : $t('common.inactive') }}</span
-        >
+        <span>{{ $t('settings.device.video.title') }}
+          {{ isVideoActive ? $t('common.active') : $t('common.inactive') }}</span>
       </v-tooltip>
 
-      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+      <v-tooltip
+        v-if="!device?.isDisconnected"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -117,18 +140,19 @@
             mdi-mouse
           </v-icon>
         </template>
-        <span
-          >{{ $t('common.mouse') }}
+        <span>{{ $t('common.mouse') }}
           {{
             device.hid.isActive && device.hid.mouse.isActive
               ? $t('common.active')
               : $t('common.inactive')
-          }}</span
-        >
+          }}</span>
       </v-tooltip>
 
       <!-- Action Controls -->
-      <v-tooltip location="top" content-class="">
+      <v-tooltip
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -143,18 +167,34 @@
         <span>{{ !isVideoActive ? $t('common.noVideoFeed') : showOverlay ? $t('common.overlayOff') : $t('common.overlayOn') }}</span>
       </v-tooltip>
 
-      <v-tooltip location="top" content-class="">
+      <v-tooltip
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
-          <v-icon v-bind="tooltipProps" color="#FFD600" size="small" @click="handleClick('lock')">
+          <v-icon
+            v-bind="tooltipProps"
+            color="#FFD600"
+            size="small"
+            @click="handleClick('lock')"
+          >
             mdi-lock
           </v-icon>
         </template>
         <span>{{ $t('common.send') }} Ctrl+Alt+Del</span>
       </v-tooltip>
 
-      <v-tooltip v-if="!isFullscreen" location="top" content-class="">
+      <v-tooltip
+        v-if="!isFullscreen"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
-          <v-icon v-bind="tooltipProps" size="small" @click="toggleFullscreen">
+          <v-icon
+            v-bind="tooltipProps"
+            size="small"
+            @click="toggleFullscreen"
+          >
             mdi-fullscreen
           </v-icon>
         </template>
@@ -167,7 +207,11 @@
 
     <template #append>
       <!-- Settings Toggle -->
-      <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+      <v-tooltip
+        v-if="toolbar.expanded"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -182,7 +226,11 @@
       </v-tooltip>
 
       <!-- Footer Toggle -->
-      <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+      <v-tooltip
+        v-if="toolbar.expanded"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -197,21 +245,37 @@
       </v-tooltip>
 
       <!-- User Menu -->
-      <v-menu v-if="toolbar.expanded" offset-y>
+      <v-menu
+        v-if="toolbar.expanded"
+        offset-y
+      >
         <template #activator="{ props: menuProps }">
-          <v-tooltip location="top" content-class="">
+          <v-tooltip
+            location="top"
+            content-class=""
+          >
             <template #activator="{ props: tooltipProps }">
-              <v-icon v-bind="{ ...menuProps, ...tooltipProps }" color="white" size="small">
+              <v-icon
+                v-bind="{ ...menuProps, ...tooltipProps }"
+                color="white"
+                size="small"
+              >
                 mdi-account-circle
               </v-icon>
             </template>
-            <span>{{ account.user || 'User' }}</span>
+            <span>{{ account.user || t('common.user') }}</span>
           </v-tooltip>
         </template>
         <v-list density="compact">
-          <template v-for="item in menuItems" :key="item.id">
+          <template
+            v-for="item in menuItems"
+            :key="item.id"
+          >
             <v-divider v-if="item.isDivider" />
-            <v-list-item v-else @click="handleUserClick(item.id)">
+            <v-list-item
+              v-else
+              @click="handleUserClick(item.id)"
+            >
               <template #prepend>
                 <v-icon>{{ item.icon }}</v-icon>
               </template>
@@ -221,7 +285,10 @@
         </v-list>
       </v-menu>
 
-      <v-icon color="#76FF03" @click.stop="toggleToolbarExpansion">
+      <v-icon
+        color="#76FF03"
+        @click.stop="toggleToolbarExpansion"
+      >
         {{ toolbar.expanded ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right' }}
       </v-icon>
     </template>

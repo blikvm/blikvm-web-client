@@ -12,9 +12,6 @@ export function useFooterToggle(initialSelection = ['video']) {
    * @param {Array} selectedValues - Array of selected toggle IDs
    */
   const handleToggleChange = (selectedValues) => {
-    console.log('⚡ useFooterToggle handleToggleChange called with:', selectedValues);
-    console.log('⚡ Current activeToggle before:', activeToggle.value);
-    
     let corrected = [...selectedValues];
     
     // Mutual exclusivity rules - MOST RECENT ITEM WINS:
@@ -22,30 +19,22 @@ export function useFooterToggle(initialSelection = ['video']) {
     const oldToggle = activeToggle.value;
     const newItem = corrected.find(val => !oldToggle.includes(val));
     
-    console.log('⚡ User clicked:', newItem);
-    console.log('⚡ Previous active items:', oldToggle);
-    
-    if (newItem === "notifications") {
-      console.log('⚡ Notifications clicked: exclude everything else');
-      corrected = corrected.filter(val => val === "video" || val === "notifications");
-    } else if (newItem === "keyboard") {
-      console.log('⚡ Keyboard clicked: exclude terminals and notifications (mouse can coexist)');
-      corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
-    } else if (newItem === "console" || newItem === "serial") {
-      console.log('⚡ Terminal clicked: exclude keyboard, notifications, and mouse');
-      corrected = corrected.filter(val => !["keyboard", "notifications", "mouse"].includes(val));
-    } else if (newItem === "mouse") {
-      console.log('⚡ Mouse clicked: exclude terminals and notifications (keyboard can coexist)');
-      corrected = corrected.filter(val => !["console", "serial", "notifications"].includes(val));
-    } else {
-      // No new exclusive item clicked - just maintain current state
-      console.log('⚡ No exclusive item clicked or toggling off');
+    if (newItem === 'notifications') {
+      // Notifications exclude everything else
+      corrected = corrected.filter(val => val === 'video' || val === 'notifications');
+    } else if (newItem === 'keyboard') {
+      // Keyboard excludes terminals and notifications (mouse can coexist)
+      corrected = corrected.filter(val => !['console', 'serial', 'notifications'].includes(val));
+    } else if (newItem === 'console' || newItem === 'serial') {
+      // Terminal excludes keyboard, notifications, and mouse
+      corrected = corrected.filter(val => !['keyboard', 'notifications', 'mouse'].includes(val));
+    } else if (newItem === 'mouse') {
+      // Mouse excludes terminals and notifications (keyboard can coexist)
+      corrected = corrected.filter(val => !['console', 'serial', 'notifications'].includes(val));
     }
     // Note: Mouse has no exclusions - it can coexist with keyboard, terminals, or be standalone
     
-    console.log('⚡ Corrected values:', corrected);
     activeToggle.value = corrected;
-    console.log('⚡ activeToggle after update:', activeToggle.value);
   };
 
   /**

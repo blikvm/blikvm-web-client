@@ -435,6 +435,7 @@
     "remove": "移除",
     "add": "添加",
     "disabled": "已禁用",
+    "user": "用户",
     "basic": "基础",
     "use": "使用",
     "cancel": "取消",
@@ -569,7 +570,7 @@
     "pageText": "{0}-{1} 共 {2}"
   },
   "diagnostics": {
-    "videoStreamClosed": "Video stream is closed",
+    "videoStreamClosed": "视频流已关闭",
     "reconnectMessage": "正在尝试重连... {countdownDisplay}s",
     "reconnectStopMessage": "已达到最大重新连接尝试次数。请检查设备",
     "reloadWindow": "重新加载窗口",

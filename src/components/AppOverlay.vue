@@ -14,14 +14,24 @@
       :style="`position: absolute; top: ${topControlsPosition}; right: 20px;`"
     >
       <!-- Experimental Controls Group -->
-      <div v-if="isExperimental" class="control-group">
+      <div
+        v-if="isExperimental"
+        class="control-group"
+        data-experimental="true"
+      >
         <KvmHandRaise />
         <KvmClipboard />
       </div>
 
       <!-- Recording Controls Group -->
-      <div v-if="isVideoVisible" class="control-group">
-        <v-tooltip location="top" content-class="">
+      <div
+        v-if="isVideoVisible"
+        class="control-group"
+      >
+        <v-tooltip
+          location="top"
+          content-class=""
+        >
           <template #activator="{ props: tooltipProps }">
             <v-icon
               v-bind="tooltipProps"
@@ -33,7 +43,11 @@
           <span>Take snapshot</span>
         </v-tooltip>
 
-        <v-tooltip v-if="device.video.videoMode === 'h264'" location="top" content-class="">
+        <v-tooltip
+          v-if="device.video.videoMode === 'h264'"
+          location="top"
+          content-class=""
+        >
           <template #activator="{ props: tooltipProps }">
             <v-btn
               v-ripple
@@ -59,13 +73,19 @@
       <!-- bottom control bar-->
       <div class="d-flex w-100 ga-3 pa-0 align-center">
         <!-- Audio Controls Group -->
-        <div v-if="device.video.videoMode === 'h264' && isVideoVisible" class="control-group">
+        <div
+          v-if="device.video.videoMode === 'h264' && isVideoVisible"
+          class="control-group"
+        >
           <div
             class="d-inline-flex align-center ga-2"
             @mouseenter="isHoveringVolume = true"
             @mouseleave="isHoveringVolume = false"
           >
-            <v-tooltip location="top" content-class="">
+            <v-tooltip
+              location="top"
+              content-class=""
+            >
               <template #activator="{ props: tooltipProps }">
                 <v-btn
                   v-ripple
@@ -101,7 +121,10 @@
             />
           </div>
 
-          <v-tooltip location="top" content-class="">
+          <v-tooltip
+            location="top"
+            content-class=""
+          >
             <template #activator="{ props: tooltipProps }">
               <v-btn
                 v-ripple
@@ -130,10 +153,16 @@
       :style="`position: absolute; bottom: ${bottomControlsPosition}; right: 8px;`"
     >
       <!-- Combined Switch and ATX Controls Group -->
-      <div v-if="filteredChannels.length > 0 || devicePersist.isATXActive" class="control-group switch-controls">
+      <div
+        v-if="filteredChannels.length > 0 || devicePersist.isATXActive"
+        class="control-group switch-controls"
+      >
         <!-- Switch Controls -->
         <template v-if="filteredChannels.length > 0">
-          <v-tooltip location="top" content-class="">
+          <v-tooltip
+            location="top"
+            content-class=""
+          >
             <template #activator="{ props: tooltipProps }">
               <v-icon
                 v-bind="tooltipProps"
@@ -149,8 +178,14 @@
             density="compact"
             @update:model-value="changeSwitchChannel"
           >
-            <template v-for="channel in filteredChannels" :key="channel.id">
-              <v-tooltip location="top" content-class="">
+            <template
+              v-for="channel in filteredChannels"
+              :key="channel.id"
+            >
+              <v-tooltip
+                location="top"
+                content-class=""
+              >
                 <template #activator="{ props }">
                   <v-btn
                     v-bind="props"
@@ -169,9 +204,16 @@
         </template>
         
         <!-- ATX Controls -->
-        <v-tooltip v-if="devicePersist.isATXActive" location="top" content-class="">
+        <v-tooltip
+          v-if="devicePersist.isATXActive"
+          location="top"
+          content-class=""
+        >
           <template #activator="{ props: tooltipProps }">
-            <v-menu location="top" :style="{ zIndex: zIndex.overlay }">
+            <v-menu
+              location="top"
+              :style="{ zIndex: zIndex.overlay }"
+            >
               <template #activator="{ props }">
                 <v-icon
                   v-bind="{ ...props, ...tooltipProps }"
@@ -191,7 +233,10 @@
                   active-class="text-green"
                   @click="triggerPowerButton(atxItem.action)"
                 >
-                  <v-icon :icon="atxItem.icon" color="#76FF03" />
+                  <v-icon
+                    :icon="atxItem.icon"
+                    color="#76FF03"
+                  />
                   {{ atxItem.title }}
                 </v-list-item>
               </v-list>
@@ -201,11 +246,22 @@
         </v-tooltip>
       </div>
 
-      <v-divider class="mx-3" inset vertical />
+      <v-divider
+        class="mx-3"
+        inset
+        vertical
+      />
 
       <!-- Experimental Controls Group -->
-      <div v-if="isExperimental" class="control-group">
-        <v-tooltip location="top" content-class="">
+      <div
+        v-if="isExperimental"
+        class="control-group"
+        data-experimental="true"
+      >
+        <v-tooltip
+          location="top"
+          content-class=""
+        >
           <template #activator="{ props: tooltipProps }">
             <v-icon
               v-bind="tooltipProps"
@@ -218,7 +274,10 @@
           <span>{{ isCameraOn ? 'Turn off' : 'Turn on' }}</span>
         </v-tooltip>
 
-        <v-tooltip location="top" content-class="">
+        <v-tooltip
+          location="top"
+          content-class=""
+        >
           <template #activator="{ props: tooltipProps }">
             <v-icon
               v-bind="tooltipProps"
@@ -248,7 +307,11 @@
           <span>{{ isCasting ? 'Stop Casting' : 'Start Casting' }}</span>
         </v-tooltip>
 
-        <v-divider class="mx-3" inset vertical />
+        <v-divider
+          class="mx-3"
+          inset
+          vertical
+        />
       </div>
     </div>
   </v-overlay>
@@ -299,7 +362,6 @@
   const DEFAULT_BOTTOM_MARGIN = 20; // Bottom margin (match top for symmetry)
   
   // Safety constants to prevent toolbar coverage
-  const TOOLBAR_HEIGHT = 60; // Approximate toolbar height
   const TOOLBAR_SAFE_ZONE = 80; // Extra margin to ensure no toolbar overlap
 
   // Video element bounds tracking for overlay positioning
@@ -388,10 +450,7 @@
       const rect = videoElement.getBoundingClientRect();
       const currentDimensions = `${rect.width} x ${rect.height}`;
       
-      console.log('Video element found:', videoElement.id, 'dimensions:', currentDimensions, 'position:', { top: rect.top, left: rect.left });
-      
       if (lastLoggedDimensions !== currentDimensions) {
-        console.log('Video element dimensions changed:', lastLoggedDimensions, '→', currentDimensions);
         lastLoggedDimensions = currentDimensions;
         // Force immediate overlay repositioning when video dimensions change significantly
         setTimeout(() => updateOverlayPosition(), 0);
@@ -400,16 +459,12 @@
       // For 4K resolution, the video might be very large - let's be more permissive
       if (rect.width >= 100 && rect.height >= 100) {
         if (lastLoggedElementType !== 'video') {
-          console.log('Using video element for overlay tracking');
           lastLoggedElementType = 'video';
         }
         return videoElement;
       }
       // Video element exists but dimensions too small - fall back to container
-      console.log('Video element too small, falling back to container');
       lastLoggedElementType = 'container';
-    } else {
-      console.log('No video element found (webrtc-output or mjpeg-output)');
     }
     
     // No video element found or video not ready - use container fallback
@@ -424,9 +479,6 @@
       console.error('Overlay: No suitable container found for positioning');
       container = document.querySelector('.main-layout') || document.body;
     }
-    
-    const rect = container.getBoundingClientRect();
-    console.log('Using container fallback:', container.className || container.id, 'dimensions:', `${rect.width} x ${rect.height}`, 'position:', { top: rect.top, left: rect.left });
     
     return container;
   };
@@ -599,7 +651,7 @@
       return null;
     }
 
-    const observer = new ResizeObserver(entries => {
+    const observer = new ResizeObserver(() => {
       try {
         // Use debounced update for ResizeObserver to prevent excessive calls
         debouncedUpdatePosition();
@@ -701,7 +753,6 @@
   // Watch for overlay being enabled/disabled - force repositioning when enabled
   watch(() => showOverlay.value, (isEnabled) => {
     if (isEnabled) {
-      console.log('Overlay enabled - forcing position update');
       // Clear cache and wait for proper video element
       lastBounds = { top: 0, left: 0, width: 0, height: 0 };
       lastElementType = null;
@@ -710,10 +761,8 @@
   });
 
   // Watch for HDMI activation changes - critical for overlay positioning
-  watch(() => device.value.video.isHDMIActivate, (isActive, wasActive) => {
-    console.log('HDMI activation changed:', wasActive, '→', isActive);
+  watch(() => device.value.video.isHDMIActivate, (isActive) => {
     if (isActive && showOverlay.value) {
-      console.log('HDMI activated with overlay enabled - repositioning');
       // Clear all cached data when HDMI state changes
       lastBounds = { top: 0, left: 0, width: 0, height: 0 };
       lastElementType = null;
@@ -758,11 +807,9 @@
         // Video must be reasonably sized (not just a tiny placeholder)
         // and positioned (not at 0,0 which indicates not ready)
         if (rect.width >= 100 && rect.height >= 100 && (rect.top > 0 || rect.left > 0)) {
-          console.log('Video element ready with proper dimensions:', rect.width + 'x' + rect.height, 'at', rect.top + ',' + rect.left);
           updateOverlayPosition();
           return true;
         }
-        console.log('Video element found but not ready:', rect.width + 'x' + rect.height, 'at', rect.top + ',' + rect.left);
       }
       return false;
     };
@@ -778,7 +825,7 @@
       if (checkVideo() || attempts >= maxAttempts) {
         clearInterval(interval);
         if (attempts >= maxAttempts) {
-          console.log('Video element not found after 10 seconds, using fallback positioning');
+          // Fallback to container positioning if video element not ready
           updateOverlayPosition();
         }
       }
@@ -889,7 +936,7 @@
 
   @container video-overlay (max-width: 300px) {
     /* Hide experimental controls on tiny videos */
-    .control-group:has(.v-tooltip:contains("Turn off"), .v-tooltip:contains("Turn on")) {
+    .control-group:has([data-experimental="true"]) {
       display: none !important;
     }
   }

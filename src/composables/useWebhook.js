@@ -1,12 +1,8 @@
 'use strict';
 
 import { ref, onMounted } from 'vue';
-import http from '@/utils/http.js';
-import { useAppStore } from '@/stores/stores';
-import { storeToRefs } from 'pinia';
 
 export function useWebhook() {
-  const store = useAppStore();
 
   const webhookList = ref({ items: [], events: [] });
 
