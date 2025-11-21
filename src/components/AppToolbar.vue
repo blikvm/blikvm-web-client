@@ -402,6 +402,7 @@
         }
         break;
       case 'lock':
+        store.showCtrlAltDelDialog = true;
         break;
 
       default:
