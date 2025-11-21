@@ -366,7 +366,6 @@
                       <v-col cols="12">
                         <v-text-field
                           v-model="device.meta.manufacturer"
-                          v-ripple
                           density="compact"
                           rounded="lg"
                           color="#76FF03"
@@ -374,16 +373,10 @@
                           single-line
                           clearable
                           maxlength="3"
-                          :rules="[
-                            (v) => !!v || 'Manufacturer is required',
-                            (v) =>
-                              (v && v.length === 3) || 'Manufacturer must be exactly 3 characters',
-                          ]"
                           @keydown.stop
+                          @keypress.stop
                           @keyup.stop
-                          @update:focused="
-                            (f) => onEdidFieldFocus('manufacturer', f, device.meta.manufacturer)
-                          "
+                          @blur="saveManufacturer"
                         >
                           <template #append>
                             <v-icon
@@ -541,6 +534,12 @@
                           density="compact"
                           tile
                           color="#76FF03"
+                          @mousedown.stop
+                          @mouseup.stop
+                          @click.stop
+                          @keydown.stop
+                          @keypress.stop
+                          @keyup.stop
                           @update:model-value="changeDisplayMode"
                         />
                       </v-col>
@@ -1200,6 +1199,10 @@
   }
 
   // Gate calling changeEDIDInfo to only when a field loses focus and passes validation
+  const saveManufacturer = () => {
+    onEdidFieldFocus('manufacturer', false, device.value.meta.manufacturer);
+  };
+
   const onEdidFieldFocus = (field, focused, value) => {
     if (focused) return; // only act on blur
     let ok = true;

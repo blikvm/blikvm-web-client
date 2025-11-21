@@ -28,7 +28,7 @@ export function useVideoPositioning() {
 
   // Validate bounds to prevent toolbar coverage and ensure safe positioning
   const validateBounds = (bounds, elementType) => {
-    const isContainer = elementType !== 'VIDEO';
+    const isContainer = elementType !== 'VIDEO' && elementType !== 'IMG';
 
     // For container elements during no-signal, apply safety restrictions
     if (isContainer) {
@@ -167,8 +167,8 @@ export function useVideoPositioning() {
     // Apply safe bounds
     videoBounds.value = safeBounds;
 
-    // Track whether we found a real video element
-    isVideoVisible.value = element.tagName === 'VIDEO';
+    // Track whether we found a real video element (VIDEO for H.264, IMG for MJPEG)
+    isVideoVisible.value = element.tagName === 'VIDEO' || element.tagName === 'IMG';
     lastBounds = safeBounds;
     lastElementType = currentElementType;
   };

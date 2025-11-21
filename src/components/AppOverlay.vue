@@ -408,11 +408,11 @@
   /**
    * Validates overlay bounds to prevent toolbar coverage and ensure safe positioning
    * @param {Object} bounds - Raw element bounds from getBoundingClientRect()
-   * @param {String} elementType - Type of element ('VIDEO' or container element tagName)
+   * @param {String} elementType - Type of element ('VIDEO', 'IMG', or container element tagName)
    * @returns {Object} Validated bounds that won't interfere with UI elements
    */
   const validateBounds = (bounds, elementType) => {
-    const isContainer = elementType !== 'VIDEO';
+    const isContainer = elementType !== 'VIDEO' && elementType !== 'IMG';
     
     // For container elements during no-signal, just ensure toolbar safety
     if (isContainer) {
@@ -531,8 +531,8 @@
     
     // Apply safe bounds
     videoBounds.value = safeBounds;
-    // Track whether we found a real video element
-    isVideoVisible.value = element.tagName === 'VIDEO';
+    // Track whether we found a real video element (VIDEO for H.264, IMG for MJPEG)
+    isVideoVisible.value = element.tagName === 'VIDEO' || element.tagName === 'IMG';
     lastBounds = safeBounds;
     lastElementType = currentElementType;
   };

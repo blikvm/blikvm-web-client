@@ -23,7 +23,7 @@
     </v-expansion-panel-title>
     <v-expansion-panel-text>
       <v-expansion-panels multiple>
-        <v-expansion-panel value="network-general">
+        <v-expansion-panel value="network-general" @group:selected="getSystemInfo">
           <v-expansion-panel-title>
             <template #default="">
               <v-row dense no-gutters>
@@ -274,6 +274,7 @@
 <script setup>
   import { useDevice } from '@/composables/useDevice.js';
   import { useAlert } from '@/composables/useAlert.js';
+  import { getSystemInfo } from '@/composables/useSystemInfo.js';
   import http from '@/utils/http.js';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
@@ -282,6 +283,28 @@
   const { isExperimental, systeminfo } = storeToRefs(store);
   const { device } = useDevice();
   const { sendAlert } = useAlert(alert);
+
+  const debugNetworkData = async (selected) => {
+    try {
+      if (!selected) return;
+      
+      // Call the original getSystemInfo
+      await getSystemInfo(selected);
+      
+      // Debug what we got
+      console.log('device.network.interfaces:', device.value.network.interfaces);
+      console.log('Full device.network:', device.value.network);
+      
+      // Also call the systeminfo API directly to see raw response
+      const response = await http.get('/systeminfo');
+      console.log('Raw /systeminfo response:', response.data.data);
+      console.log('Network part:', response.data.data.network);
+      
+    } catch (error) {
+      console.error('Debug error:', error);
+      sendAlert('error', 'Debug Error', error.message);
+    }
+  };
 
   const changeHostname = async (value) => {
     try {
@@ -362,6 +385,7 @@
       sendAlert('error', title, message);
     }
   };
+
 
   const getNetworkInfo = async (selected) => {
     try {
