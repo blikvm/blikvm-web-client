@@ -11,15 +11,8 @@
     :style="headerMenuStyle"
   >
     <!-- Layout Controls Button Group -->
-    <v-btn-group
-      variant="elevated"
-      color="black"
-      class="layout-btn-group"
-    >
-      <v-tooltip
-        location="bottom"
-        content-class=""
-      >
+    <v-btn-group variant="elevated" color="black" class="layout-btn-group">
+      <v-tooltip location="bottom" content-class="">
         <template #activator="{ props: tooltipProps }">
           <v-btn
             v-bind="tooltipProps"
@@ -30,18 +23,13 @@
             variant="tonal"
             @click="handleLayoutClick('left')"
           >
-            <v-icon :color="settings.isVisible ? '#76FF03' : 'white'">
-              mdi-dock-left
-            </v-icon>
+            <v-icon :color="settings.isVisible ? '#76FF03' : 'white'"> mdi-dock-left </v-icon>
           </v-btn>
         </template>
         <span>Toggle settings</span>
       </v-tooltip>
 
-      <v-tooltip
-        location="bottom"
-        content-class=""
-      >
+      <v-tooltip location="bottom" content-class="">
         <template #activator="{ props: tooltipProps }">
           <v-btn
             v-bind="tooltipProps"
@@ -52,9 +40,7 @@
             variant="tonal"
             @click="handleLayoutClick('bottom')"
           >
-            <v-icon :color="footer.showFooter ? '#76FF03' : 'white'">
-              mdi-dock-bottom
-            </v-icon>
+            <v-icon :color="footer.showFooter ? '#76FF03' : 'white'"> mdi-dock-bottom </v-icon>
           </v-btn>
         </template>
         <span>Toggle footer</span>
@@ -83,10 +69,7 @@
     <!-- User Menu -->
     <v-menu offset-y>
       <template #activator="{ props: menuProps }">
-        <v-tooltip
-          location="bottom"
-          content-class=""
-        >
+        <v-tooltip location="bottom" content-class="">
           <template #activator="{ props: tooltipProps }">
             <v-btn
               v-bind="{ ...menuProps, ...tooltipProps }"
@@ -96,24 +79,16 @@
               variant="elevated"
               color="black"
             >
-              <v-icon color="white">
-                mdi-account-circle
-              </v-icon>
+              <v-icon color="white"> mdi-account-circle </v-icon>
             </v-btn>
           </template>
-          <span>{{ account.user || t('common.user') }} </span>
+          <span>{{ account.user }} </span>
         </v-tooltip>
       </template>
       <v-list>
-        <template
-          v-for="item in menuItems"
-          :key="item.id"
-        >
+        <template v-for="item in menuItems" :key="item.id">
           <v-divider v-if="item.isDivider" />
-          <v-list-item
-            v-else
-            @click="handleUserClick(item.id)"
-          >
+          <v-list-item v-else @click="handleUserClick(item.id)">
             <template #prepend>
               <v-icon>{{ item.icon }}</v-icon>
             </template>
@@ -127,9 +102,7 @@
 
 <script setup>
   import { useHeaderMenu } from '@/composables/useHeaderMenu';
-  import { useI18n } from 'vue-i18n';
 
-  const { t } = useI18n();
   const {
     account,
     settings,
