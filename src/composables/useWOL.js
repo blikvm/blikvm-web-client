@@ -43,9 +43,7 @@ export function useWOL() {
         mac: mac,
       };
       const response = await http.post('/v2/wol', requestBody);
-      console.log('response:', response);
       if (response.status === 200 && response.data.code === 0) {
-        console.log('response.data:', response.data.data);
         if (response.data.data) {
           // If the response contains data, update the wolList
           wolList.value.items = response.data.data;
@@ -71,12 +69,10 @@ export function useWOL() {
         mac: mac,
       };
       const response = await http.delete('/wol', { data: requestBody });
-      console.log('response:', response);
       if (response.status === 200 && response.data.code === 0) {
         if (response.data.data) {
           // If the response contains data, update the wolList
           wolList.value.items = response.data.data;
-          console.log('wolList.value.items:', wolList.value.items);
         }
       }
     } catch (error) {
