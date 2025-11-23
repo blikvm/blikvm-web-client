@@ -32,7 +32,6 @@ import { routes } from 'vue-router/auto-routes';
 // Modify the existing routes if needed
 for (const route of routes) {
   if (route.name === '/main') {
-    console.log(route);
     route.meta = route.meta || {};
     // Uncomment this line if you want to require authentication for the main route
     // route.meta.requiresAuth = true;
@@ -55,21 +54,12 @@ const router = createRouter({
 
 // Global navigation guard for authentication
 router.beforeEach((to, from, next) => {
-  console.log('to.matched:', to.matched);
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const token = localStorage.getItem('token'); // TODO get from store
-
-  console.log('token', token);
-  console.log('Navigating to:', to.path);
 
   if (requiresAuth && !token) {
     next('/'); // Redirect to home if authentication is required and no token is present
   } else {
-    if (token) {
-      console.log('token valid');
-    } else {
-      console.log("don't need auth");
-    }
     next(); // Proceed to the route
   }
 });

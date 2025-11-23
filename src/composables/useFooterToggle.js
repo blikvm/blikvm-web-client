@@ -13,26 +13,27 @@ export function useFooterToggle(initialSelection = ['video']) {
    */
   const handleToggleChange = (selectedValues) => {
     let corrected = [...selectedValues];
-
-    // Simple mutual exclusivity rules
-    if (corrected.includes('notifications')) {
-      // Notifications only with video
-      corrected = corrected.filter((val) => val === 'video' || val === 'notifications');
-    } else if (
-      corrected.includes('keyboard') &&
-      (corrected.includes('console') || corrected.includes('serial'))
-    ) {
-      // Keyboard vs terminals - remove the older one (keep the last clicked)
-      const oldToggle = activeToggle.value;
-      const newItem = corrected.find((val) => !oldToggle.includes(val));
-
-      if (newItem === 'keyboard') {
-        corrected = corrected.filter((val) => val !== 'console' && val !== 'serial');
-      } else {
-        corrected = corrected.filter((val) => val !== 'keyboard');
-      }
+    
+    // Mutual exclusivity rules - MOST RECENT ITEM WINS:
+    // Determine what the user just clicked (newest item)
+    const oldToggle = activeToggle.value;
+    const newItem = corrected.find(val => !oldToggle.includes(val));
+    
+    if (newItem === 'notifications') {
+      // Notifications exclude everything else
+      corrected = corrected.filter(val => val === 'video' || val === 'notifications');
+    } else if (newItem === 'keyboard') {
+      // Keyboard excludes terminals and notifications (mouse can coexist)
+      corrected = corrected.filter(val => !['console', 'serial', 'notifications'].includes(val));
+    } else if (newItem === 'console' || newItem === 'serial') {
+      // Terminal excludes keyboard, notifications, and mouse
+      corrected = corrected.filter(val => !['keyboard', 'notifications', 'mouse'].includes(val));
+    } else if (newItem === 'mouse') {
+      // Mouse excludes terminals and notifications (keyboard can coexist)
+      corrected = corrected.filter(val => !['console', 'serial', 'notifications'].includes(val));
     }
-
+    // Note: Mouse has no exclusions - it can coexist with keyboard, terminals, or be standalone
+    
     activeToggle.value = corrected;
   };
 

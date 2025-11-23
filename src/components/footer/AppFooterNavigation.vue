@@ -115,10 +115,11 @@
     { id: 'notifications', text: t('notification.title'), icon: 'mdi-bell-outline' },
   ];
 
-  // Computed properties
-  const availableMenuItems = computed(() =>
-    menuItems.filter((item) => item.id !== 'mouse' || props.isTouchDevice)
-  );
+  // Computed properties  
+  const availableMenuItems = computed(() => {
+    // Hide mouse button when no touch device detected
+    return menuItems.filter(item => item.id !== 'mouse' || props.isTouchDevice);
+  });
 </script>
 
 <style scoped>
