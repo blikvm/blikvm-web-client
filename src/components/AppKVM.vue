@@ -373,6 +373,7 @@
     () => isVideoActive.value,
     (isActive) => {
       if (isActive === false) {
+        console.log('DEBUG: Signal lost - video stream became inactive');
         device.value.video.connectionState = 'no-signal';
       }
     }

@@ -42,7 +42,6 @@ export function debounce(func, wait = 300, options = {}) {
 
   function remainingWait(time) {
     const timeSinceLastCall = time - lastCallTime;
-    const timeSinceLastInvoke = time - lastInvokeTime;
     const timeWaiting = wait - timeSinceLastCall;
 
     return timeWaiting;

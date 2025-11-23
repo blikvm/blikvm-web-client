@@ -1,6 +1,9 @@
 <template>
   <!-- Unified single footer with toggle navigation -->
-  <v-footer v-if="shouldShowFooter" class="d-flex flex-column pa-0 bg-black">
+  <v-footer
+    v-if="shouldShowFooter"
+    class="d-flex flex-column pa-0 bg-black"
+  >
     <!-- Content sections with proper ordering: Virtual Mouse → Notifications → Terminals → Keyboard -->
     <div v-if="hasActiveComponents">
       <!-- Virtual Mouse Section -->
@@ -39,7 +42,7 @@
 </template>
 
 <script setup>
-  import { computed, watch, onMounted, ref } from 'vue';
+  import { computed, watch, onMounted, onBeforeUnmount, ref } from 'vue';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
@@ -97,42 +100,18 @@
   const shouldShowFooter = computed(() => footer.value.showFooter);
 
   function handleToggleChange(newToggles) {
-    // Business rules: mutual exclusions
-    // 1. notifications vs (keyboard, console, serial)
-    // 2. keyboard vs (console, serial)
-    // 3. video is display-only, cannot be toggled by user
-    // Rule: newest clicked component wins, hides all conflicting ones
-
-    const interactiveComponents = ['keyboard', 'console', 'serial', 'notifications'];
-    const newItem = newToggles.find((item) => !previousToggleState.value.includes(item));
-
     // If user clicked video, ignore it (video is controlled by video state, not user)
+    const newItem = newToggles.find(item => !previousToggleState.value.includes(item));
     if (newItem === 'video') {
       // Restore previous state - video toggle is display-only
       activeToggle.value = previousToggleState.value;
       return;
     }
-
-    if (interactiveComponents.includes(newItem)) {
-      // User clicked an interactive component, apply exclusions
-      if (newItem === 'notifications') {
-        // Notifications clicked - remove keyboard, console, serial
-        newToggles = newToggles.filter((item) => !['keyboard', 'console', 'serial'].includes(item));
-      } else if (newItem === 'keyboard') {
-        // Keyboard clicked - remove notifications, console, serial
-        newToggles = newToggles.filter(
-          (item) => !['notifications', 'console', 'serial'].includes(item)
-        );
-      } else if (newItem === 'console' || newItem === 'serial') {
-        // Terminal clicked - remove notifications and keyboard
-        newToggles = newToggles.filter((item) => !['notifications', 'keyboard'].includes(item));
-      }
-    }
-
+    
     // Update previous state for next time
     previousToggleState.value = [...newToggles];
-
-    activeToggle.value = newToggles;
+    
+    // Let useFooterToggle handle the mutual exclusion logic
     handleFooterToggleChange(newToggles);
     updateVisibility(newToggles);
   }
@@ -168,15 +147,64 @@
   // Setup component visibility watcher
   watchToggleChanges(activeToggle);
 
-  // Component lifecycle
-  onMounted(() => {
-    if (typeof window !== 'undefined') {
-      isTouchDevice.value =
-        'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+  // Enhanced touch detection for USB touch screens
+  const detectTouchDevice = () => {
+    // Standard touch detection
+    const hasOntouchstart = 'ontouchstart' in window;
+    const hasMaxTouchPoints = navigator.maxTouchPoints > 0;
+    const hasMsMaxTouchPoints = navigator.msMaxTouchPoints > 0;
+    
+    // Additional detection for USB touch screens
+    const hasPointerEvents = 'onpointerdown' in window;
+    const hasTouchEvents = 'TouchEvent' in window;
+    
+    // Check media queries for touch capability
+    const hasTouchMediaQuery = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    
+    // More precise touch detection - only consider actual touch capability
+    const isTouch = hasOntouchstart || hasMaxTouchPoints || hasMsMaxTouchPoints || 
+                   hasTouchMediaQuery;
+    
+    // Touch detection logic - using multiple detection methods for accuracy
+    
+    return isTouch;
+  };
+
+  // Re-check when USB devices are connected/disconnected
+  const recheckTouchDevice = () => {
+    const newValue = detectTouchDevice();
+    if (newValue !== isTouchDevice.value) {
+      isTouchDevice.value = newValue;
     }
-  });
+  };
+
+// Component lifecycle
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    isTouchDevice.value = detectTouchDevice();
+    
+    // Global debug function for manual override
+    window.setTouchDevice = (value) => {
+      isTouchDevice.value = value;
+    };
+    window.getTouchDeviceStatus = () => {
+      return { current: isTouchDevice.value, detected: detectTouchDevice() };
+    };
+    
+    // Listen for device changes (when USB devices are plugged/unplugged)
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices.addEventListener('devicechange', recheckTouchDevice);
+    }
+  }
+});
+
+onBeforeUnmount(() => {
+  if (navigator.mediaDevices) {
+    navigator.mediaDevices.removeEventListener('devicechange', recheckTouchDevice);
+  }
+});
 </script>
 
 <style scoped>
-  /* Minimal styles for main AppFooter component */
+/* Minimal styles for main AppFooter component */
 </style>

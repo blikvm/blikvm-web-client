@@ -231,7 +231,6 @@ export class RateLimitedMouse {
     } else {
       // 绝对模式：直接用 clientX / clientY
       // 这里用相对于视口的坐标（方便 _parseMouseEvent 算归一化）
-      const rect = touch.target.getBoundingClientRect();
       fakeEvt.clientX = touch.clientX;
       fakeEvt.clientY = touch.clientY;
     }
