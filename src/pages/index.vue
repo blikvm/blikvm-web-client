@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-  import { ref, shallowRef, onMounted, getCurrentInstance } from 'vue';
+  import { ref, shallowRef, onMounted } from 'vue';
   import { storeToRefs } from 'pinia';
   import { useRouter } from 'vue-router';
   import { useAppStore } from '@/stores/stores';

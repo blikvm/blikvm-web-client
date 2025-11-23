@@ -23,7 +23,7 @@
     </v-expansion-panel-title>
     <v-expansion-panel-text>
       <v-expansion-panels multiple>
-        <v-expansion-panel value="network-general" @group:selected="getSystemInfo">
+        <v-expansion-panel value="network-general">
           <v-expansion-panel-title>
             <template #default="">
               <v-row dense no-gutters>
@@ -83,8 +83,7 @@
               <v-row dense no-gutters>
                 <v-col cols="12">
                   <v-text-field
-                    :value="device.network.interfaces?.[0]?.mac"
-                    readonly
+                    v-model="device.network.interfaces[0].mac"
                     v-ripple
                     density="compact"
                     rounded="lg"
@@ -99,7 +98,7 @@
                         size="small"
                         color="#76FF03"
                         style="pointer-events: auto; cursor: pointer"
-                        @click.stop="copyClipboard(device.network.interfaces?.[0]?.mac)"
+                        @click.stop="copyClipboard(device.network.interfaces[0].mac)"
                       >
                         mdi-content-copy
                       </v-icon>
@@ -114,8 +113,7 @@
               <v-row dense no-gutters>
                 <v-col cols="12">
                   <v-text-field
-                    :value="device.network.interfaces?.[0]?.ip4"
-                    @input="updateNetworkIP($event)"
+                    v-model="device.network.interfaces[0].ip4"
                     v-ripple
                     density="compact"
                     rounded="lg"
@@ -124,13 +122,13 @@
                     hide-details
                     single-line
                     clearable
-                    :disabled="device.network.interfaces?.[0]?.dhcp"
+                    :disabled="device.network.interfaces[0].dhcp"
                   >
                     <template #append>
                       <v-icon
                         size="small"
                         color="#76FF03"
-                        @click="copyClipboard(device.network.interfaces?.[0]?.ip4)"
+                        @click="copyClipboard(device.network.interfaces[0].ip4)"
                       >
                         mdi-content-copy
                       </v-icon>
@@ -151,7 +149,7 @@
                 >
                   <v-chip>
                     {{
-                      device.network.interfaces?.[0]?.dhcp
+                      device.network.interfaces[0].dhcp
                         ? $t('settings.network.general.dynamic')
                         : $t('settings.network.general.static')
                     }}
@@ -274,7 +272,6 @@
 <script setup>
   import { useDevice } from '@/composables/useDevice.js';
   import { useAlert } from '@/composables/useAlert.js';
-  import { getSystemInfo } from '@/composables/useSystemInfo.js';
   import http from '@/utils/http.js';
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
@@ -283,28 +280,6 @@
   const { isExperimental, systeminfo } = storeToRefs(store);
   const { device } = useDevice();
   const { sendAlert } = useAlert(alert);
-
-  const debugNetworkData = async (selected) => {
-    try {
-      if (!selected) return;
-      
-      // Call the original getSystemInfo
-      await getSystemInfo(selected);
-      
-      // Debug what we got
-      console.log('device.network.interfaces:', device.value.network.interfaces);
-      console.log('Full device.network:', device.value.network);
-      
-      // Also call the systeminfo API directly to see raw response
-      const response = await http.get('/systeminfo');
-      console.log('Raw /systeminfo response:', response.data.data);
-      console.log('Network part:', response.data.data.network);
-      
-    } catch (error) {
-      console.error('Debug error:', error);
-      sendAlert('error', 'Debug Error', error.message);
-    }
-  };
 
   const changeHostname = async (value) => {
     try {
@@ -386,7 +361,6 @@
     }
   };
 
-
   const getNetworkInfo = async (selected) => {
     try {
       if (!selected) return;
@@ -409,13 +383,6 @@
       const title = 'Network Ports Error';
       const message = `${error.message}`;
       sendAlert('error', title, message);
-    }
-  };
-
-  // Handle network IP updates safely
-  const updateNetworkIP = (newValue) => {
-    if (device.value?.network?.interfaces?.[0]) {
-      device.value.network.interfaces[0].ip4 = newValue;
     }
   };
 </script>

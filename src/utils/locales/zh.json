@@ -435,7 +435,6 @@
     "remove": "移除",
     "add": "添加",
     "disabled": "已禁用",
-    "user": "用户",
     "basic": "基础",
     "use": "使用",
     "cancel": "取消",
@@ -463,6 +462,7 @@
     "server": "后端",
     "used": "已用",
     "free": "剩余",
+    "unregister": "未注册",
     "allowed": "已允许",
     "blocked": "已阻止",
     "retry": "立刻重试",
@@ -473,11 +473,7 @@
     "notifications": "通知",
     "toggleSettings": "切换设置",
     "toggleFooter": "切换页脚",
-    "atxPower": "ATX 电源",
-    "unregistered": "unregistered",
-    "micMute": "静音",
-    "micUnmute": "取消静音",
-    "micRegisterFirst": "请先注册麦克风"
+    "atxPower": "ATX 电源"
   },
   "label": {
     "connected": "已连接",
@@ -570,7 +566,7 @@
     "pageText": "{0}-{1} 共 {2}"
   },
   "diagnostics": {
-    "videoStreamClosed": "视频流已关闭",
+    "videoStreamerServerClosed": "视频流服务器已关闭",
     "reconnectMessage": "正在尝试重连... {countdownDisplay}s",
     "reconnectStopMessage": "已达到最大重新连接尝试次数。请检查设备",
     "reloadWindow": "重新加载窗口",

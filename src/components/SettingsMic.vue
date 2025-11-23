@@ -126,7 +126,7 @@
     const registered = !!device.value?.mic?.isRegistered;
     const micOn = !!audio.value?.isMicrophoneOn;
     if (!registered) {
-      return { color: '#76FF03', labelKey: 'common.unregistered' };
+      return { color: '#76FF03', labelKey: 'common.unregister' };
     }
     if (!micOn) {
       return { color: 'orange', labelKey: 'common.blocked' };

@@ -21,11 +21,7 @@
         multiple
         color="#76FF03"
         density="compact"
-        @update:model-value="(newValue) => {
-          console.log('🔘 Toggle button clicked:', newValue);
-          console.log('🔘 Previous state:', activeToggle);
-          handleToggleChange(newValue);
-        }"
+        @update:model-value="handleToggleChange"
       >
         <v-btn
           v-for="item in availableMenuItems"
@@ -119,11 +115,10 @@
     { id: 'notifications', text: t('notification.title'), icon: 'mdi-bell-outline' },
   ];
 
-  // Computed properties  
-  const availableMenuItems = computed(() => {
-    // Hide mouse button when no touch device detected
-    return menuItems.filter(item => item.id !== 'mouse' || props.isTouchDevice);
-  });
+  // Computed properties
+  const availableMenuItems = computed(() =>
+    menuItems.filter((item) => item.id !== 'mouse' || props.isTouchDevice)
+  );
 </script>
 
 <style scoped>

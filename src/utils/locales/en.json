@@ -61,8 +61,7 @@
         "isHDMIActivateField": "HDMI active?",
         "modeField": "Video Mode",
         "orientation": "Orientation",
-        "HDMIInput": "HDMI input",
-        "resolution": "Resolution",
+        "inputFormat": "HDMI input format",
         "liveFormat": "Live Bitrate / fps",
         "desiredFpsField": "Desired Frames per Second",
         "mjpegQualityField": "Quality",
@@ -434,7 +433,6 @@
     "current": "current",
     "total": "total",
     "active": "active",
-    "noVideoFeed": "No video feed - overlay disabled",
     "unavailable": "unavailable",
     "inactive": "Inactive",
     "download": "Download",
@@ -443,7 +441,6 @@
     "remove": "Remove",
     "add": "Add",
     "disabled": "Disabled",
-    "user": "User",
     "basic": "Basic",
     "use": "Use",
     "cancel": "Cancel",
@@ -474,6 +471,7 @@
     "free": "Free",
     "allowed": "allowed",
     "blocked": "blocked",
+    "unregister": "unregister",
     "hide": "Hide",
     "video": "Video",
     "sshTerminal": "SSH Terminal",
@@ -481,11 +479,7 @@
     "notifications": "Notifications",
     "toggleSettings": "Toggle settings",
     "toggleFooter": "Toggle footer",
-    "atxPower": "ATX Power",
-    "unregistered": "unregistered",
-    "micMute": "Mute",
-    "micUnmute": "Unmute",
-    "micRegisterFirst": "Register mic first"
+    "atxPower": "ATX Power"
   },
   "label": {
     "connected": "Connected",
@@ -572,7 +566,7 @@
     "pageText": "{0}-{1} of {2}"
   },
   "diagnostics": {
-    "videoStreamClosed": "Video stream is closed",
+    "videoStreamerServerClosed": "Video streamer server is closed",
     "reconnectMessage": "Attempting to reconnect... {countdownDisplay}s",
     "reconnectStopMessage": "The maximum number of reconnection attempts has been reached. Please check the device",
     "reloadWindow": "Reload Window",

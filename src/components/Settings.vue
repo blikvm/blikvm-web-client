@@ -143,12 +143,12 @@
       </v-expansion-panels>
 
       <!-- Network -->
-      <v-expansion-panels v-model="networkPanel" multiple>
+      <v-expansion-panels v-model="outerPanel8" multiple>
         <SettingsNetwork />
       </v-expansion-panels>
 
       <!-- Security -->
-      <v-expansion-panels v-model="securityPanel" multiple>
+      <v-expansion-panels v-model="outerPanel9" multiple>
         <SettingsSecurity />
       </v-expansion-panels>
 
@@ -221,8 +221,6 @@
   const outerPanel9 = ref([]);
   const outerPanel10 = ref([]);
   const outerPanel11 = ref([]);
-  const networkPanel = ref([]);
-  const securityPanel = ref([]);
   const innerPanel = ref([]);
 
   // Ensure isAuthEnabled is true if is2FaEnabled is true

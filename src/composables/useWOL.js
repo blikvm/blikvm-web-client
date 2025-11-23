@@ -1,6 +1,6 @@
 'use strict';
 
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import http from '@/utils/http.js';
 import { useAlert } from '@/composables/useAlert.js';
 
