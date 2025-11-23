@@ -110,6 +110,7 @@
               <br />
               <div class="text-caption">
                 {{ $t('settings.network.general.ip4Field') }}
+                <!-- TODO: Backend persistence needed for static IP updates -->
               </div>
               <v-row dense no-gutters>
                 <v-col cols="12">
@@ -406,9 +407,14 @@
   };
 
   // Handle network IP updates safely
+  // TODO: Add backend persistence for static IP configuration
+  // CodeRabbit Issue: Missing backend API endpoint for IP updates
   const updateNetworkIP = (newValue) => {
     if (device.value?.network?.interfaces?.[0]) {
       device.value.network.interfaces[0].ip4 = newValue;
+      // TODO: Implement backend API call to persist IP changes
+      // Expected endpoint: POST /network/interface with { ip4: newValue, interface: 0 }
+      console.warn('IP address updated locally only - backend persistence not implemented');
     }
   };
 </script>
