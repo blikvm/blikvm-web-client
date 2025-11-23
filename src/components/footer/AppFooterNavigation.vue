@@ -21,11 +21,7 @@
         multiple
         color="#76FF03"
         density="compact"
-        @update:model-value="(newValue) => {
-          console.log('🔘 Toggle button clicked:', newValue);
-          console.log('🔘 Previous state:', activeToggle);
-          handleToggleChange(newValue);
-        }"
+        @update:model-value="handleToggleChange"
       >
         <v-btn
           v-for="item in availableMenuItems"

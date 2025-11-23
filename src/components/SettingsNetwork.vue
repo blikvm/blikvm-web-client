@@ -291,14 +291,7 @@
       // Call the original getSystemInfo
       await getSystemInfo(selected);
       
-      // Debug what we got
-      console.log('device.network.interfaces:', device.value.network.interfaces);
-      console.log('Full device.network:', device.value.network);
-      
-      // Also call the systeminfo API directly to see raw response
-      const response = await http.get('/systeminfo');
-      console.log('Raw /systeminfo response:', response.data.data);
-      console.log('Network part:', response.data.data.network);
+      // Network data loaded successfully
       
     } catch (error) {
       console.error('Debug error:', error);
