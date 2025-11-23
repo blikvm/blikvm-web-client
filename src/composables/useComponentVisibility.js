@@ -31,13 +31,13 @@ export function useComponentVisibility(device, isTouchDevice) {
    * @param {Array} toggleSelection - Array of selected toggle IDs
    */
   const updateVisibility = (toggleSelection) => {
-    const hasKeyboard = toggleSelection.includes('keyboard');
-    const hasConsole = toggleSelection.includes('console');
-    const hasSerial = toggleSelection.includes('serial');
-    const hasNotifications = toggleSelection.includes('notifications');
-    const hasTommy = toggleSelection.includes('tommy');
-    const hasMouse = toggleSelection.includes('mouse');
-
+    const hasKeyboard = toggleSelection.includes("keyboard");
+    const hasConsole = toggleSelection.includes("console");
+    const hasSerial = toggleSelection.includes("serial");
+    const hasNotifications = toggleSelection.includes("notifications");
+    const hasTommy = toggleSelection.includes("tommy");
+    const hasMouse = toggleSelection.includes("mouse");
+    
     // Business rules:
     // - Notifications and keyboard are mutually exclusive
     // - Terminals (console/serial) can coexist with each other and virtual mouse
@@ -94,16 +94,11 @@ export function useComponentVisibility(device, isTouchDevice) {
       showVirtualMouse.value = hasMouse;
       device.value.showSSHTerminal = hasConsole;
       showSerial.value = hasSerial;
-
-      // Show keyboard based on device type
+      
+      // Show keyboard - always use desktop keyboard for now (mobile keyboard for separate release)
       if (hasKeyboard) {
-        if (isTouchDevice.value) {
-          showMobileKeyboard.value = true;
-          showKeyboard.value = false;
-        } else {
-          showKeyboard.value = true;
-          showMobileKeyboard.value = false;
-        }
+        showKeyboard.value = true;
+        showMobileKeyboard.value = false;
       } else {
         showKeyboard.value = false;
         showMobileKeyboard.value = false;

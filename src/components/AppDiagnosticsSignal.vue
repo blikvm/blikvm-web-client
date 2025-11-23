@@ -1,10 +1,8 @@
 <template>
-  <v-overlay
-    :model-value="showDiagnostics"
-    :opacity="0"
-    contained
-    content-class="d-flex flex-column align-center justify-end w-100 h-100"
-    :style="{ pointerEvents: 'none' }"
+  <div
+    v-if="showDiagnostics"
+    class="diagnostics-overlay d-flex flex-column align-center justify-end w-100 h-100"
+    :style="{ zIndex: props.zIndex }"
   >
     <!--
    <v-hover v-slot="{ isHovering, props }">  
@@ -32,12 +30,12 @@
       <v-icon size="32" color="orange" class="mb-2"> mdi-alert-circle </v-icon>
       <div>{{ $t('diagnostics.noSignal') }}</div>
       <div v-if="!device.video.isActive" class="text-caption mt-1">
-        {{ $t('diagnostics.videoStreamerServerClosed') }}
+        {{ $t('diagnostics.videoStreamClosed') }}
       </div>
     </div>
 
     <v-spacer />
-  </v-overlay>
+  </div>
 </template>
 
 <script setup>
@@ -45,6 +43,13 @@
   import { useAppStore } from '@/stores/stores';
   import { storeToRefs } from 'pinia';
   import { useDevice } from '@/composables/useDevice';
+
+  const props = defineProps({
+    zIndex: {
+      type: Number,
+      default: 800
+    }
+  });
 
   const store = useAppStore();
   const { device } = useDevice();
@@ -56,6 +61,7 @@
   onMounted(() => {
     device.value.video.connectingTimeout = setTimeout(() => {
       if (device.value.video.connectionState === 'connecting') {
+        console.log('DEBUG: Signal lost - diagnostics component connection timeout after 10 seconds');
         device.value.video.connectionState = 'no-signal';
       }
     }, 10000); // 10 seconds - reasonable wait time
@@ -68,6 +74,20 @@
     }
   });
 </script>
+
+<style scoped>
+.diagnostics-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  color: white;
+  text-align: center;
+  pointer-events: none;
+}
+</style>
 
 <style scoped>
   .no-signal {

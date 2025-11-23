@@ -38,28 +38,59 @@
     </slot>
 
     <template v-if="$vuetify.display.smAndUp">
-      <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical />
+      <v-divider
+        class="mx-1 align-self-center"
+        length="24"
+        thickness="2"
+        vertical
+      />
     </template>
 
-    <!-- Status Indicator (Connection + Health) -->
-    <v-tooltip location="top" content-class="">
+    <!-- LAN Connectivity Status (always visible) -->
+    <v-tooltip
+      location="top"
+      content-class=""
+    >
       <template #activator="{ props: tooltipProps }">
         <v-icon
           v-bind="tooltipProps"
-          :color="device.isDisconnected ? '#D32F2F' : healthIconColor"
+          :color="device.isDisconnected ? '#D32F2F' : '#76FF03'"
           class="toolbar-icon"
           size="small"
         >
-          {{ device.isDisconnected ? 'mdi-lan-disconnect' : 'mdi-heart-pulse' }}
+          {{ device.isDisconnected ? 'mdi-lan-disconnect' : 'mdi-lan-connect' }}
         </v-icon>
       </template>
-      <span>{{ device.isDisconnected ? $t('common.disconnect') : device.health.status }}</span>
+      <span>{{ device.isDisconnected ? $t('common.disconnect') : $t('common.connect') }}</span>
+    </v-tooltip>
+
+    <!-- Health Status (always visible when connected) -->
+    <v-tooltip
+      v-if="!device?.isDisconnected"
+      location="top"
+      content-class=""
+    >
+      <template #activator="{ props: tooltipProps }">
+        <v-icon
+          v-bind="tooltipProps"
+          :color="healthIconColor"
+          class="toolbar-icon"
+          size="small"
+        >
+          mdi-heart-pulse
+        </v-icon>
+      </template>
+      <span>{{ device.health.status }}</span>
     </v-tooltip>
 
     <!-- Expanded Controls Section -->
     <template v-if="toolbar.expanded">
       <!-- KVM Status Icons -->
-      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+      <v-tooltip
+        v-if="!device?.isDisconnected"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -69,29 +100,37 @@
             mdi-keyboard
           </v-icon>
         </template>
-        <span
-          >{{ $t('common.keyboard') }}
+        <span>{{ $t('common.keyboard') }}
           {{
             device.hid.isActive && device.hid.keyboard.isActive
               ? $t('common.active')
               : $t('common.inactive')
-          }}</span
-        >
+          }}</span>
       </v-tooltip>
 
-      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+      <v-tooltip
+        v-if="!device?.isDisconnected"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
-          <v-icon v-bind="tooltipProps" :color="isVideoActive ? '#76FF03' : '#D32F2F'" size="small">
+          <v-icon
+            v-bind="tooltipProps"
+            :color="isVideoActive ? '#76FF03' : '#D32F2F'"
+            size="small"
+          >
             mdi-monitor
           </v-icon>
         </template>
-        <span
-          >{{ $t('settings.device.video.title') }}
-          {{ isVideoActive ? $t('common.active') : $t('common.inactive') }}</span
-        >
+        <span>{{ $t('settings.device.video.title') }}
+          {{ isVideoActive ? $t('common.active') : $t('common.inactive') }}</span>
       </v-tooltip>
 
-      <v-tooltip v-if="!device?.isDisconnected" location="top" content-class="">
+      <v-tooltip
+        v-if="!device?.isDisconnected"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -101,43 +140,61 @@
             mdi-mouse
           </v-icon>
         </template>
-        <span
-          >{{ $t('common.mouse') }}
+        <span>{{ $t('common.mouse') }}
           {{
             device.hid.isActive && device.hid.mouse.isActive
               ? $t('common.active')
               : $t('common.inactive')
-          }}</span
-        >
+          }}</span>
       </v-tooltip>
 
       <!-- Action Controls -->
-      <v-tooltip location="top" content-class="">
+      <v-tooltip
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
-            :color="showOverlay ? '#76FF03' : '#42A5F5'"
+            :color="!isVideoActive ? '#9E9E9E' : showOverlay ? '#76FF03' : '#42A5F5'"
+            :class="{ 'cursor-not-allowed': !isVideoActive }"
             size="small"
             @click="handleClick('overlay')"
           >
             {{ showOverlay ? 'mdi-layers-outline' : 'mdi-layers-off-outline' }}
           </v-icon>
         </template>
-        <span>{{ showOverlay ? $t('common.overlayOff') : $t('common.overlayOn') }}</span>
+        <span>{{ !isVideoActive ? $t('common.noVideoFeed') : showOverlay ? $t('common.overlayOff') : $t('common.overlayOn') }}</span>
       </v-tooltip>
 
-      <v-tooltip location="top" content-class="">
+      <v-tooltip
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
-          <v-icon v-bind="tooltipProps" color="#FFD600" size="small" @click="handleClick('lock')">
+          <v-icon
+            v-bind="tooltipProps"
+            color="#FFD600"
+            size="small"
+            @click="handleClick('lock')"
+          >
             mdi-lock
           </v-icon>
         </template>
         <span>{{ $t('common.send') }} Ctrl+Alt+Del</span>
       </v-tooltip>
 
-      <v-tooltip v-if="!isFullscreen" location="top" content-class="">
+      <v-tooltip
+        v-if="!isFullscreen"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
-          <v-icon v-bind="tooltipProps" size="small" @click="toggleFullscreen">
+          <v-icon
+            v-bind="tooltipProps"
+            size="small"
+            @click="toggleFullscreen"
+          >
             mdi-fullscreen
           </v-icon>
         </template>
@@ -150,7 +207,11 @@
 
     <template #append>
       <!-- Settings Toggle -->
-      <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+      <v-tooltip
+        v-if="toolbar.expanded"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -165,7 +226,11 @@
       </v-tooltip>
 
       <!-- Footer Toggle -->
-      <v-tooltip v-if="toolbar.expanded" location="top" content-class="">
+      <v-tooltip
+        v-if="toolbar.expanded"
+        location="top"
+        content-class=""
+      >
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
@@ -180,21 +245,37 @@
       </v-tooltip>
 
       <!-- User Menu -->
-      <v-menu v-if="toolbar.expanded" offset-y>
+      <v-menu
+        v-if="toolbar.expanded"
+        offset-y
+      >
         <template #activator="{ props: menuProps }">
-          <v-tooltip location="top" content-class="">
+          <v-tooltip
+            location="top"
+            content-class=""
+          >
             <template #activator="{ props: tooltipProps }">
-              <v-icon v-bind="{ ...menuProps, ...tooltipProps }" color="white" size="small">
+              <v-icon
+                v-bind="{ ...menuProps, ...tooltipProps }"
+                color="white"
+                size="small"
+              >
                 mdi-account-circle
               </v-icon>
             </template>
-            <span>{{ account.user }}</span>
+            <span>{{ account.user || t('common.user') }}</span>
           </v-tooltip>
         </template>
         <v-list density="compact">
-          <template v-for="item in menuItems" :key="item.id">
+          <template
+            v-for="item in menuItems"
+            :key="item.id"
+          >
             <v-divider v-if="item.isDivider" />
-            <v-list-item v-else @click="handleUserClick(item.id)">
+            <v-list-item
+              v-else
+              @click="handleUserClick(item.id)"
+            >
               <template #prepend>
                 <v-icon>{{ item.icon }}</v-icon>
               </template>
@@ -204,7 +285,10 @@
         </v-list>
       </v-menu>
 
-      <v-icon color="#76FF03" @click.stop="toggleToolbarExpansion">
+      <v-icon
+        color="#76FF03"
+        @click.stop="toggleToolbarExpansion"
+      >
         {{ toolbar.expanded ? 'mdi-chevron-double-left' : 'mdi-chevron-double-right' }}
       </v-icon>
     </template>
@@ -220,9 +304,11 @@
   import { useHeaderMenu } from '@/composables/useHeaderMenu';
   import { useDragHandle, DRAG_CONSTANTS } from '@/composables/useDragHandle';
   import { useFullscreen } from '@/composables/useFullscreen';
-  import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
+  import { onMounted, onBeforeUnmount, ref, computed, nextTick, watch } from 'vue';
+  import { useI18n } from 'vue-i18n';
 
   const store = useAppStore();
+  const { t } = useI18n();
 
   const { settings, footer, toolbar, showOverlay, systeminfo } = storeToRefs(store);
 
@@ -310,9 +396,13 @@
         settings.value.isVisible = !settings.value.isVisible;
         break;
       case 'overlay':
-        showOverlay.value = !showOverlay.value;
+        // Don't allow overlay toggle when there's no video feed
+        if (isVideoActive.value) {
+          showOverlay.value = !showOverlay.value;
+        }
         break;
       case 'lock':
+        store.showCtrlAltDelDialog = true;
         break;
 
       default:
@@ -338,6 +428,15 @@
 
   // Reset position on window resize - delegate to drag composable
   const handleResize = dragHandleResize;
+
+  // Auto-manage overlay state based on video feed
+  watch(isVideoActive, (newValue) => {
+    if (!newValue && showOverlay.value) {
+      // Hide overlay when video feed stops
+      showOverlay.value = false;
+    }
+    // Note: Don't auto-show overlay when video returns - let user manually enable
+  });
 
   onMounted(async () => {
     window.addEventListener('resize', handleResize);
