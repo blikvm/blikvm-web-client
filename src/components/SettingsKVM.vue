@@ -844,7 +844,7 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue';
+  import { ref, computed, toRaw } from 'vue';
   import { useDevice } from '@/composables/useDevice.js';
   import { useConversion } from '@/composables/useConversion.js';
   import { useClipboard } from '@/composables/useClipboard.js';
@@ -874,16 +874,17 @@
   });
 
   // Computed property to update 'boot' mode title dynamically
-  const displayModes = computed(() =>
-    device.value.display.modes.map((mode) =>
-      mode.value === 'boot'
-        ? {
-            ...mode,
-            title: `Keep on for ${device.value.display.displayBootTime} sec after boot`,
-          }
-        : mode
-    )
-  );
+  const displayModes = computed(() => {
+      const modes = device.value?.display?.modes ?? [];
+      return modes.map((mode) => ({
+          ...toRaw(mode),
+          title:
+              mode.value === 'boot'
+                  ? `Keep on for ${device.value?.display?.displayBootTime ?? 0} sec after boot`
+                  : mode.title,
+      }));
+  });
+
 
   const handleInnerPanelUpdate = async (panel) => {
     try {

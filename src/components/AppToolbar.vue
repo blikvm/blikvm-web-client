@@ -313,8 +313,8 @@
         showOverlay.value = !showOverlay.value;
         break;
       case 'lock':
+        store.showCtrlAltDelDialog = true;
         break;
-
       default:
         break;
     }

@@ -399,7 +399,7 @@
     };
 
     // Track whether we found a real video element
-    isVideoVisible.value = element.tagName === 'VIDEO';
+    isVideoVisible.value = element.tagName === 'VIDEO' || element.tagName === 'IMG';
     lastBounds = { top: rect.top, left: rect.left, width: rect.width, height: rect.height };
     lastElementType = currentElementType;
   };
