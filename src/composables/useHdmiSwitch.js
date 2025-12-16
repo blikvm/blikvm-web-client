@@ -100,15 +100,21 @@ export function useHdmiSwitch() {
 
   const changeSwitchChannel = async (channelName) => {
     try {
-      if (channelName <= 0 || channelName > 16) {
+      // Ensure channelName is a number (some callers pass strings)
+      const channelNum = Number(channelName);
+      if (!Number.isFinite(channelNum) || channelNum <= 0 || channelNum > 16) {
         const status = 'error';
         const title = 'Switch';
         const message = `error channel ${channelName}`;
         sendAlert(status, title, message);
         return;
       }
-      const id = kvmSwitch.value.activeSwitchId;
-      if (id <= 0 || id > 4) {
+      // Prefer kvmSwitch activeSwitchId but fall back to store persisted active item
+      let id = kvmSwitch.value && kvmSwitch.value.activeSwitchId;
+      if (!id && devicePersist && devicePersist.value && devicePersist.value.HDMISwitchActiveItem) {
+        id = devicePersist.value.HDMISwitchActiveItem.id;
+      }
+      if (!Number.isFinite(id) || id <= 0 || id > 4) {
         const status = 'error';
         const title = 'Switch';
         const message = `error active id ${id}`;
@@ -116,15 +122,16 @@ export function useHdmiSwitch() {
         return;
       }
       const requestBody = {
-        channel: channelName,
+        channel: channelNum,
       };
+      console.log('changeSwitchChannel: sending', { id, channel: requestBody.channel });
       const response = await http.post(`/switch/${id}/channel`, requestBody);
       if (response.status === 200 && response.data.code === 0) {
         console.log('set module success');
       }
       kvmSwitch.value.items.forEach((item) => {
         if (item.id === id) {
-          item.activeChannel = channelName;
+          item.activeChannel = channelNum;
         }
       });
       //
