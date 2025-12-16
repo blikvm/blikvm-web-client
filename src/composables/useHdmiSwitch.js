@@ -27,8 +27,6 @@ export function useHdmiSwitch() {
         channels: kvmSwitch.value.items[index - 1].channels,
       };
 
-      console.log('Request body for updating HDMI switch:', requestPathBody);
-
       const response = await http.post(`/switch/${index}/update`, requestPathBody);
 
       if (response.status === 200 && response.data.code === 0) {
@@ -105,7 +103,7 @@ export function useHdmiSwitch() {
       if (!Number.isFinite(channelNum) || channelNum <= 0 || channelNum > 16) {
         const status = 'error';
         const title = 'Switch';
-        const message = `error channel ${channelName}`;
+        const message = `error channel ${channelName} (parsed: ${channelNum})`;
         sendAlert(status, title, message);
         return;
       }
@@ -114,6 +112,7 @@ export function useHdmiSwitch() {
       if (!id && devicePersist && devicePersist.value && devicePersist.value.HDMISwitchActiveItem) {
         id = devicePersist.value.HDMISwitchActiveItem.id;
       }
+      id = Number(id);
       if (!Number.isFinite(id) || id <= 0 || id > 4) {
         const status = 'error';
         const title = 'Switch';
@@ -124,11 +123,7 @@ export function useHdmiSwitch() {
       const requestBody = {
         channel: channelNum,
       };
-      console.log('changeSwitchChannel: sending', { id, channel: requestBody.channel });
       const response = await http.post(`/switch/${id}/channel`, requestBody);
-      if (response.status === 200 && response.data.code === 0) {
-        console.log('set module success');
-      }
       kvmSwitch.value.items.forEach((item) => {
         if (item.id === id) {
           item.activeChannel = channelNum;
