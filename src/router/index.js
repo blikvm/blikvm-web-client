@@ -28,11 +28,11 @@
 import { createRouter, createWebHistory } from 'vue-router/auto';
 import { setupLayouts } from 'virtual:generated-layouts';
 import { routes } from 'vue-router/auto-routes';
+import { useAppStore } from '@/stores/stores';
 
 // Modify the existing routes if needed
 for (const route of routes) {
   if (route.name === '/main') {
-    console.log(route);
     route.meta = route.meta || {};
     // Uncomment this line if you want to require authentication for the main route
     // route.meta.requiresAuth = true;
@@ -55,20 +55,35 @@ const router = createRouter({
 
 // Global navigation guard for authentication
 router.beforeEach((to, from, next) => {
-  console.log('to.matched:', to.matched);
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+  const store = useAppStore();
   const token = localStorage.getItem('token'); // TODO get from store
-
-  console.log('token', token);
-  console.log('Navigating to:', to.path);
 
   if (requiresAuth && !token) {
     next('/'); // Redirect to home if authentication is required and no token is present
   } else {
     if (token) {
-      console.log('token valid');
-    } else {
-      console.log("don't need auth");
+      
+      // Restore username from JWT token on page refresh
+      try {
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+          throw new Error('Invalid token format - must have 3 parts');
+        }
+        
+        const payload = JSON.parse(atob(parts[1]));
+        
+        // Validate payload has username and it's a string
+        if (payload?.username && typeof payload.username === 'string' && !store.account.user) {
+          store.account.user = payload.username;
+        } else if (!payload?.username) {
+          throw new Error('Token payload missing username');
+        }
+      } catch (error) {
+        console.warn('Invalid JWT token, clearing from storage:', error.message);
+        localStorage.removeItem('token');
+        // Don't set user state with invalid token
+      }
     }
     next(); // Proceed to the route
   }
