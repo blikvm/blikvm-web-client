@@ -1,8 +1,10 @@
 'use strict';
 
+import { ref } from 'vue';
 import http from '@/utils/http.js';
 import { useAppStore } from '@/stores/stores';
 import { storeToRefs } from 'pinia';
+import { useAlert } from '@/composables/useAlert';
 
 const store = useAppStore();
 const { serial } = storeToRefs(store);
@@ -11,12 +13,16 @@ const serialPortList = ref([]); // Initialize hdmiSwitch as an object with items
 const serialBaudrateList = ref([9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]); // Baudrate options
 
 export function useSerialPorts() {
+  const { sendAlert } = useAlert();
+  
   const getPortList = async () => {
     try {
       const response = await http.get('/serial');
       if (response.status === 200 && response.data.code === 0) {
-        if (response.data.data) {
+        if (response.data.data && Array.isArray(response.data.data)) {
           serialPortList.value = response.data.data;
+        } else {
+          serialPortList.value = [];
         }
       } else {
         const title = 'Serial';
@@ -38,8 +44,10 @@ export function useSerialPorts() {
       };
       const response = await http.post('/serial', requestBody);
       if (response.status === 200 && response.data.code === 0) {
-        if (response.data.data) {
+        if (response.data.data && Array.isArray(response.data.data)) {
           serialPortList.value = response.data.data;
+        } else {
+          serialPortList.value = [];
         }
       } else {
         const title = 'Serial';
