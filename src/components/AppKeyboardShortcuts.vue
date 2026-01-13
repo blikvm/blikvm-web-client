@@ -50,10 +50,11 @@
     >
       <v-chip
         v-for="(item, index) in allShortcuts"
-        :key="index"
+        :key="getShortcutKey(item)"
         class="mr-2 flex-shrink-0 shortcut-chip"
         :color="getChipColor(item, index)"
-        @click="handleShortcutClick(item.value)"
+        @click="executeShortcut(item.value)"
+        @dblclick="togglePin(item.value)"
         @mousedown="startLongPress(index, item)"
         @mouseup="cancelLongPress"
         @mouseleave="cancelLongPress"
@@ -61,13 +62,25 @@
         @touchend="cancelLongPress"
         @touchcancel="cancelLongPress"
       >
-        <v-tooltip v-if="item.warning" location="top">
-          <template #activator="{ props }">
-            <span v-bind="props">{{ item.name }}</span>
-          </template>
-          <span>{{ item.warning }}</span>
-        </v-tooltip>
-        <span v-else>{{ item.name }}</span>
+        <div class="d-flex align-center gap-1">
+          <v-tooltip v-if="item.warning" location="top">
+            <template v-slot:activator="{ props }">
+              <span v-bind="props">{{ item.name }}</span>
+            </template>
+            <span>{{ item.warning }}</span>
+          </v-tooltip>
+          <span v-else>{{ item.name }}</span>
+          
+          <!-- Pin icon -->
+          <v-icon
+            v-if="isPinned(item.value)"
+            size="12"
+            color="#FFD700"
+            class="ml-1"
+          >
+            mdi-star
+          </v-icon>
+        </div>
       </v-chip>
     </div>
 
@@ -169,6 +182,7 @@
   ]);
 
   import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
+  import { useAdaptiveShortcuts } from '@/composables/useAdaptiveShortcuts';
 
   const {
     shortcutList,
@@ -179,10 +193,48 @@
     loadShortcuts,
   } = useKeyboardShortcuts(targetOS);
 
+  const {
+    togglePin,
+    isPinned,
+    getUsageCount,
+    adaptiveShortcuts,
+    trackShortcutUsage,
+  } = useAdaptiveShortcuts();
+
   // All shortcuts from API
   const allShortcuts = computed(() => {
     // Ensure shortcutList.value is an array
-    return Array.isArray(shortcutList.value) ? shortcutList.value : [];
+    const shortcuts = Array.isArray(shortcutList.value) ? shortcutList.value : [];
+    
+    // Sort by adaptive importance: pinned first, then by usage count, then by most recent
+    return shortcuts.sort((a, b) => {
+      const aIsPinned = isPinned(a.value);
+      const bIsPinned = isPinned(b.value);
+      const aUsage = getUsageCount(a.value);
+      const bUsage = getUsageCount(b.value);
+      
+      // Pinned shortcuts come first
+      if (aIsPinned && !bIsPinned) return -1;
+      if (!aIsPinned && bIsPinned) return 1;
+      
+      // Then by usage count (descending)
+      if (aUsage !== bUsage) {
+        return bUsage - aUsage;
+      }
+      
+      // When usage counts are equal, most recently used wins
+      const aKey = Array.isArray(a.value) ? a.value.join('+') : String(a.value);
+      const bKey = Array.isArray(b.value) ? b.value.join('+') : String(b.value);
+      const aLastUsed = adaptiveShortcuts.value[aKey]?.lastUsed || 0;
+      const bLastUsed = adaptiveShortcuts.value[bKey]?.lastUsed || 0;
+      
+      if (aLastUsed !== bLastUsed) {
+        return bLastUsed - aLastUsed; // Most recent first
+      }
+      
+      // Finally alphabetically if everything else is equal
+      return a.name.localeCompare(b.name);
+    });
   });
 
   // Recording state
@@ -381,8 +433,14 @@
     }
   };
 
-  const handleShortcutClick = (value) => {
+  const executeShortcut = (value) => {
     if (isRecording.value) return;
+
+    // Find the shortcut to track it
+    const shortcut = allShortcuts.value.find(s => s.value === value);
+    if (shortcut) {
+      trackShortcutUsage(shortcut, 'ui-click');
+    }
 
     // Clear any existing highlight when user clicks a shortcut directly
     highlightedShortcutIndex.value = -1;
@@ -464,7 +522,7 @@
 
   const selectSearchResult = (item) => {
     // Execute the shortcut
-    handleShortcutClick(item.value);
+    executeShortcut(item.value);
 
     // Find and highlight the selected item
     const index = allShortcuts.value.findIndex((s) => s.name === item.name);
@@ -487,6 +545,11 @@
         checkScrollButtons();
       }
     }
+  };
+
+  // Helper functions
+  const getShortcutKey = (item) => {
+    return item.value || item.name || Math.random().toString();
   };
 
   // Helper function to determine chip color
