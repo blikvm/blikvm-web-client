@@ -1,0 +1,595 @@
+{
+  "app": {
+    "defaultTitle": "BliKVM Matrix \"KVM-over-IP\"",
+    "subtitle": "Open-Source \"KVM-over-IP\""
+  },
+  "settings": {
+    "title": "Конфигурация устройства",
+    "configuration": "Конфигурация устройства",
+    "device": {
+      "subtitle": "Управление вашим IP KVM устройством",
+      "general": {
+        "title": "Общие",
+        "hardware": "Оборудование",
+        "os": "ОС",
+        "architecture": "Архитектура",
+        "uptime": "Время работы",
+        "timezone": "Часовой пояс",
+        "connectedClients": "Подключенные клиенты",
+        "deviceVersion": "Версия устройства",
+        "kvm_device_identity": {
+          "title": "Идентификация KVM устройства",
+          "subtitle": "Настройка идентификации KVM в целевой системе",
+          "monitorNameField": "Название монитора",
+          "manufacturer": "Производитель",
+          "productIdField": "ID продукта",
+          "serialNumber": "Серийный номер"
+        },
+        "display": {
+          "title": "LCD/OLED дисплей",
+          "subtitle": "",
+          "mode": "Режим дисплея",
+          "bootMode": "Время отображения после загрузки",
+          "intervalMode": "Интервал включения дисплея",
+          "secondaryIP": "Вторичный IP"
+        },
+        "fan": {
+          "title": "Вентилятор",
+          "tempThresholdField": "Порог температуры"
+        }
+      },
+      "healthCheck": {
+        "title": "Проверка состояния",
+        "ramThreshold": "Порог ОЗУ",
+        "storageThreshold": "Порог хранилища",
+        "networkLatencyThreshold": "Порог задержки сети",
+        "temperatureThreshold": "Порог температуры"
+      },
+      "systemControl": {
+        "title": "Управление системой",
+        "subtitle": "Управление системными операциями KVM устройства",
+        "warning": "Перезагрузка временно отключит все соединения и прервет текущие операции.",
+        "rebootButton": "Перезагрузить KVM устройство",
+        "confirmTitle": "Подтвердите перезагрузку системы",
+        "confirmMessage": "Вы уверены, что хотите перезагрузить KVM устройство?",
+        "confirmWarning": "Это отключит все активные сеансы, и устройство будет недоступно примерно 30-60 секунд.",
+        "confirmButton": "Да, перезагрузить сейчас"
+      },
+      "video": {
+        "title": "Видео",
+        "subtitle": "Настройка параметров видео",
+        "isHDMIActivateField": "HDMI активен?",
+        "modeField": "Режим видео",
+        "orientation": "Ориентация",
+        "inputFormat": "Формат входа HDMI",
+        "liveFormat": "Битрейт / fps трансляции",
+        "desiredFpsField": "Желаемое количество кадров в секунду",
+        "mjpegQualityField": "Качество",
+        "WebRTCBitrateField": "Битрейт",
+        "WebRTCGopField": "Группа изображений"
+      },
+      "audio": {
+        "title": "Аудио-вход",
+        "subtitle": "Настройка параметров аудио",
+        "isRegisteredField": "Аудио-вход зарегистрирован?",
+        "registerMic": "Зарегистрировать микрофон (⚠️ Может потребоваться перезагрузка)"
+      },
+      "hid": {
+        "title": "Клавиатура и мышь",
+        "subtitle": "Настройка параметров устройств ввода",
+        "section": "Конфигурация",
+        "audioVolumeField": "Аудио",
+        "audioVolumeHelp": "справка по аудио",
+        "modeField": "Регистрация USB устройства (⚠️ Может потребоваться перезагрузка)",
+        "modeHelp": "Выберите режим работы мыши. У меня есть текст для этого..",
+        "behaviourField": "Режим поведения мыши (при выборе двойного режима)",
+        "absolute": "Абсолютный",
+        "relative": "Относительный",
+        "registration": {
+          "dual": "Двойной режим (быстрое переключение)",
+          "absolute": "Регистрировать только абсолютный",
+          "relative": "Регистрировать только относительный"
+        },
+        "isActiveField": "HID активен?",
+        "isActiveHelp": "справка isActiveHelp",
+        "mouseJigglerIntervalField": "Интервал имитатора движения мыши",
+        "mouseJigglerIntervalHelp": "справка jigglerHelp",
+        "pollingIntervalField": "Интервал опроса (мс)",
+        "pollingIntervalHelp": "справка pollingIntervalHelp",
+        "change_mode": "режим мыши успешно изменен, теперь необходимо перезагрузить kvm и целевой ПК!",
+        "relativeSensitivityField": "Чувствительность мыши",
+        "sensitivity": "Чувствительность"
+      }
+    },
+    "gui": {
+      "title": "Интерфейс",
+      "subtitle": "Выберите настройки веб-интерфейса",
+      "isLocalCursorVisibleField": "Показывать локальный курсор в видео?",
+      "isLocalCursorVisibleHelp": "справка hideLocalVideoCursorHelp",
+      "language": {
+        "languageField": "Язык",
+        "languageHelp": "справка LanguageHelp",
+        "helpTranslate": "Помочь с переводом"
+      },
+      "alert": {
+        "title": "Оповещения",
+        "isAlertField": "Показывать оповещения?",
+        "showAlertHelp": "справка showAlertHelp",
+        "locationField": "Расположение",
+        "locationHelp": "Выберите расположение для отображения оповещений."
+      },
+      "cursor": {
+        "title": "Локальный курсор"
+      },
+      "temperature": {
+        "title": "Температура",
+        "unit": "Единица измерения температуры",
+        "celsius": "Цельсий",
+        "fahrenheit": "Фаренгейт"
+      },
+      "login": {
+        "title": "Вход",
+        "showCocField": "Показывать сообщение Кодекса поведения?",
+        "conductUrlField": "URL"
+      }
+    },
+    "text": {
+      "title": "Извлечение и вставка текста",
+      "subtitle": "Управление передачей текста между устройством и целевой системой",
+      "paste": {
+        "title": "Вставить текст",
+        "subtitle": "Отправить текст на удаленную машину путем имитации отдельных нажатий клавиш",
+        "input": "Введите текст",
+        "inputHelp": "Введите текст",
+        "obfuscate": "Обфускация",
+        "confirmOnSend": "Подтверждать при отправке?",
+        "selectedKeymap": "Использовать раскладку хоста",
+        "send": "Отправить",
+        "keymap": "Раскладка",
+        "delay": "Задержка"
+      },
+      "extract": {
+        "title": "Извлечение текста",
+        "selectArea": "Выбрать область"
+      }
+    },
+    "msd": {
+      "stream": {
+        "subtitle": "Потоковая передача образов напрямую из браузера"
+      },
+      "url": {
+        "subtitle": "Доступ к образам по любому публичному веб-адресу"
+      },
+      "local": {
+        "subtitle": "Доступ к образам из хранилища устройства"
+      },
+      "title": "Виртуальные носители",
+      "subtitle": "Выберите способ подключения виртуальных носителей",
+      "toolbarTitle": "Загрузочные образы",
+      "connectVirtualMedia": "Подключить к виртуальным носителям",
+      "virtualMediaCreate": "Создание виртуального носителя",
+      "deviceFileField": "Устройство",
+      "deviceFileHelp": "справка deviceHelp",
+      "disconnectVirtualMedia": "Отключить виртуальные носители",
+      "setMsdSize": "Размер диска",
+      "streamSourceUrl": "URL источника потока",
+      "urlSource": "URL источника",
+      "imageName": "Имя образа",
+      "make_msd_size": "Размер виртуального носителя",
+      "abort": "Прервать",
+      "deleteMSD": "Удалить виртуальный носитель",
+      "connect_to_host": "Подключить к хосту",
+      "refreshList": "Обновить список",
+      "deleteImage": "Удалить файл",
+      "deleteImageConfirm": "Вы уверены, что хотите удалить образ",
+      "irreversable": "Этот процесс необратим.",
+      "deleteMsdConfirm": "Вы уверены, что хотите удалить виртуальный носитель?",
+      "resizeFilesystem": "Изменить размер файловой системы",
+      "noDataAvailable": "Нет доступных данных",
+      "uploadOrDrop": "Загрузить или перетащить файл",
+      "virtualMediaDelete": "Удаление виртуального носителя",
+      "mount": "Монтировать",
+      "created": "Создан",
+      "notCreated": "Не создан",
+      "readyForUse": "Готов к использованию",
+      "mountImage": "Монтировать в файловый менеджер",
+      "unmountImage": "Размонтировать файловый менеджер"
+    },
+    "storage": {
+      "title": "Хранилище",
+      "subtitle": "Просмотр использования хранилища",
+      "freeSize": "Свободное место"
+    },
+    "atx": {
+      "title": "Удаленное управление питанием",
+      "subtitle": "Аппаратное управление питанием через ATX контакты",
+      "iconInfo": "ATX питание",
+      "showATXField": "Удаленное управление питанием активно?",
+      "commandField": "Команда",
+      "atx_no_connect": "Отключено",
+      "powerOn": "Включить",
+      "powerOff": "Выключить",
+      "forceOff": "Принудительное выключение",
+      "reset": "Сброс",
+      "ledPwr": "Индикатор питания",
+      "ledHdd": "Индикатор HDD"
+    },
+    "switch": {
+      "title": "KVM переключатель",
+      "subtitle": "Настройка переключателя",
+      "activeField": "Переключатель активен?",
+      "section": "Конфигурация",
+      "switch": "",
+      "switchField": "Переключатель включен?",
+      "switchHelp": "справка switchHelp",
+      "moduleField": "Модуль",
+      "moduleHelp": "справка modulelHelp",
+      "channelField": "Канал",
+      "channelHelp": "справка switchHelp",
+      "selectModel": "Выбрать модель",
+      "selectChannel": "Выбрать канал",
+      "deviceFile": "Устройство",
+      "deviceFileField": "поле deviceField",
+      "deviceFileHelp": "устройство в Unix-подобных операционных системах, представляющее USB-to-serial адаптер.",
+      "deviceFilePlaceholder": "Введите устройство",
+      "port": "Порт переключателя"
+    },
+    "network": {
+      "title": "Сеть",
+      "subtitle": "Управление сетевыми настройками",
+      "isHttpsConnectionEnabledHelp": "справка isDiscoveryEnabledHelp",
+      "isDiscoverableField": "Устройство обнаруживаемо?",
+      "isDiscoverableHelp": "справка isDiscoveryHelp",
+      "latency": "Задержка сети",
+      "general": {
+        "hostnameField": "Имя хоста",
+        "hostnameHelp": "справка hostnameHelp",
+        "osField": "ОС",
+        "fqdnField": "FQDN",
+        "mac": "MAC адрес",
+        "ip4Field": "IPv4",
+        "dhcp": "Режим DHCP",
+        "dynamic": "динамический",
+        "static": "статический"
+      },
+      "services": {
+        "title": "Сервисы",
+        "httpPortField": "Номер HTTP порта",
+        "httpsPortField": "Номер HTTPS порта",
+        "isHttpsConnectionEnabledField": "Включить HTTPS соединение?"
+      },
+      "wol": {
+        "add": "Добавить устройство",
+        "title": "Wake On LAN",
+        "subtitle": "Отправить WOL Magic Packet для пробуждения удаленного устройства",
+        "refreshList": "Обновить список WOL",
+        "target": "Цель",
+        "section": "Конфигурация цели",
+        "mac": "MAC адрес (ff:ff:ff:ff:ff:ff)",
+        "macField": "поле macField",
+        "macHelp": "справка macHelp",
+        "name": "Имя устройства",
+        "wakeup": "Пробудить",
+        "newDeiviceName": "Имя нового устройства",
+        "newDeviceMac": "MAC адрес нового устройства"
+      }
+    },
+    "security": {
+      "title": "Безопасность",
+      "subtitle": "Настройка защиты устройства",
+      "redirectHttpsField": "Автоматически перенаправлять HTTP соединение на HTTPS?",
+      "redirectHttpsHelp": "справка redirectHttpsHelp",
+      "authorization": {
+        "title": "Авторизация",
+        "subtitle": "Список контроля доступа",
+        "subtitle1": "Белый список",
+        "subtitle2": "Черный список",
+        "allowlist": "Белый список IP адресов, которым вы доверяете",
+        "blocklist": "Черный список IP адресов для блокировки входа",
+        "remove": "Удалить из списка",
+        "newIPAdress": "Новый IP адрес"
+      },
+      "authentication": {
+        "title": "Аутентификация",
+        "subtitle": "Тип аутентификации",
+        "2faTitle": "Двухфакторная аутентификация",
+        "isAuthEnabledField": "Использовать аутентификацию?",
+        "isAuthEnabledHelp": "справка isAuthEnabledHelp",
+        "is2FaEnabledField": "Использовать 2FA?",
+        "is2FaEnabledHelp": "справка is2FA EnabledHelp",
+        "2faScan": "Отсканируйте QR код",
+        "2faScanHelp": "Используйте приложение или расширение браузера для сканирования.",
+        "2faLoading": "Загрузка QR кода",
+        "2faScanKeyHelp": "Не можете отсканировать? Используйте настройку ключа",
+        "learnMore": "Узнать больше",
+        "2faEnterCode": "Введите предоставленный код подтверждения",
+        "2faFinishInfo": "Ваша учетная запись теперь защищена двухфакторной аутентификацией.",
+        "2faDisabledInfo": "Введите предоставленный код подтверждения для отключения 2FA",
+        "setup": "Настроить",
+        "verify": "Проверить",
+        "complete": "Завершить",
+        "disable": "Отключить",
+        "ssh": {
+          "publicKeyfield": "SSH публичный ключ"
+        }
+      },
+      "sessionMgmnt": {
+        "title": "Управление сеансами",
+        "subtitle": "VPN (виртуальная частная сеть)"
+      },
+      "reset": {
+        "title": "Сброс конфигурации",
+        "subtitle": "Сброс конфигурации к настройкам по умолчанию.\nВы будете разлогинены.",
+        "retainPasswordField": "Сохранить все пароли без изменений?",
+        "retainPasswordHelp": "справка retainAdminPasswordHelp",
+        "resetConfig": "Сбросить конфигурацию"
+      },
+      "iam": {
+        "systemField": "Система IAM",
+        "systemHelp": "справка systemHelp",
+        "authMethodField": "Метод аутентификации",
+        "authMethodHelp": "справка authMethodHelp"
+      },
+      "session": {
+        "isAutoLogoutField": "Автоматический выход после 5 мин неактивности",
+        "isAutoLogoutHelp": "справка isAutoLogoutHelp",
+        "vpn": {
+          "ip": "IP адрес",
+          "isTailscaleEnabledField": "Tailscale включен?",
+          "isTailscaleEnabledHelp": "справка isTailscaleEnabledHelp"
+        }
+      }
+    },
+    "integrations": {
+      "title": "Интеграции",
+      "subtitle": "Интеграция со сторонними системами",
+      "prometheus": {
+        "title": "Prometheus",
+        "isActiveField": "Использовать Prometheus?",
+        "isActiveHelp": "справка isActivedHelp",
+        "endpointField": "URL конечной точки",
+        "endpointHelp": "справка endpointHelp",
+        "refreshIntervalField": "Интервал обновления"
+      },
+      "snmp": {
+        "title": "SNMP мониторинг",
+        "isEnabledField": "SNMP включен?",
+        "isEnabledHelp": "справка isEnabledHelp",
+        "snmpVersionField": "Версия",
+        "snmpVersionHelp": "справка snmpVersionHelp",
+        "snmpCommunityStringField": "Строка сообщества",
+        "snmpCommunityStringHelp": "справка snmpCommunityStringHelp",
+        "snmpHostnameField": "Имя хоста SNMP",
+        "snmpHostnameHelp": "справка snmpHostnameHelp",
+        "snmpOidField": "Идентификатор объекта",
+        "snmpOidHelp": "справка snmpOidHelp"
+      },
+      "webhook": {
+        "webhookField": "Вебхуки",
+        "webhookHelp": "справка webhookHelp",
+        "endpointEventField": "Событие",
+        "endpointEventHelp": "справка endpointEventHelp",
+        "endpointNameField": "Имя конечной точки",
+        "endpointNameHelp": "справка endpointNameHelp",
+        "endpointURLField": "URL конечной точки",
+        "endpointURLHelp": "справка endpointURLHelp"
+      }
+    },
+    "scripts": {
+      "title": "Скрипты",
+      "subtitle": "Загрузка и скачивание ваших любимых скриптов"
+    },
+    "analytics": {
+      "title": "Аналитика",
+      "subtitle": ""
+    },
+    "serial": {
+      "title": "Последовательный терминал",
+      "subtitle": "Взаимодействие с целевой системой через последовательную связь",
+      "section": "Конфигурация",
+      "serialPortField": "Последовательный порт",
+      "serialPortHelp": "справка serialPortHelp",
+      "baudrateField": "Скорость передачи",
+      "baudrateHelp": "справка baudrateHelp"
+    },
+    "identity": {
+      "title": "Идентификация KVM устройства",
+      "subtitle": "Настройка идентификации KVM в целевой системе",
+      "monitorNameField": "Название монитора",
+      "monitorNameHelp": "справка monitorNameHelp",
+      "manufacturerNameField": "Производитель",
+      "manufacturerNameHelp": "справка manufacturerNameHelp",
+      "productIdField": "ID продукта",
+      "productIdHelp": "справка productIdHelp",
+      "serialField": "Серийный номер",
+      "serialHelp": "справка serialHelp"
+    }
+  },
+  "login": {
+    "user": "Имя пользователя",
+    "username": "Имя пользователя",
+    "userPlaceholder": "Введите ваше имя пользователя",
+    "password": "Пароль",
+    "passwordPlaceholder": "Введите ваш пароль",
+    "login": "Войти",
+    "logout": "Выйти",
+    "otp": "2FA (если включено)",
+    "loginAccount": "Войти в ваше устройство",
+    "secureNotice1": "Уведомление о защищенной среде",
+    "secureNotice2": "Вы входите в защищенную среду управления.",
+    "adhere": "Пожалуйста, соблюдайте",
+    "eCOC": "Кодекс поведения в цифровой рабочей среде",
+    "forbidden": "Несанкционированный доступ строго запрещен.",
+    "loginFailed": "Ошибка входа. Пожалуйста, проверьте ваши учетные данные"
+  },
+  "common": {
+    "revertLastSaved": "Вернуться к последнему сохранению",
+    "available": "доступно",
+    "refresh": "Обновить",
+    "noData": "Нет данных",
+    "copy": "Копировать",
+    "connect": "подключено",
+    "disconnect": "отключено",
+    "current": "текущий",
+    "total": "всего",
+    "active": "активно",
+    "unavailable": "недоступно",
+    "inactive": "Неактивно",
+    "download": "Скачать",
+    "delete": "Удалить",
+    "general": "Общая информация",
+    "remove": "Удалить",
+    "add": "Добавить",
+    "disabled": "Отключено",
+    "basic": "Базовый",
+    "use": "Использовать",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "ok": "ОК",
+    "configure": "Настроить",
+    "overlay": "Оверлей",
+    "overlayOn": "Включить оверлей",
+    "overlayOff": "Выключить оверлей",
+    "takeSnapshot": "Сделать снимок",
+    "startRecording": "Начать запись видео",
+    "stopRecording": "Остановить запись видео",
+    "send": "Отправить",
+    "fullscreenMode": "Войти в полноэкранный режим",
+    "keyboard": "Клавиатура",
+    "mouse": "Мышь",
+    "virtualMouse": "Виртуальная мышь",
+    "record": "Записать",
+    "recordShortcut": "Записать комбинацию...",
+    "dismiss": "Закрыть",
+    "seconds": "секунд",
+    "local": "Локальный",
+    "keypress": "нажатие клавиши",
+    "version": "Версия",
+    "client": "Клиент",
+    "server": "Сервер",
+    "used": "Использовано",
+    "free": "Свободно",
+    "allowed": "разрешено",
+    "blocked": "заблокировано",
+    "unregister": "отменить регистрацию",
+    "hide": "Скрыть",
+    "video": "Видео",
+    "sshTerminal": "SSH терминал",
+    "serialTerminal": "Последовательный терминал",
+    "notifications": "Уведомления",
+    "toggleSettings": "Переключить настройки",
+    "toggleFooter": "Переключить нижний колонтитул",
+    "atxPower": "ATX питание"
+  },
+  "label": {
+    "connected": "Подключено",
+    "disconnected": "Отключено",
+    "none": "Нет",
+    "yes": "Да",
+    "no": "Нет",
+    "warning": "Предупреждение // использовать иконку"
+  },
+  "notification": {
+    "title": "Уведомления",
+    "subtitle": "......",
+    "log": "Последние 20 записей журнала"
+  },
+  "account": {
+    "title": "Учетная запись",
+    "subtitle": "Управление вашей учетной записью",
+    "section": "Конфигурация пользователя",
+    "users": "пользователи",
+    "isActiveField": "Активен?",
+    "isActivedHelp": "справка isActiveHelp",
+    "userField": "Имя пользователя",
+    "userPlaceholder": "заполнитель usernamePlaceholder",
+    "userHelp": "справка usernameHelp",
+    "passwordField": "пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "passwordHelp": "Обеспечьте надежный пароль",
+    "rePasswordField": "Повторите пароль",
+    "rePasswordPlaceholder": "Повторите пароль",
+    "rePasswordHelp": "Подтвердите пароль",
+    "roleField": "Роль",
+    "roleHelp": "Справка по роли",
+    "addUser": "Добавить пользователя",
+    "changePassword": "Изменить пароль",
+    "user_setting": "TODO Настройки пользователя",
+    "new_username": "TODO Новое имя пользователя",
+    "new_password": "TODO Новый пароль",
+    "confirm_password": "TODO Подтвердите пароль",
+    "current_password": "TODO Текущий пароль",
+    "change_password": "TODO Изменить пароль",
+    "docs": "Документация",
+    "discord": "Discord",
+    "issue": "Проблема"
+  },
+  "hid": {
+    "section": "Конфигурация",
+    "audioVolumeField": "Аудио",
+    "audioVolumeHelp": "справка по аудио",
+    "modeHelp": "Выберите режим работы мыши. У меня есть текст для этого..",
+    "absolute": "Абсолютный",
+    "relative": "Относительный",
+    "isActiveField": "HID активен?",
+    "isActiveHelp": "справка isActiveHelp",
+    "mouseJigglerIntervalHelp": "справка jigglerHelp",
+    "pollingIntervalHelp": "справка pollingIntervalHelp",
+    "change_mode": "режим мыши успешно изменен, теперь необходимо перезагрузить kvm и целевой ПК!",
+    "wheelReverseField": "Инвертировать колесо мыши?",
+    "passthrough": "Сквозная передача HID?",
+    "passthroughWheelReverseField": "Инвертировать колесо мыши при сквозной передаче?",
+    "sensitivity": "Чувствительность"
+  },
+  "appFooter": {
+    "about": "О BliKVM",
+    "sshTerminal": "SSH терминал",
+    "serialTerminal": "Последовательный терминал"
+  },
+  "terminal": {
+    "clearTerminal": "Очистить терминал",
+    "copyText": "Копировать текст",
+    "pasteText": "Вставить текст",
+    "scrollToTop": "Прокрутить вверх",
+    "scrollToBottom": "Прокрутить вниз",
+    "connected": "Подключено",
+    "disconnected": "Отключено",
+    "sshTerminalConsole": "Консоль SSH терминала",
+    "copySelection": "Копировать выделение или весь текст",
+    "pasteFromClipboard": "Вставить из буфера обмена",
+    "scrollToTopAction": "Прокрутить вверх",
+    "scrollToBottomAction": "Прокрутить вниз"
+  },
+  "dataIterator": {
+    "noDataText": "Нет доступных данных",
+    "rowsPerPageText": "Элементов на странице:",
+    "pageText": "{0}-{1} из {2}"
+  },
+  "diagnostics": {
+    "videoStreamerServerClosed": "Сервер потокового видео закрыт",
+    "reconnectMessage": "Попытка переподключения... {countdownDisplay}с",
+    "reconnectStopMessage": "Достигнуто максимальное количество попыток переподключения. Пожалуйста, проверьте устройство",
+    "reloadWindow": "Перезагрузить окно",
+    "reconnectingIn": "Переподключение через",
+    "retryNow": "Повторить сейчас",
+    "noSignal": "Сигнал не обнаружен",
+    "connecting": "Подключение...",
+    "connectionLost": "Соединение потеряно",
+    "connectionLostDetail": "Соединение с удаленным сервером было потеряно. Вы можете попытаться переподключиться или перезагрузить страницу.",
+    "checkDevice": "Пожалуйста, проверьте устройство"
+  },
+  "ctrlAltDel": {
+    "confirmTitle": "Отправить CTRL+ALT+DEL",
+    "confirmMessage": "Вы уверены, что хотите отправить CTRL+ALT+DEL в целевую систему?",
+    "warningMessage": "Это может прервать текущий сеанс или вызвать системные действия.",
+    "sendButton": "Отправить"
+  },
+  "aboutPage": {
+    "newVersion": "Новая версия",
+    "runCommandTip": "Выполните эту команду через внешний терминал:",
+    "dontShowAfterLogin": "Не показывать после входа",
+    "updating": "Обновление",
+    "startUpgrade": "Начать обновление",
+    "runningLatestVersion": "Используется последняя версия"
+  }
+}
