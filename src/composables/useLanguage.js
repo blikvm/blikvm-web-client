@@ -16,7 +16,7 @@ export function useLanguage() {
     { language: '', ocr: '', label: 'Chinese traditional' },
     { language: '', ocr: '', label: 'Nederlands' },
     { language: '', ocr: '', label: 'Français' },
-    { language: '', ocr: '', label: 'русский' },
+    { language: 'ru', ocr: 'ru', label: 'русский' },
     { language: '', ocr: '', label: 'Italiana' },
     { language: '', ocr: '', label: 'Deutsch' },
   ]);
