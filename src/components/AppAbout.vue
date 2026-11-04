@@ -1,3 +1,0 @@
-<template>
-  <DialogAboutPage />
-</template>
