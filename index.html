@@ -1,13 +1,10 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  </head>
-
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BliKVM WebRTC Demo</title><style>body{font:15px system-ui;margin:40px auto;max-width:1000px;padding:0 20px;background:#f5f5f7;color:#202124}h1{font-size:25px}section{background:white;border-radius:14px;padding:20px;margin:16px 0}input,button{font:inherit;padding:10px;border:1px solid #ccd0d7;border-radius:8px;margin:4px}button{cursor:pointer;background:#0866ed;color:white}button:disabled{opacity:.45}video:focus{outline:3px solid #0866ed}video{width:100%;aspect-ratio:16/9;background:#111;object-fit:contain;border-radius:10px}p{color:#626975;line-height:1.6}output{display:block;margin:12px 0;overflow-wrap:anywhere}label{display:inline-block;margin-right:12px}#hid-status{margin-left:8px;color:#626975}input{max-width:180px}code{font-size:13px}.heading{display:flex;align-items:center;justify-content:space-between;gap:16px}select{font:inherit;padding:8px;border-radius:8px;border:1px solid #ccd0d7;background:white}.toggles{display:inline-block}</style></head>
+<body><header class="heading"><h1 data-i18n="title"></h1><select id="language" aria-label="Language / 语言"><option value="en">English</option><option value="zh-CN">简体中文</option></select></header>
+<p data-i18n="intro"></p><section>
+<form id="login"><label><span data-i18n="user"></span><input name="username" autocomplete="username" value="admin" required></label><label><span data-i18n="password"></span><input name="password" type="password" autocomplete="current-password" required></label><button data-i18n="login"></button></form>
+<p data-i18n="session"></p><button id="connect" data-i18n="connect"></button><button id="stop" disabled data-i18n="stop"></button>
+<label><input id="input" type="checkbox" disabled><span data-i18n="input"></span></label><label><input id="sound" type="checkbox"><span data-i18n="sound"></span></label><span id="hid-status" data-i18n="hidOff"></span><output id="status" aria-live="polite"></output></section>
+<video id="video" tabindex="0" data-i18n-label="videoLabel" autoplay muted playsinline></video>
+<p><span data-i18n="help"></span><br><span data-i18n="signal"></span>: <code>/api/v1/stream/webrtc/signaling</code><br><span data-i18n="origin"></span></p>
+<script type="module" src="./app.js"></script></body></html>
